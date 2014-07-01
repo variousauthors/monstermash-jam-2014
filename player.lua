@@ -11,7 +11,7 @@ JUMP         = "z"
 SHOOT        = "x"
 DASH         = "shift"
 FALLING      = "falling"
-FLOOR_HEIGHT = 500
+FLOOR_HEIGHT = 170
 
 MovementModule = require("player_movement")
 XBuster        = require("arm_cannon")
@@ -24,19 +24,18 @@ return function (x, y)
     local facing    = RIGHT
     local shooting  = false
 
-    local local_scale = 3
-
     -- back of glove to beginning of red thing
     -- red thing is top
-    local height = 30 * local_scale
-    local width  = 15  * local_scale
+    local height = 30
+    local width  = 15
 
+    local fat_gun_dim             = 3
     local jump_origin
-    local horizontal_speed        = 1.5  * local_scale
-    local initial_vertical_speed  = 5    * local_scale
-    local terminal_vertical_speed = 5.75 * local_scale
-    local vertical_speed          = 0    * local_scale
-    local gravity                 = 0.25 * local_scale
+    local horizontal_speed        = 1.5
+    local initial_vertical_speed  = 5
+    local terminal_vertical_speed = 5.75
+    local vertical_speed          = 0
+    local gravity                 = 0.25
 
     entity.setJumpOrigin = function ()
         jump_origin = p.copy()
@@ -155,10 +154,10 @@ return function (x, y)
             local offset = width
 
             if facing == LEFT then
-                offset = 0 - 10
+                offset = 0 - fat_gun_dim*2
             end
 
-            love.graphics.rectangle("fill", draw_x + offset, draw_y + height/2, 10, 10)
+            love.graphics.rectangle("fill", draw_x + offset, draw_y + 1*height/3, fat_gun_dim * 2, fat_gun_dim)
         end
 
         love.graphics.rectangle("fill", draw_x, draw_y, width, height)

@@ -19,16 +19,16 @@ function love.load()
     viewport = Viewport:new({width = 256, height = 224})
 
     world         = World()
-    mega_man      = Player(128, 200)
+    mega_man      = Player(10, 170)
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
     world.register(mega_man)
     world.register(chill_penguin)
 
-    state_machine = FSM()
+    game_state = FSM()
 
-    state_machine.addState({
+    game_state.addState({
         name       = "start",
       --init       = game.init,
         draw       = function ()
@@ -51,7 +51,7 @@ function love.load()
         end
     })
 
-    state_machine.addState({
+    game_state.addState({
         name       = "stop",
       --init       = game.init,
       --draw       = game.drawfunction,
@@ -60,7 +60,7 @@ function love.load()
     })
 
     -- start the game when the mega_man chooses a menu option
-    state_machine.addTransition({
+    game_state.addTransition({
         from      = "start",
         to        = "stop",
         condition = function ()
@@ -68,11 +68,11 @@ function love.load()
         end
     })
 
-    state_machine.start()
+    game_state.start()
 end
 
 function love.update(dt)
-    state_machine.update(dt)
+    game_state.update(dt)
 end
 
 function love.keypressed(key, isrepeat)
@@ -83,19 +83,19 @@ function love.keypressed(key, isrepeat)
         love.event.quit()
     end
 
-    state_machine.keypressed(key, isrepeat)
+    game_state.keypressed(key, isrepeat)
 end
 
 function love.keyreleased(key)
-    state_machine.keyreleased(key)
+    game_state.keyreleased(key)
 end
 
 function love.textinput(text)
-    state_machine.textinput(text)
+    game_state.textinput(text)
 end
 
 function love.draw()
     viewport:pushScale()
-    state_machine.draw()
+    game_state.draw()
     viewport:popScale()
 end
