@@ -35,6 +35,33 @@ FSM = function ()
     local states        = {}
     local current_state = { name = "nil" }
 
+    local set = function (key)
+        current_state.variables[key] = true
+    end
+
+    local unset = function (key)
+        current_state.variables[key] = false
+    end
+
+    local isSet = function (key)
+        local result = false
+
+        if current_state.variables[key] ~= nil then
+            result = current_state.variables[key]
+        end
+
+        return result
+    end
+
+    local is = function (name)
+        return current_state.name == name
+    end
+
+    local getCount = function ()
+        return current_state.count
+    end
+
+
     local transitionTo = function (next_state)
         -- TODO currently no states have cleanup steps, and I'm debating whether they need'em
         -- most "cleanup steps" could be their own states with automatic transitions...
@@ -78,14 +105,14 @@ FSM = function ()
 
     local keypressed = function (key)
         -- transition to draw or win
-        state_machine.set(key)
+        set(key)
 
         if current_state.keypressed then current_state.keypressed(key) end
     end
 
     local keyreleased = function (key)
         -- transition to draw or win
-        state_machine.unset(key)
+        unset(key)
 
         if current_state.keyreleased then current_state.keyreleased(key) end
     end
@@ -120,32 +147,6 @@ FSM = function ()
     local start = function (name)
         if name == nil then name = "start" end
         transitionTo(name)
-    end
-
-    local set = function (key)
-        current_state.variables[key] = true
-    end
-
-    local unset = function (key)
-        current_state.variables[key] = false
-    end
-
-    local isSet = function (key)
-        local result = false
-
-        if current_state.variables[key] ~= nil then
-            result = current_state.variables[key]
-        end
-
-        return result
-    end
-
-    local is = function (name)
-        return current_state.name == name
-    end
-
-    local getCount = function ()
-        return current_state.count
     end
 
     return {

@@ -24,7 +24,7 @@ function love.load()
     gj            = GameJolt("1", nil)
 
     world.register(mega_man)
-    world.register(chill_penguin)
+    -- world.register(chill_penguin)
 
     game_state = FSM()
 
@@ -33,8 +33,6 @@ function love.load()
       --init       = game.init,
         draw       = function ()
             world.draw()
-            mega_man.draw()
-            chill_penguin.draw()
         end,
         update     = function (dt)
             world.update(dt)

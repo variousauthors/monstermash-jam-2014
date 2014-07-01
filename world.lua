@@ -9,6 +9,11 @@ return function ()
         entities[entity.get("id")] = entity
     end
 
+    local unregister = function (entity)
+        entities[entity.get("id")] = nil
+        entity.cleanup()
+    end
+
     local tic = function (dt)
         timer = timer + dt
 
@@ -32,10 +37,15 @@ return function ()
         for i, entity in ipairs(entities) do
             entity.update(dt)
         end
+
     end
 
     local draw = function (dt)
         love.graphics.draw(background_image)
+
+        for i, entity in ipairs(entities) do
+            entity.draw(dt)
+        end
     end
 
     return {

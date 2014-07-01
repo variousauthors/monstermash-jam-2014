@@ -17,8 +17,7 @@ MovementModule = require("player_movement")
 XBuster        = require("arm_cannon")
 
 return function (x, y)
-    local entity    = Entity()
-    local p         = Point(x, y)
+    local entity    = Entity(x, y)
     local will_move = nil
     local maneuver  = nil
     local facing    = RIGHT
@@ -26,11 +25,12 @@ return function (x, y)
 
     -- back of glove to beginning of red thing
     -- red thing is top
-    local height = 30
-    local width  = 15
+    local height      = 30
+    local width       = 15
+    local max_bullets = 3
 
-    local fat_gun_dim             = 3
     local jump_origin
+    local fat_gun_dim             = 3
     local horizontal_speed        = 1.5
     local initial_vertical_speed  = 5
     local terminal_vertical_speed = 5.75
@@ -38,7 +38,7 @@ return function (x, y)
     local gravity                 = 0.25
 
     entity.setJumpOrigin = function ()
-        jump_origin = p.copy()
+        jump_origin = Point(entity.getX(), entity.getY())
     end
 
     entity.startJump = function ()
@@ -58,12 +58,12 @@ return function (x, y)
 
     local controls = {}
     controls[LEFT] = function ()
-        p.setX(p.getX() - horizontal_speed)
+        entity.setX(entity.getX() - horizontal_speed)
         facing = LEFT
     end
 
     controls[RIGHT] = function ()
-        p.setX(p.getX() + horizontal_speed)
+        entity.setX(entity.getX() + horizontal_speed)
         facing = RIGHT
     end
 
@@ -74,24 +74,28 @@ return function (x, y)
 
         vertical_speed = math.max(vertical_speed - gravity, 0)
 
-        p.setY(p.getY() - vertical_speed)
+        entity.setY(entity.getY() - vertical_speed)
 
         if vertical_speed == 0 then
             entity.set(FALLING, true)
         end
     end
 
-    controls[SHOOT] = function (dt)
+    controls[DASH] = function (dt)
+    end
+
+    local shoot = function (dt)
+        print("shoot")
     end
 
     local falling = function (dt)
         vertical_speed = math.min(vertical_speed + gravity, terminal_vertical_speed)
 
-        p.setY(p.getY() + vertical_speed)
+        entity.setY(entity.getY() + vertical_speed)
 
-        if p.getY() > FLOOR_HEIGHT then
+        if entity.getY() > FLOOR_HEIGHT then
             entity.set(FALLING, false)
-            p.setY(FLOOR_HEIGHT)
+            entity.setY(FLOOR_HEIGHT)
         end
     end
 
@@ -122,14 +126,18 @@ return function (x, y)
             end
         end
 
+        if x_buster.isSet("shoot") then
+            shoot(dt)
+        end
+
         if entity.get(FALLING) then
             falling(dt)
         end
     end
 
     entity.draw       = function ()
-        local draw_x = p.getX() + width
-        local draw_y = p.getY() - height
+        local draw_x = entity.getX() + width
+        local draw_y = entity.getY() - height
 
         love.graphics.setColor(COLOR.BLACK)
         if facing == LEFT then
