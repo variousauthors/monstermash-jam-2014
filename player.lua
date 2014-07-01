@@ -1,19 +1,5 @@
 if not Entity then require("entity") end
 
-Entity = function ()
-    local read_only  = {}
-    read_only["id"]  = global.entity_id
-    global.entity_id = global.entity_id + 1
-
-    local get = function (key)
-        return read_only[key]
-    end
-
-    return {
-        get = get
-    }
-end
-
 return function (x, y)
     local entity    = Entity()
     local p         = Point(x, y)
