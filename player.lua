@@ -10,7 +10,6 @@ return function (x, y)
         return will_move ~= nil
     end
 
-
     -- every tick, set the current maneuver
     entity.tic = function ()
         if willMove() then
@@ -28,9 +27,11 @@ return function (x, y)
 
     -- record the desired action of the player as a vector
     entity.keypressed = function (key)
-        if key == " " then
-            will_move = true
-        end
+        entity.set(key, true)
+    end
+
+    entity.keyreleased = function (key)
+        entity.set(key, false)
     end
 
     return entity

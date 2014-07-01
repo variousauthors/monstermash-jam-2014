@@ -29,7 +29,7 @@ return function ()
         -- then resolve any collisions
 
         for i, entity in ipairs(entities) do
-            entity.update(dt, timer)
+            entity.update(dt)
         end
     end
 

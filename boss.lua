@@ -18,6 +18,8 @@ return function (x, y)
         end
     end
 
+    entity.keyreleased = function (key) end
+
     entity.willMove = function ()
         return move ~= nil
     end

@@ -40,6 +40,10 @@ function love.load()
             mega_man.keypressed(key) -- queues up the mega_man's next move
             chill_penguin.keypressed(key)
 
+        end,
+        keyreleased = function (key)
+            mega_man.keyreleased(key) -- queues up the mega_man's next move
+            chill_penguin.keyreleased(key)
         end
     })
 
@@ -60,10 +64,11 @@ function love.load()
         end
     })
 
-    love.update     = state_machine.update
-    love.keypressed = state_machine.keypressed
-    love.textinput  = state_machine.textinput
-    love.draw       = state_machine.draw
+    love.update      = state_machine.update
+    love.keypressed  = state_machine.keypressed
+    love.keyreleased = state_machine.keyreleased
+    love.textinput   = state_machine.textinput
+    love.draw        = state_machine.draw
 
     state_machine.start()
 end

@@ -81,6 +81,13 @@ FSM = function ()
         if current_state.keypressed then current_state.keypressed(key) end
     end
 
+    local keyreleased = function (key)
+        -- transition to draw or win
+        state_machine.unset(key)
+
+        if current_state.keyreleased then current_state.keyreleased(key) end
+    end
+
     local textinput = function (key)
         if current_state.textinput then current_state.textinput(key) end
     end
@@ -92,6 +99,7 @@ FSM = function ()
             update      = state.update,
             draw        = state.draw,
             keypressed  = state.keypressed,
+            keyreleased = state.keyreleased,
             textinput   = state.textinput,
             transitions = {},
             variables   = {}
@@ -107,12 +115,17 @@ FSM = function ()
         })
     end
 
-    local start = function ()
-        transitionTo("start")
+    local start = function (name)
+        if name == nil then name = "start" end
+        transitionTo(name)
     end
 
     local set = function (key)
         current_state.variables[key] = true
+    end
+
+    local unset = function (key)
+        current_state.variables[key] = false
     end
 
     local isSet = function (key)
@@ -125,15 +138,22 @@ FSM = function ()
         return result
     end
 
+    local is = function (name)
+        return current_state.name == name
+    end
+
     return {
         start         = start,
         update        = update,
         keypressed    = keypressed,
+        keyreleased   = keyreleased,
         textinput     = textinput,
         draw          = draw,
         addState      = addState,
         addTransition = addTransition,
+        unset         = unset,
         set           = set,
-        isSet         = isSet
+        isSet         = isSet,
+        is            = is
     }
 end
