@@ -1,7 +1,20 @@
 if not Entity then require("entity") end
 
-LEFT  = 0
-RIGHT = 1
+-- TODO convert these to unique constants
+-- rather than strings
+PRESSED = "pressed"
+HOLDING = "holding"
+
+LEFT         = "left"
+RIGHT        = "right"
+JUMP         = "z"
+SHOOT        = "x"
+DASH         = "shift"
+FALLING      = "falling"
+FLOOR_HEIGHT = 170
+
+MovementModule = require("player_movement")
+XBuster        = require("arm_cannon")
 
 return function (x, y)
     local entity    = Entity()
@@ -9,44 +22,78 @@ return function (x, y)
     local will_move = nil
     local maneuver  = nil
     local facing    = RIGHT
-    local movement  = FSM()
+    local shooting  = false
 
-    movement.addState({
-        name = "running"
-    })
+    -- back of glove to beginning of red thing
+    -- red thing is top
+    local height = 30
+    local width  = 15
 
-    movement.addState({
-        name = "standing"
-    })
+    local fat_gun_dim             = 3
+    local jump_origin
+    local horizontal_speed        = 1.5
+    local initial_vertical_speed  = 5
+    local terminal_vertical_speed = 5.75
+    local vertical_speed          = 0
+    local gravity                 = 0.25
 
-    movement.addTransition({
-        from = "standing",
-        to = "running",
-        condition = function ()
-            return entity.get("left") or entity.get("right")
+    entity.setJumpOrigin = function ()
+        jump_origin = p.copy()
+    end
+
+    entity.startJump = function ()
+        vertical_speed = initial_vertical_speed
+    end
+
+    entity.pressed = function (key)
+        return entity.get(key) == PRESSED
+    end
+
+    entity.holding = function (key)
+        return entity.get(key) == HOLDING
+    end
+
+    local movement = MovementModule(entity)
+    local x_buster = XBuster(entity)
+
+    local controls = {}
+    controls[LEFT] = function ()
+        p.setX(p.getX() - horizontal_speed)
+        facing = LEFT
+    end
+
+    controls[RIGHT] = function ()
+        p.setX(p.getX() + horizontal_speed)
+        facing = RIGHT
+    end
+
+    controls[JUMP] = function (dt)
+        -- even if the jump button is down, we don't
+        -- want to run this function unless the player is jumping
+        if not movement.is("jumping") then return end
+
+        vertical_speed = math.max(vertical_speed - gravity, 0)
+
+        p.setY(p.getY() - vertical_speed)
+
+        if vertical_speed == 0 then
+            entity.set(FALLING, true)
         end
-    })
+    end
 
-    movement.addTransition({
-        from = "running",
-        to = "standing",
-        condition = function ()
-            return not entity.get("left") and not entity.get("right")
+    controls[SHOOT] = function (dt)
+    end
+
+    local falling = function (dt)
+        vertical_speed = math.min(vertical_speed + gravity, terminal_vertical_speed)
+
+        p.setY(p.getY() + vertical_speed)
+
+        if p.getY() > FLOOR_HEIGHT then
+            entity.set(FALLING, false)
+            p.setY(FLOOR_HEIGHT)
         end
-    })
-
-    movement.start("standing")
-
-    local controls = {
-        left  = function ()
-            p.setX(p.getX() - 10)
-            facing = LEFT
-        end,
-        right = function ()
-            p.setX(p.getX() + 10)
-            facing = RIGHT
-        end
-    }
+    end
 
     local willMove = function ()
         return will_move ~= nil
@@ -61,34 +108,64 @@ return function (x, y)
 
     entity.update = function (dt)
         movement.update()
+        x_buster.update()
 
         for k, v in pairs(controls) do
-            if entity.get(k) then
+            -- the player is holding a key as long as it is down, and we
+            -- received input in this or some previous update
+            if (entity.pressed(k) or entity.holding(k)) and love.keyboard.isDown(k) then
+                entity.set(k, HOLDING)
+
                 v(dt)
+            else
+                entity.set(k, false)
             end
+        end
+
+        if entity.get(FALLING) then
+            falling(dt)
         end
     end
 
     entity.draw       = function ()
-        love.graphics.setColor(COLOR.WHITE)
+        local draw_x = p.getX() + width
+        local draw_y = p.getY() - height
+
+        love.graphics.setColor(COLOR.BLACK)
         if facing == LEFT then
-            love.graphics.line(p.getX(), p.getY(), p.getX(), p.getY() + 10)
+            love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
         else
-            love.graphics.line(p.getX() + 10, p.getY(), p.getX() + 10, p.getY() + 10)
+            love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
         end
 
         if movement.is("running") then
             love.graphics.setColor(COLOR.RED)
+        elseif movement.is("jumping") or movement.is("falling") then
+            love.graphics.setColor(COLOR.GREEN)
         else
             love.graphics.setColor(COLOR.BLUE)
         end
 
-        love.graphics.rectangle("fill", p.getX(), p.getY(), 10, 10)
+        if x_buster.is("charging") then
+            love.graphics.setColor(COLOR.CYAN)
+        end
+
+        if x_buster.is("pellet") or x_buster.is("cool_down") or x_buster.is("charging") then
+            local offset = width
+
+            if facing == LEFT then
+                offset = 0 - fat_gun_dim*2
+            end
+
+            love.graphics.rectangle("fill", draw_x + offset, draw_y + 1*height/3, fat_gun_dim * 2, fat_gun_dim)
+        end
+
+        love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+        love.graphics.setColor(COLOR.WHITE)
     end
 
-    -- record the desired action of the player as a vector
     entity.keypressed = function (key)
-        entity.set(key, true)
+        entity.set(key, "pressed")
     end
 
     entity.keyreleased = function (key)

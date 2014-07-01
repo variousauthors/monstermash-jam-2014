@@ -4,7 +4,7 @@ GameJolt = function (game_id, private_key)
 
     local http     = require("socket.http")
     local ltn12    = require("ltn12")
-    local md5      = require("vendor/md5")
+    local md5      = require("vendor/md5/md5")
     local base_url = "http://gamejolt.com/api/game/v1"
 
     function urlencode(str)

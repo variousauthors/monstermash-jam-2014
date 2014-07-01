@@ -41,19 +41,19 @@ FSM = function ()
         -- but that is kind of wordy... I'll decide after a refactor
         if current_state.cleanup then current_state.cleanup() end
 
-        current_state = states[next_state]
+        current_state           = states[next_state]
         current_state.variables = {}
+        current_state.count     = 0
 
         if current_state.init then current_state.init() end
     end
 
     local update = function (dt)
-
         -- iterate over the transitions for the current state
         local next_state = {}
 
         for i, transition in ipairs(current_state.transitions) do
-            if transition.condition() then
+            if transition.condition and transition.condition() then
                 table.insert(next_state, transition.to)
             end
         end
@@ -66,6 +66,8 @@ FSM = function ()
             -- exception!
             -- ambiguous state transition
         end
+
+        current_state.count = current_state.count + 1
 
         if current_state.update then current_state.update(dt) end
     end
@@ -142,6 +144,10 @@ FSM = function ()
         return current_state.name == name
     end
 
+    local getCount = function ()
+        return current_state.count
+    end
+
     return {
         start         = start,
         update        = update,
@@ -154,6 +160,7 @@ FSM = function ()
         unset         = unset,
         set           = set,
         isSet         = isSet,
-        is            = is
+        is            = is,
+        getCount      = getCount
     }
 end
