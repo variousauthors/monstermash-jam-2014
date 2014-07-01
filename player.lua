@@ -15,12 +15,20 @@ return function (x, y)
     local maneuver  = nil
     local facing    = RIGHT
 
-    local horizontal_speed = 6
-    local vertical_speed   = 12
-    local jump_height      = 200
+    local local_scale = 3
+    local jump_origin
+    local horizontal_speed        = 1.5  * local_scale
+    local initial_vertical_speed  = 5    * local_scale
+    local terminal_vertical_speed = 5.75 * local_scale
+    local vertical_speed          = 0    * local_scale
+    local gravity                 = 0.25 * local_scale
 
     entity.setJumpOrigin = function ()
-        entity.set("jump_origin", p.copy())
+        jump_origin = p.copy()
+    end
+
+    entity.startJump = function ()
+        vertical_speed = initial_vertical_speed
     end
 
     local movement  = MovementModule(entity)
@@ -39,18 +47,23 @@ return function (x, y)
     controls[JUMP] = function (dt)
         if movement.is("falling") then return end
 
-        if p.getY() > entity.get("jump_origin").getY() - jump_height then
-            p.setY(p.getY() - vertical_speed)
-        else
+        vertical_speed = math.max(vertical_speed - gravity, 0)
+
+        p.setY(p.getY() - vertical_speed)
+
+        if vertical_speed == 0 then
             entity.set(JUMP, false)
         end
     end
 
     controls[FALLING] = function (dt)
-        if p.getY() < FLOOR_HEIGHT then
-            p.setY(p.getY() + vertical_speed)
-        else
+        vertical_speed = math.min(vertical_speed + gravity, terminal_vertical_speed)
+
+        p.setY(p.getY() + vertical_speed)
+
+        if p.getY() > FLOOR_HEIGHT then
             entity.set(FALLING, false)
+            p.setY(FLOOR_HEIGHT)
         end
     end
 
@@ -77,7 +90,7 @@ return function (x, y)
 
     local stand_in = 30
     entity.draw       = function ()
-        love.graphics.setColor(COLOR.WHITE)
+        love.graphics.setColor(COLOR.BLACK)
         if facing == LEFT then
             love.graphics.line(p.getX(), p.getY(), p.getX(), p.getY() + stand_in)
         else
@@ -93,6 +106,7 @@ return function (x, y)
         end
 
         love.graphics.rectangle("fill", p.getX(), p.getY(), stand_in, stand_in)
+        love.graphics.setColor(COLOR.WHITE)
     end
 
     -- record the desired action of the player as a vector

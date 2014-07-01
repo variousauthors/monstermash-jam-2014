@@ -3,6 +3,7 @@ return function ()
     local entities = {}
     local timer    = 0
     local tic_duration = 5
+    local background_image = love.graphics.newImage("assets/snow.png")
 
     local register = function (entity)
         entities[entity.get("id")] = entity
@@ -34,7 +35,7 @@ return function ()
     end
 
     local draw = function (dt)
-
+        love.graphics.draw(background_image)
     end
 
     return {

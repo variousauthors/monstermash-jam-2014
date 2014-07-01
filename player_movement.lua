@@ -13,6 +13,7 @@ return function (entity)
     movement.addState({
         name = "jumping",
         init = function ()
+            entity.startJump()
             entity.setJumpOrigin()
         end
     })
