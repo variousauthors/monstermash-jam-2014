@@ -14,8 +14,15 @@ return function (x, y)
     local will_move = nil
     local maneuver  = nil
     local facing    = RIGHT
+    local shooting  = false
 
     local local_scale = 3
+
+    -- back of glove to beginning of red thing
+    -- red thing is top
+    local height = 30 * local_scale
+    local width  = 15  * local_scale
+
     local jump_origin
     local horizontal_speed        = 1.5  * local_scale
     local initial_vertical_speed  = 5    * local_scale
