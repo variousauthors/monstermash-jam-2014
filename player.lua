@@ -152,7 +152,13 @@ return function (x, y)
         end
 
         if x_buster.is("pellet") or x_buster.is("cool_down") or x_buster.is("charging") then
-            love.graphics.rectangle("fill", draw_x + width, draw_y + height/2, 10, 10)
+            local offset = width
+
+            if facing == LEFT then
+                offset = 0 - 10
+            end
+
+            love.graphics.rectangle("fill", draw_x + offset, draw_y + height/2, 10, 10)
         end
 
         love.graphics.rectangle("fill", draw_x, draw_y, width, height)
