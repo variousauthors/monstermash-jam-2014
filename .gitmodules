@@ -1,0 +1,15 @@
+[submodule "vendor/inspect"]
+	path = vendor/inspect
+	url = git@github.com:kikito/inspect.lua.git
+[submodule "vendor/md5"]
+	path = vendor/md5
+	url = git@github.com:kikito/md5.lua.git
+[submodule "vendor/bump"]
+	path = vendor/bump
+	url = git@github.com:kikito/bump.lua.git
+[submodule "vendor/anim8"]
+	path = vendor/anim8
+	url = git@github.com:kikito/anim8.git
+[submodule "vendor/middleclass"]
+	path = vendor/middleclass
+	url = git@github.com:kikito/middleclass.git
