@@ -1,8 +1,12 @@
 if not Entity then require("entity") end
 
-LEFT  = 0
-RIGHT = 1
-SPACE = " "
+LEFT         = "left"
+RIGHT        = "right"
+JUMP         = " "
+FALLING      = "falling"
+FLOOR_HEIGHT = 500
+
+MovementModule = require("player_movement")
 
 return function (x, y)
     local entity    = Entity()
@@ -10,110 +14,43 @@ return function (x, y)
     local will_move = nil
     local maneuver  = nil
     local facing    = RIGHT
-    local movement  = FSM()
 
-    local horizontal_speed = 3
+    local horizontal_speed = 6
     local vertical_speed   = 12
-    local jump_origin
     local jump_height      = 200
 
-    movement.addState({
-        name = "running"
-    })
+    entity.setJumpOrigin = function ()
+        entity.set("jump_origin", p.copy())
+    end
 
-    movement.addState({
-        name = "standing"
-    })
-
-    movement.addState({
-        name = "jumping",
-        init = function ()
-            jump_origin = p.copy()
-        end
-    })
-
-    movement.addState({
-        name = "falling",
-        init = function ()
-            entity.set("falling", true)
-        end
-    })
-
-    movement.addTransition({
-        from = "standing",
-        to = "running",
-        condition = function ()
-            return not entity.get(" ") and (entity.get("left") or entity.get("right"))
-        end
-    })
-
-    -- TODO add a from = "any" option to simplify this
-    movement.addTransition({
-        from = "standing",
-        to = "jumping",
-        condition = function ()
-            return entity.get(" ")
-        end
-    })
-
-    movement.addTransition({
-        from = "running",
-        to = "standing",
-        condition = function ()
-            return not entity.get("left") and not entity.get("right")
-        end
-    })
-
-    movement.addTransition({
-        from = "running",
-        to = "jumping",
-        condition = function ()
-            return entity.get(" ")
-        end
-    })
-
-    movement.addTransition({
-        from = "jumping",
-        to = "falling",
-        condition = function ()
-            return not entity.get(" ")
-        end
-    })
-
-    movement.addTransition({
-        from = "falling",
-        to = "standing",
-        condition = function ()
-            return not entity.get("falling")
-        end
-    })
-
-    movement.start("standing")
+    local movement  = MovementModule(entity)
 
     local controls = {}
-    controls["left"] = function ()
+    controls[LEFT] = function ()
         p.setX(p.getX() - horizontal_speed)
         facing = LEFT
     end
 
-    controls["right"] = function ()
+    controls[RIGHT] = function ()
         p.setX(p.getX() + horizontal_speed)
         facing = RIGHT
     end
 
-    controls[" "] = function (dt)
-        if p.getY() > jump_origin.getY() - jump_height then
+    controls[JUMP] = function (dt)
+        if movement.is("falling") then return end
+
+        if p.getY() > entity.get("jump_origin").getY() - jump_height then
             p.setY(p.getY() - vertical_speed)
         else
-            entity.set(" ", false)
+            entity.set(JUMP, false)
         end
     end
 
-    controls["falling"] = function (dt)
-        if p.getY() < jump_origin.getY() then
+    controls[FALLING] = function (dt)
+        if p.getY() < FLOOR_HEIGHT then
             p.setY(p.getY() + vertical_speed)
         else
-            entity.set("falling", false)
+            entity.set(FALLING, false)
         end
     end
 
