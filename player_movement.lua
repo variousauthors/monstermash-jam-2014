@@ -29,7 +29,7 @@ return function (entity)
         from = "standing",
         to = "running",
         condition = function ()
-            return not entity.get(JUMP) and (entity.get(LEFT) or entity.get(RIGHT))
+            return not entity.holding(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
         end
     })
 
@@ -38,7 +38,7 @@ return function (entity)
         from = "standing",
         to = "jumping",
         condition = function ()
-            return entity.get(" ")
+            return entity.pressed(JUMP)
         end
     })
 
@@ -46,7 +46,7 @@ return function (entity)
         from = "running",
         to = "standing",
         condition = function ()
-            return not entity.get(LEFT) and not entity.get(RIGHT)
+            return not entity.holding(LEFT) and not entity.holding(RIGHT)
         end
     })
 
@@ -54,7 +54,7 @@ return function (entity)
         from = "running",
         to = "jumping",
         condition = function ()
-            return entity.get(JUMP)
+            return entity.pressed(JUMP)
         end
     })
 
@@ -62,7 +62,7 @@ return function (entity)
         from = "jumping",
         to = "falling",
         condition = function ()
-            return not entity.get(JUMP)
+            return entity.get(FALLING) or not entity.holding(JUMP)
         end
     })
 

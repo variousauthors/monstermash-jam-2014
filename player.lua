@@ -1,12 +1,20 @@
 if not Entity then require("entity") end
 
+-- TODO convert these to unique constants
+-- rather than strings
+PRESSED = "pressed"
+HOLDING = "holding"
+
 LEFT         = "left"
 RIGHT        = "right"
-JUMP         = " "
+JUMP         = "z"
+SHOOT        = "x"
+DASH         = "shift"
 FALLING      = "falling"
 FLOOR_HEIGHT = 500
 
 MovementModule = require("player_movement")
+XBuster        = require("arm_cannon")
 
 return function (x, y)
     local entity    = Entity()
@@ -38,7 +46,16 @@ return function (x, y)
         vertical_speed = initial_vertical_speed
     end
 
-    local movement  = MovementModule(entity)
+    entity.pressed = function (key)
+        return entity.get(key) == PRESSED
+    end
+
+    entity.holding = function (key)
+        return entity.get(key) == HOLDING
+    end
+
+    local movement = MovementModule(entity)
+    local x_buster = XBuster(entity)
 
     local controls = {}
     controls[LEFT] = function ()
@@ -52,18 +69,23 @@ return function (x, y)
     end
 
     controls[JUMP] = function (dt)
-        if movement.is("falling") then return end
+        -- even if the jump button is down, we don't
+        -- want to run this function unless the player is jumping
+        if not movement.is("jumping") then return end
 
         vertical_speed = math.max(vertical_speed - gravity, 0)
 
         p.setY(p.getY() - vertical_speed)
 
         if vertical_speed == 0 then
-            entity.set(JUMP, false)
+            entity.set(FALLING, true)
         end
     end
 
-    controls[FALLING] = function (dt)
+    controls[SHOOT] = function (dt)
+    end
+
+    local falling = function (dt)
         vertical_speed = math.min(vertical_speed + gravity, terminal_vertical_speed)
 
         p.setY(p.getY() + vertical_speed)
@@ -87,21 +109,34 @@ return function (x, y)
 
     entity.update = function (dt)
         movement.update()
+        x_buster.update()
 
         for k, v in pairs(controls) do
-            if entity.get(k) then
+            -- the player is holding a key as long as it is down, and we
+            -- received input in this or some previous update
+            if (entity.pressed(k) or entity.holding(k)) and love.keyboard.isDown(k) then
+                entity.set(k, HOLDING)
+
                 v(dt)
+            else
+                entity.set(k, false)
             end
+        end
+
+        if entity.get(FALLING) then
+            falling(dt)
         end
     end
 
-    local stand_in = 30
     entity.draw       = function ()
+        local draw_x = p.getX() + width
+        local draw_y = p.getY() - height
+
         love.graphics.setColor(COLOR.BLACK)
         if facing == LEFT then
-            love.graphics.line(p.getX(), p.getY(), p.getX(), p.getY() + stand_in)
+            love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
         else
-            love.graphics.line(p.getX() + stand_in, p.getY(), p.getX() + stand_in, p.getY() + stand_in)
+            love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
         end
 
         if movement.is("running") then
@@ -112,13 +147,20 @@ return function (x, y)
             love.graphics.setColor(COLOR.BLUE)
         end
 
-        love.graphics.rectangle("fill", p.getX(), p.getY(), stand_in, stand_in)
+        if x_buster.is("charging") then
+            love.graphics.setColor(COLOR.CYAN)
+        end
+
+        if x_buster.is("pellet") or x_buster.is("cool_down") or x_buster.is("charging") then
+            love.graphics.rectangle("fill", draw_x + width, draw_y + height/2, 10, 10)
+        end
+
+        love.graphics.rectangle("fill", draw_x, draw_y, width, height)
         love.graphics.setColor(COLOR.WHITE)
     end
 
-    -- record the desired action of the player as a vector
     entity.keypressed = function (key)
-        entity.set(key, true)
+        entity.set(key, "pressed")
     end
 
     entity.keyreleased = function (key)
