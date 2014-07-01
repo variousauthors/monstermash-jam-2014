@@ -5,17 +5,21 @@ require "libs/gamejolt"
 require "libs/vector"
 require "libs/utility"
 
+Viewport  = require("libs/viewport")
+
 World  = require("world")
 Player = require("player")
 Boss   = require("boss")
+
 
 function love.focus(f) gameIsPaused = not f end
 
 function love.load()
     love.graphics.setBackgroundColor(0, 0, 0)
+    viewport = Viewport:new({width = 256, height = 224})
 
     world         = World()
-    mega_man      = Player(100, 500)
+    mega_man      = Player(128, 200)
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
@@ -64,12 +68,34 @@ function love.load()
         end
     })
 
-    love.update      = state_machine.update
-    love.keypressed  = state_machine.keypressed
-    love.keyreleased = state_machine.keyreleased
-    love.textinput   = state_machine.textinput
-    love.draw        = state_machine.draw
-
     state_machine.start()
 end
 
+function love.update(dt)
+    state_machine.update(dt)
+end
+
+function love.keypressed(key, isrepeat)
+    if (key == 'f11') then
+        viewport:setFullscreen()
+        viewport:setupScreen()
+    elseif (key == 'f10') then
+        love.event.quit()
+    end
+
+    state_machine.keypressed(key, isrepeat)
+end
+
+function love.keyreleased(key)
+    state_machine.keyreleased(key)
+end
+
+function love.textinput(text)
+    state_machine.textinput(text)
+end
+
+function love.draw()
+    viewport:pushScale()
+    state_machine.draw()
+    viewport:popScale()
+end
