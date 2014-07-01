@@ -1,4 +1,4 @@
-global.entity_id = 1
+if not Entity then require("entity") end
 
 Entity = function ()
     local read_only  = {}
@@ -15,25 +15,36 @@ Entity = function ()
 end
 
 return function (x, y)
-    local entity = Entity()
-    local p      = Point(x, y)
-    local move   = nil
+    local entity    = Entity()
+    local p         = Point(x, y)
+    local will_move = nil
+    local maneuver  = nil
 
-    entity.update     = function (dt)
-        move = nil
+    local willMove = function ()
+        return will_move ~= nil
     end
 
-    entity.draw       = function () end
+
+    -- every tick, set the current maneuver
+    entity.tic = function ()
+        if willMove() then
+            will_move = nil
+        end
+    end
+
+    entity.update     = function (dt, timer)
+    end
+
+    entity.draw       = function ()
+        love.graphics.setColor(COLOR.BLUE)
+        love.graphics.rectangle("fill", p.getX(), p.getY(), 10, 10)
+    end
 
     -- record the desired action of the player as a vector
     entity.keypressed = function (key)
         if key == " " then
-            move = Vector(1, 1)
+            will_move = true
         end
-    end
-
-    entity.willMove = function ()
-        return move ~= nil
     end
 
     return entity
