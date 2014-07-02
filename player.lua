@@ -275,6 +275,10 @@ return function (x, y)
             love.graphics.rectangle("fill", draw_x + offset, draw_y + 1*height/3, fat_gun_dim * 2, fat_gun_dim)
         end
 
+        if movement.is("damaged") then
+            love.graphics.setColor(COLOR.BLACK)
+        end
+
         -- TODO ha ha ha
         if movement.is("dashing") then
             local verts

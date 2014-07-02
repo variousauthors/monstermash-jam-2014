@@ -41,6 +41,12 @@ return function (entity, verbose)
         end
     })
 
+    movement.addState({
+        name = "damaged",
+        init = function ()
+        end
+    })
+
     movement.addTransition({
         from = "standing",
         to = "running",
@@ -173,6 +179,14 @@ return function (entity, verbose)
         to = "standing",
         condition = function ()
             return not entity.get(FALLING)
+        end
+    })
+
+    movement.addTransition({
+        from = "any",
+        to = "damaged",
+        condition = function ()
+            return entity.get("damage") and entity.get("damage") > 0
         end
     })
 
