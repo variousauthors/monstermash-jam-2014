@@ -41,6 +41,7 @@ return function (x, y)
     local jump_origin
     local fat_gun_dim             = 3
     local horizontal_speed        = 1.5
+    local damaged_speed           = 1
     local initial_vs  = 5
     local terminal_vs = 5.75
     local gravity                 = 0.25
@@ -54,6 +55,12 @@ return function (x, y)
 
     entity.set("facing", RIGHT)
     entity.set("vs", 0)
+    entity.set("hp", 10)
+
+    -- TODO player's collide with enemies causing damage
+    -- this is just to test
+    entity.set("isBullet", true)
+    entity.set("damage", 1)
 
     entity.setJumpOrigin = function ()
         jump_origin = Point(entity.getX(), entity.getY())
@@ -76,10 +83,10 @@ return function (x, y)
 
     local controls = {}
 
-    local move = function (direction, sign)
+    local move = function (direction, speed)
         if movement.is("dashing") then return end
 
-        local speed = horizontal_speed
+        local sign = (direction == LEFT) and -1 or 1
 
         if entity.get("dash_jump") then
             speed = horizontal_speed*2
@@ -92,11 +99,11 @@ return function (x, y)
     end
 
     controls[LEFT] = function ()
-        move(LEFT, -1)
+        move(LEFT, horizontal_speed)
     end
 
     controls[RIGHT] = function ()
-        move(RIGHT, 1)
+        move(RIGHT, horizontal_speed)
     end
 
     controls[JUMP] = function (dt)
@@ -147,6 +154,11 @@ return function (x, y)
     local falling = function (dt)
         if movement.is('jumping') then return end
 
+        -- face forward but slide back
+        if movement.is('damaged') then
+            move(entity.get("facing"), -damaged_speed)
+        end
+
         entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
 
         entity.setY(entity.getY() + entity.get("vs"))
@@ -190,11 +202,20 @@ return function (x, y)
         local x, y = entity.getX(), entity.getY()
         local cols, len = world.bump:check(entity, x, y, bulletFilter)
 
-        while len > 0 do
-            local bullet = cols[1].other
+        while len > 0 and not entity.get("invulnerable") do
+            local col            = cols[1]
+            local bullet         = col.other
+            local tx, ty, nx, ny = col:getTouch()
+            local facing         = (tx > entity.getX()) and LEFT or RIGHT
 
-            entity.set("damage", bullet.get("damage"))
-            bullet.resolveCollide()
+            entity.set("damage_queue", bullet.get("damage"))
+            entity.set("facing", facing) -- megaman always turns to face the damage source
+            movement.update()
+
+            -- if there is something the bullet needs to do
+            if bullet.resolveCollide then
+                bullet.resolveCollide()
+            end
 
             cols, len = world.bump:check(entity, x, y, bulletFilter)
         end

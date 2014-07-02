@@ -1,7 +1,8 @@
 
 return function (entity, verbose)
-    local movement = FSM(verbose)
-    local dash_duration = 30
+    local movement         = FSM(verbose)
+    local dash_duration    = 30
+    local damaged_duration = 20
 
     movement.addState({
         name = "standing",
@@ -44,6 +45,9 @@ return function (entity, verbose)
     movement.addState({
         name = "damaged",
         init = function ()
+            entity.set("hp", math.max(entity.get("hp") - entity.get("damage_queue")))
+            entity.set("damage_queue", 0)
+            entity.set("invulnerable", true)
         end
     })
 
@@ -186,7 +190,15 @@ return function (entity, verbose)
         from = "any",
         to = "damaged",
         condition = function ()
-            return entity.get("damage") and entity.get("damage") > 0
+            return entity.get("damage_queue") and entity.get("damage_queue") > 0
+        end
+    })
+
+    movement.addTransition({
+        from = "damaged",
+        to = "standing",
+        condition = function ()
+            return movement.getCount() > damaged_duration
         end
     })
 
