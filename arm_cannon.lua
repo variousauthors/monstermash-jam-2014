@@ -1,8 +1,9 @@
 
 return function (entity)
-    local cannon    = FSM()
-    local cool_down = 10
-    local relax     = 20
+    local cannon     = FSM()
+    local cool_down  = 10
+    local relax      = 20
+    local mega_blast = 40
 
     cannon.addState({
         name = "inactive"
@@ -30,7 +31,12 @@ return function (entity)
     })
 
     cannon.addState({
-        name = "charging"
+        name = "charging",
+        update = function (dt)
+            if cannon.getCount() > mega_blast then
+                cannon.set("mega_blast")
+            end
+        end
     })
 
     cannon.addState({
@@ -89,15 +95,15 @@ return function (entity)
     })
 
     cannon.addTransition({
-        from = "charging",
-        to = "mega_blast",
-        condition = function () return false end
-    })
-
-    cannon.addTransition({
         from = "blast",
         to = "inactive",
         condition = function () return true end
+    })
+
+    cannon.addTransition({
+        from = "charging",
+        to = "mega_blast",
+        condition = function () return false end
     })
 
     cannon.addTransition({

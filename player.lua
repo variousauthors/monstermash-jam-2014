@@ -9,7 +9,7 @@ LEFT         = "left"
 RIGHT        = "right"
 JUMP         = "z"
 SHOOT        = "x"
-DASH         = "shift"
+DASH         = "lshift"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
@@ -51,7 +51,6 @@ return function (x, y)
     local entity    = Entity(x, y)
     local will_move = nil
     local maneuver  = nil
-    local facing    = RIGHT
     local shooting  = false
 
     -- back of glove to beginning of red thing
@@ -67,6 +66,8 @@ return function (x, y)
     local terminal_vertical_speed = 5.75
     local vertical_speed          = 0
     local gravity                 = 0.25
+
+    entity.set("facing", RIGHT)
 
     entity.setJumpOrigin = function ()
         jump_origin = Point(entity.getX(), entity.getY())
@@ -89,13 +90,21 @@ return function (x, y)
 
     local controls = {}
     controls[LEFT] = function ()
+        if movement.is("dashing") then return end
+
+        entity.set(DASH, false)
+
         entity.setX(entity.getX() - horizontal_speed)
-        facing = LEFT
+        entity.set("facing", LEFT)
     end
 
     controls[RIGHT] = function ()
+        if movement.is("dashing") then return end
+
+        entity.set(DASH, false)
+
         entity.setX(entity.getX() + horizontal_speed)
-        facing = RIGHT
+        entity.set("facing", RIGHT)
     end
 
     controls[JUMP] = function (dt)
@@ -113,13 +122,20 @@ return function (x, y)
     end
 
     controls[DASH] = function (dt)
+        if not movement.is("dashing") then return end
+
+        local speed = horizontal_speed*2
+        local sign = 1
+
+        if entity.get("facing") == LEFT then sign = -1 end
+
+        entity.setX(entity.getX() + sign*speed)
     end
 
     controls[SHOOT] = function (dt)
     end
 
     local shoot = function (dt)
-        print("shoot")
     end
 
     local falling = function (dt)
@@ -174,7 +190,7 @@ return function (x, y)
         local draw_y = entity.getY() - height
 
         love.graphics.setColor(COLOR.BLACK)
-        if facing == LEFT then
+        if entity.get("facing") == LEFT then
             love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
         else
             love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
@@ -190,12 +206,16 @@ return function (x, y)
 
         if x_buster.is("charging") then
             love.graphics.setColor(COLOR.CYAN)
+
+            if x_buster.isSet("mega_blast") then
+                love.graphics.setColor(COLOR.YELLOW)
+            end
         end
 
         if x_buster.is("pellet") or x_buster.is("cool_down") or x_buster.is("charging") then
             local offset = width
 
-            if facing == LEFT then
+            if entity.get("facing") == LEFT then
                 offset = 0 - fat_gun_dim*2
             end
 
