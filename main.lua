@@ -18,13 +18,13 @@ function love.load()
     love.graphics.setBackgroundColor(0, 0, 0)
     viewport = Viewport:new({width = 256, height = 224})
 
-    world         = World()
-    mega_man      = Player(10, 170)
+    world         = World:new()
+    mega_man      = Player(32, 140)
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
-    world.register(mega_man)
-    -- world.register(chill_penguin)
+    world:register(mega_man)
+    -- world:register(chill_penguin)
 
     game_state = FSM()
 
@@ -32,10 +32,10 @@ function love.load()
         name       = "start",
       --init       = game.init,
         draw       = function ()
-            world.draw()
+            world:draw()
         end,
         update     = function (dt)
-            world.update(dt)
+            world:update(dt)
 
         end,
         keypressed = function (key)
