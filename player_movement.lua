@@ -52,7 +52,7 @@ return function (entity)
         from = "standing",
         to = "jumping",
         condition = function ()
-            return entity.pressed(JUMP)
+            return not entity.pressed(DASH) and entity.pressed(JUMP)
         end
     })
 
@@ -92,7 +92,7 @@ return function (entity)
         from = "dashing",
         to = "running",
         condition = function ()
-            return entity.holding(DASH) and (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
+            return entity.holding(DASH) and not entity.pressed(JUMP) and (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
         end
     })
 
@@ -116,7 +116,7 @@ return function (entity)
         from = "dashing",
         to = "dash_jump",
         condition = function ()
-            return entity.pressed(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
+            return entity.holding(DASH) and entity.pressed(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
         end
     })
 
