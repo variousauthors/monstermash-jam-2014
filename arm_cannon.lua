@@ -47,7 +47,7 @@ return function (entity)
         from = "inactive",
         to = "pellet",
         condition = function ()
-            return entity.pressed(SHOOT)
+            return not entity.get("shocked") and entity.pressed(SHOOT)
         end
     })
 
@@ -55,7 +55,7 @@ return function (entity)
         from = "inactive",
         to = "charging",
         condition = function ()
-            return entity.holding(SHOOT)
+            return not entity.get("shocked") and entity.holding(SHOOT)
         end
     })
 

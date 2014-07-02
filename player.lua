@@ -214,6 +214,7 @@ return function (x, y)
             entity.set("damage_queue", bullet.get("damage"))
             entity.set("facing", facing) -- megaman always turns to face the damage source
             movement.update()
+            x_buster.start("inactive")
 
             -- if there is something the bullet needs to do
             if bullet.resolveCollide then

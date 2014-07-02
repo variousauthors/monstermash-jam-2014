@@ -8,6 +8,7 @@ return function (entity, verbose)
         name = "standing",
         init = function ()
             entity.set("dash_jump", false)
+            entity.set("shocked", false)
         end
     })
 
@@ -47,7 +48,9 @@ return function (entity, verbose)
         init = function ()
             entity.set("hp", math.max(entity.get("hp") - entity.get("damage_queue")))
             entity.set("damage_queue", 0)
-            entity.set("invulnerable", 2)
+            entity.set("invulnerable", 1)
+            entity.set("dash_jump", false)
+            entity.set("shocked", true)
         end
     })
 
