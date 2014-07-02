@@ -206,7 +206,10 @@ return function (x, y)
             local col            = cols[1]
             local bullet         = col.other
             local tx, ty, nx, ny = col:getTouch()
-            local facing         = (tx > entity.getX()) and LEFT or RIGHT
+
+            local entity_center = entity.getX() + col.itemRect.w/2
+            local bullet_center = bullet.getX() + col.otherRect.w/2
+            local facing        = (entity_center > bullet_center) and LEFT or RIGHT
 
             entity.set("damage_queue", bullet.get("damage"))
             entity.set("facing", facing) -- megaman always turns to face the damage source
