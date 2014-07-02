@@ -1,6 +1,7 @@
 
 return function (entity)
     local movement = FSM()
+    local dash_duration = 30
 
     movement.addState({
         name = "standing",
@@ -92,7 +93,12 @@ return function (entity)
         from = "dashing",
         to = "running",
         condition = function ()
-            return entity.holding(DASH) and not entity.pressed(JUMP) and (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
+            local turning     = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
+            local not_jumping = entity.holding(DASH) and not entity.pressed(JUMP)
+            local dash_done   = movement.getCount() > dash_duration
+            local running     = entity.pressed(RIGHT) or entity.pressed(LEFT)
+
+            return (dash_done and running) or (turning and not_jumping)
         end
     })
 
@@ -100,7 +106,10 @@ return function (entity)
         from = "dashing",
         to = "standing",
         condition = function ()
-            return not entity.holding(DASH)
+            local dash_done   = movement.getCount() > dash_duration
+            local standing    = not entity.pressed(RIGHT) and not entity.pressed(LEFT)
+
+            return not entity.holding(DASH) or (dash_done and standing)
         end
     })
 
