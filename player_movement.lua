@@ -90,6 +90,14 @@ return function (entity)
     })
 
     movement.addTransition({
+        from = "running",
+        to = "falling",
+        condition = function ()
+            return entity.get("vs") > 0
+        end
+    })
+
+    movement.addTransition({
         from = "dashing",
         to = "running",
         condition = function ()
@@ -113,10 +121,14 @@ return function (entity)
         end
     })
 
+    -- rather than dashing to falling, we will do dashing to dash_jump
+    -- but in a situation where you aren't jumping
     movement.addTransition({
         from = "dashing",
         to = "falling",
         condition = function ()
+            entity.set("dash_jump", true)
+
             return entity.get("vs") > 0
         end
     })
