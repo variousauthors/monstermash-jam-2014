@@ -89,6 +89,7 @@ FSM = function ()
             transitionTo(unpack(next_state))
         elseif #next_state > 1 then
             print("AMBIGUITY!")
+            print("  in " .. current_state.name)
             inspect(next_state)
             -- exception!
             -- ambiguous state transition
