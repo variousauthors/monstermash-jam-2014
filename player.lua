@@ -16,6 +16,37 @@ FLOOR_HEIGHT = 170
 MovementModule = require("player_movement")
 XBuster        = require("arm_cannon")
 
+Bullet = function (x, y, owner)
+    local entity = Entity(x, y)
+
+    if owner.get("bullet_count") then
+        local count = owner.get("bullet_count")
+        owner.set("bullet_count", count + 1)
+    else
+        owner.set("bullet_count", 1)
+    end
+
+    entity.draw = function ()
+        love.graphics.setColor(COLOR.YELLOW)
+        love.graphics.rectangle("fill", entity.getX(), entity.getY(), 4, 2)
+        love.graphics.setColor(COLOR.WHITE)
+    end
+
+    entity.update = function (dt)
+        entity.setX(entity.getX() + 2)
+    end
+
+    entity.set("owner_id", owner.get("id"))
+
+    entity.cleanup = function ()
+        local count = owner.get("bullet_count")
+        owner.set("bullet_count", count - 1)
+        entity.set("owner_id", nil)
+    end
+
+    return entity
+end
+
 return function (x, y)
     local entity    = Entity(x, y)
     local will_move = nil
@@ -82,6 +113,9 @@ return function (x, y)
     end
 
     controls[DASH] = function (dt)
+    end
+
+    controls[SHOOT] = function (dt)
     end
 
     local shoot = function (dt)
