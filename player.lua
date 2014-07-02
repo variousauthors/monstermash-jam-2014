@@ -92,25 +92,37 @@ return function (x, y)
     controls[LEFT] = function ()
         if movement.is("dashing") then return end
 
+        local speed = horizontal_speed
+
+        if entity.get("dash_jump") then
+            speed = horizontal_speed*2
+        end
+
         entity.set(DASH, false)
 
-        entity.setX(entity.getX() - horizontal_speed)
+        entity.setX(entity.getX() - speed)
         entity.set("facing", LEFT)
     end
 
     controls[RIGHT] = function ()
         if movement.is("dashing") then return end
 
+        local speed = horizontal_speed
+
+        if entity.get("dash_jump") then
+            speed = horizontal_speed*2
+        end
+
         entity.set(DASH, false)
 
-        entity.setX(entity.getX() + horizontal_speed)
+        entity.setX(entity.getX() + speed)
         entity.set("facing", RIGHT)
     end
 
     controls[JUMP] = function (dt)
         -- even if the jump button is down, we don't
         -- want to run this function unless the player is jumping
-        if not movement.is("jumping") then return end
+        if not movement.is("jumping") and not movement.is("dash_jump") then return end
 
         vertical_speed = math.max(vertical_speed - gravity, 0)
 

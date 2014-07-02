@@ -3,7 +3,10 @@ return function (entity)
     local movement = FSM()
 
     movement.addState({
-        name = "standing"
+        name = "standing",
+        init = function ()
+            entity.set("dash_jump", false)
+        end
     })
 
     movement.addState({
@@ -12,6 +15,13 @@ return function (entity)
 
     movement.addState({
         name = "dashing"
+    })
+
+    movement.addState({
+        name = "dash_jump",
+        init = function ()
+            entity.set("dash_jump", true)
+        end
     })
 
     movement.addState({
@@ -98,7 +108,15 @@ return function (entity)
         from = "dashing",
         to = "jumping",
         condition = function ()
-            return entity.pressed(JUMP)
+            return entity.pressed(JUMP) and not entity.holding(LEFT) and not entity.holding(RIGHT)
+        end
+    })
+
+    movement.addTransition({
+        from = "dashing",
+        to = "dash_jump",
+        condition = function ()
+            return entity.pressed(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
         end
     })
 
@@ -107,6 +125,14 @@ return function (entity)
         to = "falling",
         condition = function ()
             return entity.get(FALLING) or not entity.holding(JUMP)
+        end
+    })
+
+    movement.addTransition({
+        from = "dash_jump",
+        to = "jumping",
+        condition = function ()
+            return true
         end
     })
 
