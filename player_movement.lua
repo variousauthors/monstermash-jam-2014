@@ -29,7 +29,7 @@ return function (entity)
         from = "standing",
         to = "running",
         condition = function ()
-            return not entity.holding(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
+            return not entity.pressed(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
         end
     })
 

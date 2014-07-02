@@ -1,22 +1,32 @@
 
 return function (entity)
     local cannon    = FSM()
-    local cool_down = 20
+    local cool_down = 10
+    local relax     = 20
 
     cannon.addState({
         name = "inactive"
     })
 
     cannon.addState({
-        name = "pellet"
+        name = "pellet",
+        init = function ()
+            cannon.set("shoot")
+        end
     })
 
     cannon.addState({
-        name = "blast"
+        name = "blast",
+        init = function ()
+            cannon.set("shoot")
+        end
     })
 
     cannon.addState({
-        name = "mega_blast"
+        name = "mega_blast",
+        init = function ()
+            cannon.set("shoot")
+        end
     })
 
     cannon.addState({
@@ -55,7 +65,7 @@ return function (entity)
         from = "cool_down",
         to = "inactive",
         condition = function ()
-            return cannon.getCount() > cool_down
+            return cannon.getCount() > relax
         end
     })
 
@@ -63,7 +73,7 @@ return function (entity)
         from = "cool_down",
         to = "pellet",
         condition = function ()
-            return cannon.getCount() <= cool_down and entity.pressed(SHOOT)
+            return cool_down <= cannon.getCount() and cannon.getCount() <= relax and entity.pressed(SHOOT)
         end
     })
 
