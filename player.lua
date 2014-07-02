@@ -61,22 +61,22 @@ return function (x, y)
     local jump_origin
     local fat_gun_dim             = 3
     local horizontal_speed        = 1.5
-    local initial_vertical_speed  = 5
-    local terminal_vertical_speed = 5.75
-    local vertical_speed          = 0
+    local initial_vs  = 5
+    local terminal_vs = 5.75
     local gravity                 = 0.25
-
-    entity.set("facing", RIGHT)
 
     local entity    = Entity(x, y, width, height)
     local obstacleFilter = entity.getFilterFor('isObstacle')
+
+    entity.set("facing", RIGHT)
+    entity.set("vs", 0)
 
     entity.setJumpOrigin = function ()
         jump_origin = Point(entity.getX(), entity.getY())
     end
 
     entity.startJump = function ()
-        vertical_speed = initial_vertical_speed
+        entity.set("vs", initial_vs)
     end
 
     entity.pressed = function (key)
@@ -126,11 +126,11 @@ return function (x, y)
         -- want to run this function unless the player is jumping
         if not movement.is("jumping") and not movement.is("dash_jump") then return end
 
-        vertical_speed = math.max(vertical_speed - gravity, 0)
+        entity.set("vs", math.max(entity.get("vs") - gravity, 0))
 
-        entity.setY(entity.getY() - vertical_speed)
+        entity.setY(entity.getY() - entity.get("vs"))
 
-        if vertical_speed == 0 then
+        if entity.get("vs") == 0 then
             entity.set(FALLING, true)
         end
     end
@@ -154,9 +154,10 @@ return function (x, y)
 
     local falling = function (dt)
         if movement.is('jumping') then return end
-        vertical_speed = math.min(vertical_speed + gravity, terminal_vertical_speed)
 
-        entity.setY(entity.getY() + vertical_speed)
+        entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
+
+        entity.setY(entity.getY() + entity.get("vs"))
     end
 
     local willMove = function ()
@@ -174,10 +175,10 @@ return function (x, y)
                 local col = cols[1]
                 local tx, ty, nx, ny, sx, sy = col:getSlide()
                 if(ny == -1) then
-                    vertical_speed = 0
+                    entity.set("vs", 0)
                     entity.set(FALLING, false)
                 elseif(ny == 1) then
-                    vertical_speed = 0
+                    entity.set("vs", 0)
                     entity.set(FALLING, true)
                 end
                 entity.setX(tx)
@@ -240,8 +241,10 @@ return function (x, y)
 
         if movement.is("running") then
             love.graphics.setColor(COLOR.RED)
-        elseif movement.is("jumping") or movement.is("falling") then
+        elseif movement.is("jumping") then
             love.graphics.setColor(COLOR.GREEN)
+        elseif movement.is("falling") then
+            love.graphics.setColor(COLOR.PURPLE)
         else
             love.graphics.setColor(COLOR.BLUE)
         end

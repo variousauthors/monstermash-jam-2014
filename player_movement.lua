@@ -98,7 +98,7 @@ return function (entity)
             local dash_done   = movement.getCount() > dash_duration
             local running     = entity.pressed(RIGHT) or entity.pressed(LEFT)
 
-            return (dash_done and running) or (turning and not_jumping)
+            return not entity.get(FALLING) and ((dash_done and running) or (turning and not_jumping))
         end
     })
 
@@ -109,7 +109,15 @@ return function (entity)
             local dash_done   = movement.getCount() > dash_duration
             local standing    = not entity.pressed(RIGHT) and not entity.pressed(LEFT)
 
-            return not entity.holding(DASH) or (dash_done and standing)
+            return not entity.get(FALLING) and (not entity.holding(DASH) or (dash_done and standing))
+        end
+    })
+
+    movement.addTransition({
+        from = "dashing",
+        to = "falling",
+        condition = function ()
+            return entity.get("vs") > 0
         end
     })
 
