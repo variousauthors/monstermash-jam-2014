@@ -2,6 +2,8 @@
 global           = {}
 global.tile_size = 16
 global.scale     = 1
+global.screen_width = 256
+global.screen_height = 224
 
 function DEC_HEX(IN)
     local B,K,OUT,I,D=16,"0123456789abcdef","",0

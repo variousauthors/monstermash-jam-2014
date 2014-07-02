@@ -16,7 +16,7 @@ function love.focus(f) gameIsPaused = not f end
 
 function love.load()
     love.graphics.setBackgroundColor(0, 0, 0)
-    viewport = Viewport:new({width = 256, height = 224})
+    viewport = Viewport:new({width = global.screen_width, height = global.screen_height})
 
     world         = World:new()
     mega_man      = Player(32, 140)

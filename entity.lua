@@ -27,7 +27,7 @@ Entity = (function ()
 
         local getFilterFor = function(key)
             return function(other)
-                return ent.get(key)
+                if other.get then return other.get(key) end
             end
         end
 

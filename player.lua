@@ -17,7 +17,12 @@ MovementModule = require("player_movement")
 XBuster        = require("arm_cannon")
 
 Bullet = function (x, y, owner)
-    local entity = Entity(x, y)
+    local speed  = 3
+    local width  = 4
+    local height = 4
+    local entity = Entity(x, y, width, height)
+
+    local direction = (owner.get("facing") == LEFT and -1 or 1)
 
     if owner.get("bullet_count") then
         local count = owner.get("bullet_count")
@@ -28,20 +33,19 @@ Bullet = function (x, y, owner)
 
     entity.draw = function ()
         love.graphics.setColor(COLOR.YELLOW)
-        love.graphics.rectangle("fill", entity.getX(), entity.getY(), 4, 2)
+        love.graphics.rectangle("fill", entity.getX(), entity.getY(), 4, 4)
         love.graphics.setColor(COLOR.WHITE)
     end
 
     entity.update = function (dt)
-        entity.setX(entity.getX() + 2)
-    end
+        entity.setX(entity.getX() + direction*speed)
 
-    entity.set("owner_id", owner.get("id"))
-
-    entity.cleanup = function ()
-        local count = owner.get("bullet_count")
-        owner.set("bullet_count", count - 1)
-        entity.set("owner_id", nil)
+        -- remove bullets as they fly off the screen
+        if entity.getX() > global.screen_width or entity.getX() < 0 then
+            local count = owner.get("bullet_count")
+            owner.set("bullet_count", count - 1)
+            entity._unregister()
+        end
     end
 
     return entity
@@ -91,7 +95,8 @@ return function (x, y)
     local x_buster = XBuster(entity)
 
     local controls = {}
-    controls[LEFT] = function ()
+
+    local move = function (direction, sign)
         if movement.is("dashing") then return end
 
         local speed = horizontal_speed
@@ -102,23 +107,16 @@ return function (x, y)
 
         entity.set(DASH, false)
 
-        entity.setX(entity.getX() - speed)
-        entity.set("facing", LEFT)
+        entity.setX(entity.getX() + sign*speed)
+        entity.set("facing", direction)
+    end
+
+    controls[LEFT] = function ()
+        move(LEFT, -1)
     end
 
     controls[RIGHT] = function ()
-        if movement.is("dashing") then return end
-
-        local speed = horizontal_speed
-
-        if entity.get("dash_jump") then
-            speed = horizontal_speed*2
-        end
-
-        entity.set(DASH, false)
-
-        entity.setX(entity.getX() + speed)
-        entity.set("facing", RIGHT)
+        move(RIGHT, 1)
     end
 
     controls[JUMP] = function (dt)
@@ -150,6 +148,19 @@ return function (x, y)
     end
 
     local shoot = function (dt)
+        local offset = width
+        local bullet_count = entity.get("bullet_count")
+        local bullet
+
+        if entity.get("facing") == LEFT then
+            offset = 0 - fat_gun_dim*2
+        end
+
+        if not bullet_count or bullet_count < max_bullets then
+            bullet = Bullet(entity.getX() + offset, entity.getY() + 1*height/3, entity)
+        end
+
+        return bullet
     end
 
     local falling = function (dt)
@@ -166,7 +177,7 @@ return function (x, y)
 
     entity.resolveObstacleCollide = function(world)
         local new_x, new_y = entity.getX(), entity.getY()
-        local cols, len = world.bump:check(entity, new_x, new_y)
+        local cols, len = world.bump:check(entity, new_x, new_y, obstacleFilter)
         if len == 0 then
             world.bump:move(entity, new_x, new_y)
         else
@@ -184,7 +195,7 @@ return function (x, y)
                 entity.setX(tx)
                 entity.setY(ty)
                 world.bump:move(entity, tx, ty)
-                cols, len = world.bump:check(entity, sx, sy)
+                cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
                 if len == 0 then
                     entity.setX(sx)
                     entity.setY(sy)
@@ -215,7 +226,9 @@ return function (x, y)
         end
 
         if x_buster.isSet("shoot") then
-            shoot(dt)
+            local bullet = shoot(dt)
+
+            if bullet then world:register(bullet) end
         end
 
         falling(dt)
