@@ -1,6 +1,6 @@
 
-return function (entity)
-    local movement = FSM()
+return function (entity, verbose)
+    local movement = FSM(verbose)
     local dash_duration = 30
 
     movement.addState({
@@ -36,6 +36,7 @@ return function (entity)
     movement.addState({
         name = "falling",
         init = function ()
+            entity.set("vs", 0)
             entity.set(FALLING, true)
         end
     })
@@ -77,6 +78,7 @@ return function (entity)
         from = "running",
         to = "jumping",
         condition = function ()
+
             return entity.pressed(JUMP)
         end
     })
@@ -85,6 +87,7 @@ return function (entity)
         from = "running",
         to = "dashing",
         condition = function ()
+
             return entity.pressed(DASH)
         end
     })
@@ -117,7 +120,7 @@ return function (entity)
             local dash_done   = movement.getCount() > dash_duration
             local standing    = not entity.pressed(RIGHT) and not entity.pressed(LEFT)
 
-            return not entity.get(FALLING) and (not entity.holding(DASH) or (dash_done and standing))
+            return (not entity.pressed(JUMP) and not entity.get(FALLING)) and (not entity.holding(DASH) or (dash_done and standing))
         end
     })
 
@@ -137,7 +140,7 @@ return function (entity)
         from = "dashing",
         to = "jumping",
         condition = function ()
-            return entity.holding(DASH) and entity.pressed(JUMP) and not entity.holding(LEFT) and not entity.holding(RIGHT)
+            return entity.pressed(JUMP) and not entity.holding(LEFT) and not entity.holding(RIGHT)
         end
     })
 
@@ -145,7 +148,7 @@ return function (entity)
         from = "dashing",
         to = "dash_jump",
         condition = function ()
-            return entity.holding(DASH) and entity.pressed(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
+            return entity.pressed(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
         end
     })
 

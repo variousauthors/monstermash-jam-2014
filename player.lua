@@ -202,9 +202,6 @@ return function (x, y)
     end
 
     entity.update = function (dt, world)
-        movement.update()
-        x_buster.update()
-
         for k, v in pairs(controls) do
             -- the player is holding a key as long as it is down, and we
             -- received input in this or some previous update
@@ -212,7 +209,6 @@ return function (x, y)
                 entity.set(k, HOLDING)
 
                 v(dt)
-
             else
                 entity.set(k, false)
             end
@@ -226,6 +222,9 @@ return function (x, y)
 
         -- Resolve collision
         entity.resolveObstacleCollide(world)
+
+        movement.update()
+        x_buster.update()
     end
 
     entity.draw       = function ()
@@ -288,6 +287,9 @@ return function (x, y)
 
     entity.keypressed = function (key)
         entity.set(key, PRESSED)
+
+        movement.update()
+        x_buster.update()
     end
 
     entity.keyreleased = function (key)
