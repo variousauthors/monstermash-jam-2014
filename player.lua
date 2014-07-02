@@ -198,8 +198,8 @@ return function (x, y)
     end
 
     entity.draw       = function ()
-        local draw_x = entity.getX() + width
-        local draw_y = entity.getY() - height
+        local draw_x = entity.getX()
+        local draw_y = entity.getY()
 
         love.graphics.setColor(COLOR.BLACK)
         if entity.get("facing") == LEFT then
@@ -234,7 +234,22 @@ return function (x, y)
             love.graphics.rectangle("fill", draw_x + offset, draw_y + 1*height/3, fat_gun_dim * 2, fat_gun_dim)
         end
 
-        love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+        -- TODO ha ha ha
+        if movement.is("dashing") then
+            local verts
+            local lean = 5
+
+            if entity.get("facing") == LEFT then
+                verts = { draw_x - lean, draw_y, draw_x + width - lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+            else
+                verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+            end
+
+            love.graphics.polygon("fill", verts)
+        else
+            love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+        end
+
         love.graphics.setColor(COLOR.WHITE)
     end
 
