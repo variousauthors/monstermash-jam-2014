@@ -91,7 +91,9 @@ return function (entity)
     cannon.addTransition({
         from = "charging",
         to = "blast",
-        condition = function () return not entity.get(SHOOT) end
+        condition = function ()
+            return not entity.get(SHOOT) and not cannon.isSet("mega_blast")
+        end
     })
 
     cannon.addTransition({
@@ -103,7 +105,10 @@ return function (entity)
     cannon.addTransition({
         from = "charging",
         to = "mega_blast",
-        condition = function () return false end
+        condition = function ()
+
+            return not entity.get(SHOOT) and cannon.isSet("mega_blast")
+        end
     })
 
     cannon.addTransition({

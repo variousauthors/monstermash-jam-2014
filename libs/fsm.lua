@@ -154,6 +154,10 @@ FSM = function (verbose)
         transitionTo(name)
     end
 
+    local getState = function ()
+        return current_state.name
+    end
+
     return {
         start         = start,
         update        = update,
@@ -167,6 +171,7 @@ FSM = function (verbose)
         set           = set,
         isSet         = isSet,
         is            = is,
-        getCount      = getCount
+        getCount      = getCount,
+        getState      = getState
     }
 end

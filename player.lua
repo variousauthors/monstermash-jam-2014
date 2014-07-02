@@ -1,4 +1,5 @@
 if not Entity then require("entity") end
+if not BulletFactory then require("bullet_factory") end
 
 -- TODO convert these to unique constants
 -- rather than strings
@@ -16,40 +17,15 @@ FLOOR_HEIGHT = 170
 MovementModule = require("player_movement")
 XBuster        = require("arm_cannon")
 
-Bullet = function (x, y, owner)
-    local speed  = 3
-    local width  = 4
-    local height = 4
-    local entity = Entity(x, y, width, height)
+Pellet    = BulletFactory(3, 4, 4, 1, COLOR.YELLOW, "pellet")
+Blast     = BulletFactory(4, 20, 5, 2, COLOR.GREEN, "blast")
+MegaBlast = BulletFactory(3, 15, 20, 3, COLOR.RED, "mega_blast")
 
-    local direction = (owner.get("facing") == LEFT and -1 or 1)
-
-    if owner.get("bullet_count") then
-        local count = owner.get("bullet_count")
-        owner.set("bullet_count", count + 1)
-    else
-        owner.set("bullet_count", 1)
-    end
-
-    entity.draw = function ()
-        love.graphics.setColor(COLOR.YELLOW)
-        love.graphics.rectangle("fill", entity.getX(), entity.getY(), 4, 4)
-        love.graphics.setColor(COLOR.WHITE)
-    end
-
-    entity.update = function (dt)
-        entity.setX(entity.getX() + direction*speed)
-
-        -- remove bullets as they fly off the screen
-        if entity.getX() > global.screen_width or entity.getX() < 0 then
-            local count = owner.get("bullet_count")
-            owner.set("bullet_count", count - 1)
-            entity._unregister()
-        end
-    end
-
-    return entity
-end
+Bullets = {
+    pellet     = Pellet,
+    blast      = Blast,
+    mega_blast = MegaBlast
+}
 
 return function (x, y)
     local will_move = nil
@@ -148,8 +124,9 @@ return function (x, y)
     end
 
     local shoot = function (dt)
-        local offset = width
-        local bullet_count = entity.get("bullet_count")
+        local offset       = width
+        local bullet_type  = x_buster.getState()
+        local bullet_count = entity.get(bullet_type)
         local bullet
 
         if entity.get("facing") == LEFT then
@@ -157,7 +134,7 @@ return function (x, y)
         end
 
         if not bullet_count or bullet_count < max_bullets then
-            bullet = Bullet(entity.getX() + offset, entity.getY() + 1*height/3, entity)
+            bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity)
         end
 
         return bullet
