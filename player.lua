@@ -48,7 +48,6 @@ Bullet = function (x, y, owner)
 end
 
 return function (x, y)
-    local entity    = Entity(x, y)
     local will_move = nil
     local maneuver  = nil
     local shooting  = false
@@ -68,6 +67,9 @@ return function (x, y)
     local gravity                 = 0.25
 
     entity.set("facing", RIGHT)
+
+    local entity    = Entity(x, y, width, height)
+    local obstacleFilter = entity.getFilterFor('isObstacle')
 
     entity.setJumpOrigin = function ()
         jump_origin = Point(entity.getX(), entity.getY())
@@ -151,18 +153,44 @@ return function (x, y)
     end
 
     local falling = function (dt)
+        if movement.is('jumping') then return end
         vertical_speed = math.min(vertical_speed + gravity, terminal_vertical_speed)
 
         entity.setY(entity.getY() + vertical_speed)
-
-        if entity.getY() > FLOOR_HEIGHT then
-            entity.set(FALLING, false)
-            entity.setY(FLOOR_HEIGHT)
-        end
     end
 
     local willMove = function ()
         return will_move ~= nil
+    end
+
+    entity.resolveObstacleCollide = function(world)
+        local new_x, new_y = entity.getX(), entity.getY()
+        local cols, len = world.bump:check(entity, new_x, new_y)
+        if len == 0 then
+            world.bump:move(entity, new_x, new_y)
+        else
+            local col, tx, ty, sx, sy
+            while len > 0 do
+                local col = cols[1]
+                local tx, ty, nx, ny, sx, sy = col:getSlide()
+                if(ny == -1) then
+                    vertical_speed = 0
+                    entity.set(FALLING, false)
+                elseif(ny == 1) then
+                    vertical_speed = 0
+                    entity.set(FALLING, true)
+                end
+                entity.setX(tx)
+                entity.setY(ty)
+                world.bump:move(entity, tx, ty)
+                cols, len = world.bump:check(entity, sx, sy)
+                if len == 0 then
+                    entity.setX(sx)
+                    entity.setY(sy)
+                    world.bump:move(entity, sx, sy)
+                end
+            end
+        end
     end
 
     -- every tick, set the current maneuver
@@ -172,7 +200,7 @@ return function (x, y)
         end
     end
 
-    entity.update = function (dt)
+    entity.update = function (dt, world)
         movement.update()
         x_buster.update()
 
@@ -183,6 +211,7 @@ return function (x, y)
                 entity.set(k, HOLDING)
 
                 v(dt)
+
             else
                 entity.set(k, false)
             end
@@ -192,9 +221,10 @@ return function (x, y)
             shoot(dt)
         end
 
-        if entity.get(FALLING) then
-            falling(dt)
-        end
+        falling(dt)
+
+        -- Resolve collision
+        entity.resolveObstacleCollide(world)
     end
 
     entity.draw       = function ()
@@ -254,7 +284,7 @@ return function (x, y)
     end
 
     entity.keypressed = function (key)
-        entity.set(key, "pressed")
+        entity.set(key, PRESSED)
     end
 
     entity.keyreleased = function (key)

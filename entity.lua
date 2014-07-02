@@ -2,7 +2,7 @@
 Entity = (function ()
     local entity_id = 1
 
-    return function (x, y)
+    return function (x, y, w, h)
         local read_only  = {}
         local read_write = { }
 
@@ -25,6 +25,16 @@ Entity = (function ()
             read_write[key] = value
         end
 
+        local getFilterFor = function(key)
+            return function(other)
+                return ent.get(key)
+            end
+        end
+
+        local getBoundingBox = function()
+            return p.getX(), p.getY(), w, h
+        end
+
         local tic     = function () end
         local cleanup = function () end
 
@@ -36,7 +46,9 @@ Entity = (function ()
             getX    = p.getX,
             getY    = p.getY,
             setX    = p.setX,
-            setY    = p.setY
+            setY    = p.setY,
+            getFilterFor = getFilterFor,
+            getBoundingBox = getBoundingBox
         }
     end
 end)()
