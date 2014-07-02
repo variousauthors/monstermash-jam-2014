@@ -41,7 +41,7 @@ function World:initialize()
     self.background_image = love.graphics.newImage("assets/chillpenguinstage.png")
 
     self.timer = 0
-    self.tic_duration = 5
+    self.tic_duration = 1
 end
 
 function World:register(entity)

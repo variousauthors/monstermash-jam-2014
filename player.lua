@@ -225,9 +225,11 @@ return function (x, y)
     end
 
     -- every tick, set the current maneuver
-    entity.tic = function ()
-        if willMove() then
-            will_move = nil
+    entity.tic = function (dt)
+        if entity.get("invulnerable") and entity.get("invulnerable") > 0 then
+            entity.set("invulnerable", math.max(entity.get("invulnerable") - 1, 0))
+
+            if entity.get("invulnerable") == 0 then entity.set("invulnerable", nil) end
         end
     end
 
@@ -300,23 +302,33 @@ return function (x, y)
         end
 
         if movement.is("damaged") then
-            love.graphics.setColor(COLOR.BLACK)
+            local r, g, b = love.graphics.getColor()
+            love.graphics.setColor(COLOR.YELLOW)
+            love.graphics.rectangle("fill", draw_x - 5, draw_y - 5, width + 10, height + 10)
+            love.graphics.setColor({ r, g, b })
         end
 
         -- TODO ha ha ha
-        if movement.is("dashing") then
-            local verts
-            local lean = 5
+        local flicker = 0
+        if entity.get("invulnerable") then
+            flicker = rng:random(0, 1)
+        end
 
-            if entity.get("facing") == LEFT then
-                verts = { draw_x - lean, draw_y, draw_x + width - lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+        if flicker == 0 then
+            if movement.is("dashing") then
+                local verts
+                local lean = 5
+
+                if entity.get("facing") == LEFT then
+                    verts = { draw_x - lean, draw_y, draw_x + width - lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+                else
+                    verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+                end
+
+                love.graphics.polygon("fill", verts)
             else
-                verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+                love.graphics.rectangle("fill", draw_x, draw_y, width, height)
             end
-
-            love.graphics.polygon("fill", verts)
-        else
-            love.graphics.rectangle("fill", draw_x, draw_y, width, height)
         end
 
         love.graphics.setColor(COLOR.WHITE)
