@@ -19,11 +19,13 @@ function love.load()
     viewport = Viewport:new({width = global.screen_width, height = global.screen_height})
 
     world         = World:new()
-    mega_man      = Player(32, 140)
+    megaman      = Player(32, 140)
+    protoman     = Player(96, 140)
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
-    world:register(mega_man)
+    world:register(megaman)
+    world:register(protoman)
     -- world:register(chill_penguin)
 
     game_state = FSM()
@@ -36,16 +38,14 @@ function love.load()
         end,
         update     = function (dt)
             world:update(dt)
-
         end,
         keypressed = function (key)
-            mega_man.keypressed(key) -- queues up the mega_man's next move
-            chill_penguin.keypressed(key)
-
+            megaman.keypressed(key)
+            protoman.keypressed(key)
         end,
         keyreleased = function (key)
-            mega_man.keyreleased(key) -- queues up the mega_man's next move
-            chill_penguin.keyreleased(key)
+            megaman.keyreleased(key)
+            protoman.keyreleased(key)
         end
     })
 

@@ -4,6 +4,9 @@ BulletFactory = function (speed, w, h, damage, color, name)
 
     return function (x, y, owner)
         local entity = Entity(x, y - h/2, w, h)
+        entity.set('isBullet', true)
+        entity.set("owner_id", owner.get("id"))
+        entity.set("damage", damage)
 
         local direction = (owner.get("facing") == LEFT and -1 or 1)
 
@@ -20,8 +23,9 @@ BulletFactory = function (speed, w, h, damage, color, name)
             love.graphics.setColor(COLOR.WHITE)
         end
 
-        entity.update = function (dt)
+        entity.update = function (dt, world)
             entity.setX(entity.getX() + direction*speed)
+            world.bump:move(entity, entity.getX(), entity.getY())
 
             -- remove bullets as they fly off the screen
             if entity.getX() > global.screen_width or entity.getX() < 0 then
@@ -29,6 +33,12 @@ BulletFactory = function (speed, w, h, damage, color, name)
                 owner.set(name, count - 1)
                 entity._unregister()
             end
+        end
+
+        entity.resolveCollide = function ()
+            local count = owner.get(name)
+            owner.set(name, count - 1)
+            entity._unregister()
         end
 
         return entity

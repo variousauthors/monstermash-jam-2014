@@ -56,6 +56,7 @@ end
 function World:unregister(entity)
     self.entities[entity.get("id")] = nil
     entity.cleanup()
+    self.bump:remove(entity)
 end
 
 function World:tic(dt)

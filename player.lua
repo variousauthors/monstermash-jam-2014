@@ -45,8 +45,12 @@ return function (x, y)
     local terminal_vs = 5.75
     local gravity                 = 0.25
 
-    local entity    = Entity(x, y, width, height)
+    local entity         = Entity(x, y, width, height)
     local obstacleFilter = entity.getFilterFor('isObstacle')
+    local bulletFilter = function (other)
+        return other.get and other.get("isBullet") == true and other.get("owner_id") ~= entity.get("id")
+    end
+
 
     entity.set("facing", RIGHT)
     entity.set("vs", 0)
@@ -182,6 +186,20 @@ return function (x, y)
         end
     end
 
+    entity.resolveBulletCollide = function(world)
+        local x, y = entity.getX(), entity.getY()
+        local cols, len = world.bump:check(entity, x, y, bulletFilter)
+
+        while len > 0 do
+            local bullet = cols[1].other
+
+            entity.set("damage", bullet.get("damage"))
+            bullet.resolveCollide()
+
+            cols, len = world.bump:check(entity, x, y, bulletFilter)
+        end
+    end
+
     -- every tick, set the current maneuver
     entity.tic = function ()
         if willMove() then
@@ -212,6 +230,7 @@ return function (x, y)
 
         -- Resolve collision
         entity.resolveObstacleCollide(world)
+        entity.resolveBulletCollide(world)
 
         movement.update()
         x_buster.update()
