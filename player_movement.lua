@@ -1,5 +1,6 @@
 
-return function (entity, verbose)
+return function (entity, controls, verbose)
+    local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local movement = FSM(verbose)
     local dash_duration = 30
 
