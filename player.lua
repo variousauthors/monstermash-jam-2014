@@ -4,17 +4,8 @@ if not Entity then require("entity") end
 -- rather than strings
 PRESSED = "pressed"
 HOLDING = "holding"
-
-LEFT         = "p1_left"
-RIGHT        = "p1_right"
-JUMP         = "p1_jump"
-SHOOT        = "p1_shoot"
-DASH         = "p1_dash"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
-
-MovementModule = require("player_movement")
-XBuster        = require("arm_cannon")
 
 Bullet = function (x, y, owner)
     local entity = Entity(x, y)
@@ -47,7 +38,13 @@ Bullet = function (x, y, owner)
     return entity
 end
 
-return function (x, y)
+return function (x, y, controls)
+    local controls = require(controls)
+    local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
+
+    MovementModule = require("player_movement")
+    XBuster        = require("arm_cannon")
+
     local will_move = nil
     local maneuver  = nil
     local shooting  = false
@@ -87,8 +84,8 @@ return function (x, y)
         return entity.get(key) == HOLDING
     end
 
-    local movement = MovementModule(entity)
-    local x_buster = XBuster(entity)
+    local movement = MovementModule(entity, controls)
+    local x_buster = XBuster(entity, controls)
 
     local controls = {}
     controls[LEFT] = function ()

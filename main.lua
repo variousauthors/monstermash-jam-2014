@@ -33,8 +33,8 @@ function love.load()
     viewport = Viewport:new({width = 256, height = 224})
 
     world         = World:new()
-    mega_man      = Player(32, 140)
-    proto_man     = Player(96, 140)
+    mega_man      = Player(32, 140, "p1_controls")
+    proto_man     = Player(96, 140, "p2_controls")
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
