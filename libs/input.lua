@@ -59,6 +59,8 @@ function Input:mappingToKey(mapping)
     b = tonumber(b)
     if (b and joysticks[b]) then
         b = joysticks[b]
+    else
+        b = nil
     end
     if (d ~= '+' and d ~= '-') then
         d = tonumber(d)
@@ -131,30 +133,34 @@ function Input:axis(...)
 end
 
 function Input:isState(state)
-    if (not self.stateMap[state] or not love.window.hasFocus() )then return end
+    if not (self.stateMap[state] and love.window.hasFocus() ) then return false end
+
+    local result = false
 
     for k, v in pairs(self.stateMap[state]) do
         local device, joy, key, dir = self:mappingToKey(v)
+
         if (device == 'k') then
-            if love.keyboard.isDown(key) then return true end
+            if love.keyboard.isDown(key) then result = true end
         elseif (device == 'j' and joy) then
             if (dir) then
                 local axis = joy:getGamepadAxis(key)
                 if (dir == "+") then
-                    if (axis >= self.deadzone) then return true end
+                    if (axis >= self.deadzone) then result = true end
                 elseif (dir == "-") then
-                    if (axis <= -self.deadzone) then return true end
+                    if (axis <= -self.deadzone) then result = true end
                 elseif (dir > 0) then
-                    if (axis >= dir) then return true end
+                    if (axis >= dir) then result = true end
                 elseif (dir < 0) then
-                    if (axis <= dir) then return true end
+                    if (axis <= dir) then result = true end
                 end
             else
-                if (joy:isGamepadDown(key)) then return true end
+                if (joy:isGamepadDown(key)) then result = true end
             end
         end
     end
-    return false
+
+    return result
 end
 
 --

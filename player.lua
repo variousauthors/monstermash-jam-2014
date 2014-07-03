@@ -5,11 +5,11 @@ if not Entity then require("entity") end
 PRESSED = "pressed"
 HOLDING = "holding"
 
-LEFT         = "left"
-RIGHT        = "right"
-JUMP         = "z"
-SHOOT        = "x"
-DASH         = "lshift"
+LEFT         = "p1_left"
+RIGHT        = "p1_right"
+JUMP         = "p1_jump"
+SHOOT        = "p1_shoot"
+DASH         = "p1_dash"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
@@ -205,7 +205,8 @@ return function (x, y)
         for k, v in pairs(controls) do
             -- the player is holding a key as long as it is down, and we
             -- received input in this or some previous update
-            if (entity.pressed(k) or entity.holding(k)) and love.keyboard.isDown(k) then
+
+            if (entity.pressed(k) or entity.holding(k)) and Input:isState(k) then
                 entity.set(k, HOLDING)
 
                 v(dt)
