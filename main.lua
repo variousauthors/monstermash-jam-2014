@@ -6,7 +6,20 @@ require "libs/vector"
 require "libs/utility"
 
 Viewport  = require("libs/viewport")
-Input    = require("libs/input")
+
+-- This is global because it will be queried from lots of places.
+Input = require("libs/input"):new({
+    p1_left   = {"k_left", "j1_leftx-", "j1_dpleft"},
+    p1_right  = {"k_right", "j1_leftx+", "j1_dpright"},
+    p1_jump   = {"k_z", "j1_a"},
+    p1_shoot  = {"k_x", "j1_x"},
+    p1_dash   = {"k_lshift", "j1_y", "j1_triggerright+1"},
+    p2_left   = {"j2_leftx-", "j2_dpleft"},
+    p2_right  = {"j2_leftx+", "j2_dpright"},
+    p2_jump   = {"j2_a"},
+    p2_shoot  = {"j2_x"},
+    p2_dash   = {"j2_y"}
+})
 
 World  = require("world")
 Player = require("player")
@@ -18,19 +31,6 @@ function love.focus(f) gameIsPaused = not f end
 function love.load()
     love.graphics.setBackgroundColor(0, 0, 0)
     viewport = Viewport:new({width = 256, height = 224})
-    input = Input:new({
-        P1_left   = {"K_left", "J1_leftx-", "J1_dpleft"},
-        P1_right  = {"K_right", "J1_leftx+", "J1_dpright"},
-        P1_jump   = {"K_z", "J1_a"},
-        P1_shoot  = {"K_x", "J1_x"},
-        P1_dash   = {"K_lshift", "J1_y"},
-
-        P2_left   = {"J2_leftx-", "J2_dpleft"},
-        P2_right  = {"J2_leftx+", "J2_dpright"},
-        P2_jump   = {"J2_a"},
-        P2_shoot  = {"J2_x"},
-        P2_dash   = {"J2_y"}
-    })
 
     world         = World:new()
     mega_man      = Player(32, 140)
@@ -97,25 +97,44 @@ function love.keypressed(key, isrepeat)
         love.event.quit()
     end
 
-    input:pressed(key)
-    game_state.keypressed(key, isrepeat)
+    local i = Input:pressed(key)
+    if i then
+        print('keypressed', i)
+        game_state.keypressed(i)
+    end
 end
 
 function love.keyreleased(key)
-    input:released(key)
-    game_state.keyreleased(key)
+    local i = Input:released(key)
+    if i then
+        print('keyreleased', i)
+        game_state.keyreleased(i)
+    end
 end
 
 function love.gamepadpressed(joystick, button)
-    input:pressed(joystick, button)
+    local i = Input:pressed(joystick, button)
+    if i then
+        print('gamepadpressed', i)
+        game_state.keypressed(i)
+    end
+
 end
 
 function love.gamepadreleased(joystick, button)
-    input:released(joystick, button)
+    local i = Input:released(joystick, button)
+    if i then
+        print('gamepadreleased', i)
+        game_state.keyreleased(i)
+    end
 end
 
 function love.gamepadaxis(joystick, axis, value)
-    input:axis(joystick, axis, value)
+    local i = Input:axis(joystick, axis, value)
+    if i then
+        print('gamepadaxis', i)
+        game_state.keypressed(i)
+    end
 end
 
 function love.textinput(text)
