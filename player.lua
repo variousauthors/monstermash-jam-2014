@@ -95,14 +95,22 @@ return function (x, y, controls)
         entity.set(DASH, false)
 
         entity.setX(entity.getX() + sign*speed)
-        entity.set("facing", direction)
+
+        if movement.is("wall_jumping") then
+            direction = (direction == LEFT) and RIGHT or LEFT
+            entity.set("facing", direction)
+        else
+            entity.set("facing", direction)
+        end
     end
 
     controls[LEFT] = function ()
+        if movement.is("damaged") then return end
         move(LEFT, horizontal_speed)
     end
 
     controls[RIGHT] = function ()
+        if movement.is("damaged") then return end
         move(RIGHT, horizontal_speed)
     end
 
@@ -110,6 +118,11 @@ return function (x, y, controls)
         -- even if the jump button is down, we don't
         -- want to run this function unless the player is jumping
         if not movement.is("jumping") and not movement.is("dash_jump") then return end
+
+        if entity.get("wall_jump") then
+            move(entity.get("facing"), 10*horizontal_speed)
+            entity.set("wall_jump", false)
+        end
 
         entity.set("vs", math.max(entity.get("vs") - gravity, 0))
 
@@ -155,11 +168,6 @@ return function (x, y, controls)
     local falling = function (dt)
         if movement.is('jumping') then return end
 
-        -- face forward but slide back
-        if movement.is('damaged') then
-            move(entity.get("facing"), -damaged_speed)
-        end
-
         entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
 
         entity.setY(entity.getY() + entity.get("vs"))
@@ -185,11 +193,17 @@ return function (x, y, controls)
                 elseif(ny == 1) then
                     entity.set("vs", 0)
                     entity.set(FALLING, true)
+                elseif (nx == 1 or nx == -1) then
+                    entity.set("vs", 0)
+                    entity.set(FALLING, true)
+                    sy = sy + 1
                 end
+
                 entity.setX(tx)
                 entity.setY(ty)
                 world.bump:move(entity, tx, ty)
                 cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
+
                 if len == 0 then
                     entity.setX(sx)
                     entity.setY(sy)
@@ -257,6 +271,11 @@ return function (x, y, controls)
 
         falling(dt)
 
+        -- slide megaman when damaged
+        if movement.is('damaged') then
+            move(entity.get("facing"), -damaged_speed)
+        end
+
         -- Resolve collision
         entity.resolveObstacleCollide(world)
         entity.resolveBulletCollide(world)
@@ -269,11 +288,13 @@ return function (x, y, controls)
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
-        love.graphics.setColor(COLOR.BLACK)
+        love.graphics.setColor(COLOR.RED)
         if entity.get("facing") == LEFT then
             love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
+            love.graphics.line(draw_x-1, draw_y, draw_x-1, draw_y + height)
         else
             love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
+            love.graphics.line(draw_x + width +1, draw_y, draw_x + width +1, draw_y + height)
         end
 
         if movement.is("running") then
@@ -282,6 +303,8 @@ return function (x, y, controls)
             love.graphics.setColor(COLOR.GREEN)
         elseif movement.is("falling") then
             love.graphics.setColor(COLOR.PURPLE)
+        elseif movement.is("wall_jumping") then
+            love.graphics.setColor(COLOR.GREY)
         else
             love.graphics.setColor(COLOR.BLUE)
         end

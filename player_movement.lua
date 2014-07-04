@@ -10,6 +10,7 @@ return function (entity, controls, verbose)
         init = function ()
             entity.set("dash_jump", false)
             entity.set("shocked", false)
+            entity.set("wall_jump", false)
         end
     })
 
@@ -31,6 +32,7 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "jumping",
         init = function ()
+            entity.set("falling", false)
             entity.startJump()
             entity.setJumpOrigin()
         end
@@ -40,6 +42,19 @@ return function (entity, controls, verbose)
         name = "falling",
         init = function ()
             entity.set("vs", 0)
+            entity.set(FALLING, true)
+        end
+    })
+
+    movement.addState({
+        name = "wall_jumping",
+        init = function ()
+            -- point megaman away from the wall
+            local facing = (entity.get("facing") == LEFT and RIGHT or LEFT)
+            entity.set("facing", facing)
+
+            entity.set("vs", 0)
+            entity.set("wall_jump", true)
             entity.set(FALLING, true)
         end
     })
@@ -118,7 +133,7 @@ return function (entity, controls, verbose)
         from = "running",
         to = "falling",
         condition = function ()
-            return entity.get("vs") > 0
+            return entity.get("vs") > 0 and entity.get(FALLING)
         end
     })
 
@@ -195,6 +210,30 @@ return function (entity, controls, verbose)
         to = "standing",
         condition = function ()
             return not entity.get(FALLING)
+        end
+    })
+
+    movement.addTransition({
+        from = "falling",
+        to = "wall_jumping",
+        condition = function ()
+            return entity.get("vs") == 0 and entity.get(FALLING)
+        end
+    })
+
+    movement.addTransition({
+        from = "wall_jumping",
+        to = "standing",
+        condition = function ()
+            return not entity.get(FALLING)
+        end
+    })
+
+    movement.addTransition({
+        from = "wall_jumping",
+        to = "jumping",
+        condition = function ()
+            return entity.get(FALLING) and entity.pressed(JUMP)
         end
     })
 
