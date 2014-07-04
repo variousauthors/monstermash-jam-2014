@@ -1,4 +1,5 @@
 if not Entity then require("entity") end
+if not BulletFactory then require("bullet_factory") end
 
 -- TODO convert these to unique constants
 -- rather than strings
@@ -7,36 +8,18 @@ HOLDING = "holding"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
-Bullet = function (x, y, owner)
-    local entity = Entity(x, y)
+MovementModule = require("player_movement")
+XBuster        = require("arm_cannon")
 
-    if owner.get("bullet_count") then
-        local count = owner.get("bullet_count")
-        owner.set("bullet_count", count + 1)
-    else
-        owner.set("bullet_count", 1)
-    end
+Pellet    = BulletFactory(3, 4, 4, 1, COLOR.YELLOW, "pellet")
+Blast     = BulletFactory(4, 20, 5, 2, COLOR.GREEN, "blast")
+MegaBlast = BulletFactory(3, 15, 20, 3, COLOR.RED, "mega_blast")
 
-    entity.draw = function ()
-        love.graphics.setColor(COLOR.YELLOW)
-        love.graphics.rectangle("fill", entity.getX(), entity.getY(), 4, 2)
-        love.graphics.setColor(COLOR.WHITE)
-    end
-
-    entity.update = function (dt)
-        entity.setX(entity.getX() + 2)
-    end
-
-    entity.set("owner_id", owner.get("id"))
-
-    entity.cleanup = function ()
-        local count = owner.get("bullet_count")
-        owner.set("bullet_count", count - 1)
-        entity.set("owner_id", nil)
-    end
-
-    return entity
-end
+Bullets = {
+    pellet     = Pellet,
+    blast      = Blast,
+    mega_blast = MegaBlast
+}
 
 return function (x, y, controls)
     local controls = require(controls)
@@ -58,15 +41,26 @@ return function (x, y, controls)
     local jump_origin
     local fat_gun_dim             = 3
     local horizontal_speed        = 1.5
+    local damaged_speed           = 1
     local initial_vs  = 5
     local terminal_vs = 5.75
     local gravity                 = 0.25
 
-    local entity    = Entity(x, y, width, height)
+    local entity         = Entity(x, y, width, height)
     local obstacleFilter = entity.getFilterFor('isObstacle')
+    local bulletFilter = function (other)
+        return other.get and other.get("isBullet") == true and other.get("owner_id") ~= entity.get("id")
+    end
+
 
     entity.set("facing", RIGHT)
     entity.set("vs", 0)
+    entity.set("hp", 10)
+
+    -- TODO player's collide with enemies causing damage
+    -- this is just to test
+    entity.set("isBullet", true)
+    entity.set("damage", 1)
 
     entity.setJumpOrigin = function ()
         jump_origin = Point(entity.getX(), entity.getY())
@@ -88,10 +82,11 @@ return function (x, y, controls)
     local x_buster = XBuster(entity, controls)
 
     local controls = {}
-    controls[LEFT] = function ()
+
+    local move = function (direction, speed)
         if movement.is("dashing") then return end
 
-        local speed = horizontal_speed
+        local sign = (direction == LEFT) and -1 or 1
 
         if entity.get("dash_jump") then
             speed = horizontal_speed*2
@@ -99,23 +94,16 @@ return function (x, y, controls)
 
         entity.set(DASH, false)
 
-        entity.setX(entity.getX() - speed)
-        entity.set("facing", LEFT)
+        entity.setX(entity.getX() + sign*speed)
+        entity.set("facing", direction)
+    end
+
+    controls[LEFT] = function ()
+        move(LEFT, horizontal_speed)
     end
 
     controls[RIGHT] = function ()
-        if movement.is("dashing") then return end
-
-        local speed = horizontal_speed
-
-        if entity.get("dash_jump") then
-            speed = horizontal_speed*2
-        end
-
-        entity.set(DASH, false)
-
-        entity.setX(entity.getX() + speed)
-        entity.set("facing", RIGHT)
+        move(RIGHT, horizontal_speed)
     end
 
     controls[JUMP] = function (dt)
@@ -147,10 +135,30 @@ return function (x, y, controls)
     end
 
     local shoot = function (dt)
+        local offset       = width
+        local bullet_type  = x_buster.getState()
+        local bullet_count = entity.get(bullet_type)
+        local bullet
+        local direction = (entity.get("facing") == LEFT and -1 or 1)
+
+        if entity.get("facing") == LEFT then
+            offset = 0 - fat_gun_dim*2
+        end
+
+        if not bullet_count or bullet_count < max_bullets then
+            bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity, direction)
+        end
+
+        return bullet
     end
 
     local falling = function (dt)
         if movement.is('jumping') then return end
+
+        -- face forward but slide back
+        if movement.is('damaged') then
+            move(entity.get("facing"), -damaged_speed)
+        end
 
         entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
 
@@ -163,7 +171,7 @@ return function (x, y, controls)
 
     entity.resolveObstacleCollide = function(world)
         local new_x, new_y = entity.getX(), entity.getY()
-        local cols, len = world.bump:check(entity, new_x, new_y)
+        local cols, len = world.bump:check(entity, new_x, new_y, obstacleFilter)
         if len == 0 then
             world.bump:move(entity, new_x, new_y)
         else
@@ -181,7 +189,7 @@ return function (x, y, controls)
                 entity.setX(tx)
                 entity.setY(ty)
                 world.bump:move(entity, tx, ty)
-                cols, len = world.bump:check(entity, sx, sy)
+                cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
                 if len == 0 then
                     entity.setX(sx)
                     entity.setY(sy)
@@ -191,10 +199,39 @@ return function (x, y, controls)
         end
     end
 
+    entity.resolveBulletCollide = function(world)
+        local x, y = entity.getX(), entity.getY()
+        local cols, len = world.bump:check(entity, x, y, bulletFilter)
+
+        while len > 0 and not entity.get("invulnerable") do
+            local col            = cols[1]
+            local bullet         = col.other
+            local tx, ty, nx, ny = col:getTouch()
+
+            local entity_center = entity.getX() + col.itemRect.w/2
+            local bullet_center = bullet.getX() + col.otherRect.w/2
+            local facing        = (entity_center > bullet_center) and LEFT or RIGHT
+
+            entity.set("damage_queue", bullet.get("damage"))
+            entity.set("facing", facing) -- megaman always turns to face the damage source
+            movement.update()
+            x_buster.start("inactive")
+
+            -- if there is something the bullet needs to do
+            if bullet.resolveCollide then
+                bullet.resolveCollide()
+            end
+
+            cols, len = world.bump:check(entity, x, y, bulletFilter)
+        end
+    end
+
     -- every tick, set the current maneuver
-    entity.tic = function ()
-        if willMove() then
-            will_move = nil
+    entity.tic = function (dt)
+        if entity.get("invulnerable") and entity.get("invulnerable") > 0 then
+            entity.set("invulnerable", math.max(entity.get("invulnerable") - 1, 0))
+
+            if entity.get("invulnerable") == 0 then entity.set("invulnerable", nil) end
         end
     end
 
@@ -213,13 +250,16 @@ return function (x, y, controls)
         end
 
         if x_buster.isSet("shoot") then
-            shoot(dt)
+            local bullet = shoot(dt)
+
+            if bullet then world:register(bullet) end
         end
 
         falling(dt)
 
         -- Resolve collision
         entity.resolveObstacleCollide(world)
+        entity.resolveBulletCollide(world)
 
         movement.update()
         x_buster.update()
@@ -254,7 +294,7 @@ return function (x, y, controls)
             end
         end
 
-        if x_buster.is("pellet") or x_buster.is("cool_down") or x_buster.is("charging") then
+        if x_buster.isSet("shoot") or x_buster.is("cool_down") then
             local offset = width
 
             if entity.get("facing") == LEFT then
@@ -264,20 +304,34 @@ return function (x, y, controls)
             love.graphics.rectangle("fill", draw_x + offset, draw_y + 1*height/3, fat_gun_dim * 2, fat_gun_dim)
         end
 
+        if movement.is("damaged") then
+            local r, g, b = love.graphics.getColor()
+            love.graphics.setColor(COLOR.YELLOW)
+            love.graphics.rectangle("fill", draw_x - 5, draw_y - 5, width + 10, height + 10)
+            love.graphics.setColor({ r, g, b })
+        end
+
         -- TODO ha ha ha
-        if movement.is("dashing") then
-            local verts
-            local lean = 5
+        local flicker = 0
+        if entity.get("invulnerable") then
+            flicker = rng:random(0, 1)
+        end
 
-            if entity.get("facing") == LEFT then
-                verts = { draw_x - lean, draw_y, draw_x + width - lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+        if flicker == 0 then
+            if movement.is("dashing") then
+                local verts
+                local lean = 5
+
+                if entity.get("facing") == LEFT then
+                    verts = { draw_x - lean, draw_y, draw_x + width - lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+                else
+                    verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+                end
+
+                love.graphics.polygon("fill", verts)
             else
-                verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
+                love.graphics.rectangle("fill", draw_x, draw_y, width, height)
             end
-
-            love.graphics.polygon("fill", verts)
-        else
-            love.graphics.rectangle("fill", draw_x, draw_y, width, height)
         end
 
         love.graphics.setColor(COLOR.WHITE)

@@ -79,9 +79,19 @@ FSM = function (verbose)
         -- iterate over the transitions for the current state
         local next_state = {}
 
-        for i, transition in ipairs(current_state.transitions) do
+        for i, transition in ipairs(states["any"].transitions) do
             if transition.condition and transition.condition() then
                 table.insert(next_state, transition.to)
+            end
+        end
+
+        -- if any of the "any" state transitions is good to go,
+        -- then we don't need to check for any other state transitions
+        if #next_state == 0 then
+            for i, transition in ipairs(current_state.transitions) do
+                if transition.condition and transition.condition() then
+                    table.insert(next_state, transition.to)
+                end
             end
         end
 
@@ -143,6 +153,12 @@ FSM = function (verbose)
     end
 
     local addTransition = function(transition)
+        if transition.to == "any" then
+            print("WARNING")
+            print("attempt to add transition to 'any' will fail")
+            return
+        end
+
         table.insert(states[transition.from].transitions, {
             to        = transition.to,
             condition = transition.condition,
@@ -153,6 +169,14 @@ FSM = function (verbose)
         if name == nil then name = "start" end
         transitionTo(name)
     end
+
+    local getState = function ()
+        return current_state.name
+    end
+
+    addState({
+        name = "any"
+    })
 
     return {
         start         = start,
@@ -167,6 +191,7 @@ FSM = function (verbose)
         set           = set,
         isSet         = isSet,
         is            = is,
-        getCount      = getCount
+        getCount      = getCount,
+        getState      = getState
     }
 end

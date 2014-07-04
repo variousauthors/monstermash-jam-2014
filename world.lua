@@ -11,7 +11,7 @@ local function addObstacle(self, x,y,w,h)
     local obstacle = Entity(x, y, w, h)
     obstacle.set('isObstacle', true)
     self.obstacles[#self.obstacles+1] = obstacle
-    self.bump:add(obstacle, x,y,w,h)
+    self.bump:add(obstacle, x, y, w, h)
 end
 
 local function drawBox(box, r,g,b)
@@ -41,24 +41,29 @@ function World:initialize()
     self.background_image = love.graphics.newImage("assets/chillpenguinstage.png")
 
     self.timer = 0
-    self.tic_duration = 5
+    self.tic_duration = 1
 end
 
 function World:register(entity)
     self.entities[entity.get("id")] = entity
     self.bump:add(entity, entity.getBoundingBox())
+
+    entity._unregister = function ()
+        world:unregister(entity)
+    end
 end
 
 function World:unregister(entity)
     self.entities[entity.get("id")] = nil
     entity.cleanup()
+    self.bump:remove(entity)
 end
 
 function World:tic(dt)
     self.timer = self.timer + dt
 
     if self.timer > self.tic_duration then
-        for i, entity in ipairs(self.entities) do
+        for i, entity in pairs(self.entities) do
             entity.tic()
         end
 

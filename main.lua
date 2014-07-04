@@ -30,16 +30,16 @@ function love.focus(f) gameIsPaused = not f end
 
 function love.load()
     love.graphics.setBackgroundColor(0, 0, 0)
-    viewport = Viewport:new({width = 256, height = 224})
+    viewport = Viewport:new({width = global.screen_width, height = global.screen_height})
 
     world         = World:new()
-    mega_man      = Player(32, 140, "p1_controls")
-    proto_man     = Player(96, 140, "p2_controls")
+    megaman      = Player(32, 140, "p1_controls")
+    protoman     = Player(96, 140, "p2_controls")
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
-    world:register(mega_man)
-    world:register(proto_man)
+    world:register(megaman)
+    world:register(protoman)
     -- world:register(chill_penguin)
 
     game_state = FSM()
@@ -52,16 +52,15 @@ function love.load()
         end,
         update     = function (dt)
             world:update(dt)
-
         end,
         keypressed = function (key)
-            mega_man.keypressed(key) -- queues up the mega_man's next move
-            proto_man.keypressed(key)
+            megaman.keypressed(key) -- queues up the megaman's next move
+            protoman.keypressed(key)
 
         end,
         keyreleased = function (key)
-            mega_man.keyreleased(key) -- queues up the mega_man's next move
-            proto_man.keyreleased(key)
+            megaman.keyreleased(key) -- queues up the megaman's next move
+            protoman.keyreleased(key)
         end
     })
 
@@ -73,7 +72,7 @@ function love.load()
       --keypressed = game.keypressed
     })
 
-    -- start the game when the mega_man chooses a menu option
+    -- start the game when the megaman chooses a menu option
     game_state.addTransition({
         from      = "start",
         to        = "stop",

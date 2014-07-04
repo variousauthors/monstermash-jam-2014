@@ -1,13 +1,15 @@
 
 return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement = FSM(verbose)
-    local dash_duration = 30
+    local movement                       = FSM(verbose)
+    local dash_duration                  = 30
+    local damaged_duration               = 20
 
     movement.addState({
         name = "standing",
         init = function ()
             entity.set("dash_jump", false)
+            entity.set("shocked", false)
         end
     })
 
@@ -42,11 +44,30 @@ return function (entity, controls, verbose)
         end
     })
 
+    movement.addState({
+        name = "damaged",
+        init = function ()
+            entity.set("hp", math.max(entity.get("hp") - entity.get("damage_queue")))
+            entity.set("damage_queue", 0)
+            entity.set("invulnerable", 1)
+            entity.set("dash_jump", false)
+            entity.set("shocked", true)
+        end
+    })
+
     movement.addTransition({
         from = "standing",
         to = "running",
         condition = function ()
             return not entity.pressed(DASH) and not entity.pressed(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
+        end
+    })
+
+    movement.addTransition({
+        from = "standing",
+        to = "falling",
+        condition = function ()
+            return entity.get("vs") > 0
         end
     })
 
@@ -174,6 +195,24 @@ return function (entity, controls, verbose)
         to = "standing",
         condition = function ()
             return not entity.get(FALLING)
+        end
+    })
+
+    movement.addTransition({
+        from = "any",
+        to = "damaged",
+        condition = function ()
+            return entity.get("damage_queue") and entity.get("damage_queue") > 0
+        end
+    })
+
+    movement.addTransition({
+        from = "damaged",
+        to = "standing",
+        condition = function ()
+            print(movement.getCount())
+            print(damaged_duration)
+            return movement.getCount() > damaged_duration
         end
     })
 

@@ -9,6 +9,8 @@ function math.round(val, decimal)
   return math.ceil(val * exp - 0.5) / exp
 end
 
+rng = love.math.newRandomGenerator(os.time())
+
 COLOR = {
     RED    = { 200, 55, 55 },
     YELLOW = { 200, 200, 55 },

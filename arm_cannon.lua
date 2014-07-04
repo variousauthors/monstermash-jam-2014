@@ -48,7 +48,7 @@ return function (entity, controls)
         from = "inactive",
         to = "pellet",
         condition = function ()
-            return entity.pressed(SHOOT)
+            return not entity.get("shocked") and entity.pressed(SHOOT)
         end
     })
 
@@ -56,7 +56,7 @@ return function (entity, controls)
         from = "inactive",
         to = "charging",
         condition = function ()
-            return entity.holding(SHOOT)
+            return not entity.get("shocked") and entity.holding(SHOOT)
         end
     })
 
@@ -92,7 +92,9 @@ return function (entity, controls)
     cannon.addTransition({
         from = "charging",
         to = "blast",
-        condition = function () return not entity.get(SHOOT) end
+        condition = function ()
+            return not entity.get(SHOOT) and not cannon.isSet("mega_blast")
+        end
     })
 
     cannon.addTransition({
@@ -104,7 +106,10 @@ return function (entity, controls)
     cannon.addTransition({
         from = "charging",
         to = "mega_blast",
-        condition = function () return false end
+        condition = function ()
+
+            return not entity.get(SHOOT) and cannon.isSet("mega_blast")
+        end
     })
 
     cannon.addTransition({
