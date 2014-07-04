@@ -81,7 +81,7 @@ return function (x, y, controls)
     local movement = MovementModule(entity, controls)
     local x_buster = XBuster(entity, controls)
 
-    local controls = {}
+    controls = {}
 
     local move = function (direction, speed)
         if movement.is("dashing") then return end
@@ -96,7 +96,9 @@ return function (x, y, controls)
 
         entity.setX(entity.getX() + sign*speed)
 
-        if movement.is("wall_jumping") then
+        -- this is so that megaman will face away from the
+        -- wall he clings to
+        if movement.is("climbing") then
             direction = (direction == LEFT) and RIGHT or LEFT
             entity.set("facing", direction)
         else
@@ -104,48 +106,57 @@ return function (x, y, controls)
         end
     end
 
-    controls[LEFT] = function ()
-        if movement.is("damaged") then return end
-        move(LEFT, horizontal_speed)
-    end
-
-    controls[RIGHT] = function ()
-        if movement.is("damaged") then return end
-        move(RIGHT, horizontal_speed)
-    end
-
-    controls[JUMP] = function (dt)
-        -- even if the jump button is down, we don't
-        -- want to run this function unless the player is jumping
-        if not movement.is("jumping") and not movement.is("dash_jump") then return end
-
-        if entity.get("wall_jump") then
-            move(entity.get("facing"), 10*horizontal_speed)
-            entity.set("wall_jump", false)
+    controls[2] = {
+        k = LEFT,
+        func = function ()
+            if movement.is("damaged") then return end
+            move(LEFT, horizontal_speed)
         end
+    }
 
-        entity.set("vs", math.max(entity.get("vs") - gravity, 0))
-
-        entity.setY(entity.getY() - entity.get("vs"))
-
-        if entity.get("vs") == 0 then
-            entity.set(FALLING, true)
+    controls[3] = {
+        k = RIGHT,
+        func = function ()
+            if movement.is("damaged") then return end
+            move(RIGHT, horizontal_speed)
         end
-    end
+    }
 
-    controls[DASH] = function (dt)
-        if not movement.is("dashing") then return end
+    controls[1] = {
+        k = JUMP,
+        func = function (dt)
+            -- even if the jump button is down, we don't
+            -- want to run this function unless the player is jumping
+            if not movement.is("jumping") and not movement.is("dash_jump") then return end
 
-        local speed = horizontal_speed*2
-        local sign = 1
+            if entity.get("wall_jump") then
+                move(entity.get("facing"), 10*horizontal_speed)
+                entity.set("wall_jump", false)
+            end
 
-        if entity.get("facing") == LEFT then sign = -1 end
+            entity.set("vs", math.max(entity.get("vs") - gravity, 0))
 
-        entity.setX(entity.getX() + sign*speed)
-    end
+            entity.setY(entity.getY() - entity.get("vs"))
 
-    controls[SHOOT] = function (dt)
-    end
+            if entity.get("vs") == 0 then
+                entity.set(FALLING, true)
+            end
+        end
+    }
+
+    controls[4] = {
+        k = DASH,
+        func = function (dt)
+            if not movement.is("dashing") then return end
+
+            local speed = horizontal_speed*2
+            local sign = 1
+
+            if entity.get("facing") == LEFT then sign = -1 end
+
+            entity.setX(entity.getX() + sign*speed)
+        end
+    }
 
     local shoot = function (dt)
         local offset       = width
@@ -250,14 +261,17 @@ return function (x, y, controls)
     end
 
     entity.update = function (dt, world)
-        for k, v in pairs(controls) do
+        for i = 1, #controls do
+            local control = controls[i]
+            local k       = control.k
+            local func    = control.func
             -- the player is holding a key as long as it is down, and we
             -- received input in this or some previous update
 
             if (entity.pressed(k) or entity.holding(k)) and Input:isState(k) then
                 entity.set(k, HOLDING)
 
-                v(dt)
+                func(dt)
             else
                 entity.set(k, false)
             end
@@ -303,7 +317,7 @@ return function (x, y, controls)
             love.graphics.setColor(COLOR.GREEN)
         elseif movement.is("falling") then
             love.graphics.setColor(COLOR.PURPLE)
-        elseif movement.is("wall_jumping") then
+        elseif movement.is("climbing") then
             love.graphics.setColor(COLOR.GREY)
         else
             love.graphics.setColor(COLOR.BLUE)

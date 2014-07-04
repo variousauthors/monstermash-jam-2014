@@ -47,11 +47,9 @@ return function (entity, controls, verbose)
     })
 
     movement.addState({
-        name = "wall_jumping",
+        name = "climbing",
         init = function ()
             -- point megaman away from the wall
-            local facing = (entity.get("facing") == LEFT and RIGHT or LEFT)
-            entity.set("facing", facing)
 
             entity.set("vs", 0)
             entity.set("wall_jump", true)
@@ -215,14 +213,14 @@ return function (entity, controls, verbose)
 
     movement.addTransition({
         from = "falling",
-        to = "wall_jumping",
+        to = "climbing",
         condition = function ()
             return entity.get("vs") == 0 and entity.get(FALLING)
         end
     })
 
     movement.addTransition({
-        from = "wall_jumping",
+        from = "climbing",
         to = "standing",
         condition = function ()
             return not entity.get(FALLING)
@@ -230,10 +228,18 @@ return function (entity, controls, verbose)
     })
 
     movement.addTransition({
-        from = "wall_jumping",
+        from = "climbing",
         to = "jumping",
         condition = function ()
             return entity.get(FALLING) and entity.pressed(JUMP)
+        end
+    })
+
+    movement.addTransition({
+        from = "climbing",
+        to = "falling",
+        condition = function ()
+            return entity.pressed(LEFT) and entity.get("facing") == RIGHT or entity.pressed(RIGHT) and entity.get("facing") == LEFT
         end
     })
 
@@ -249,8 +255,6 @@ return function (entity, controls, verbose)
         from = "damaged",
         to = "standing",
         condition = function ()
-            print(movement.getCount())
-            print(damaged_duration)
             return movement.getCount() > damaged_duration
         end
     })
