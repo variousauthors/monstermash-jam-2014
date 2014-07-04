@@ -5,12 +5,6 @@ if not BulletFactory then require("bullet_factory") end
 -- rather than strings
 PRESSED = "pressed"
 HOLDING = "holding"
-
-LEFT         = "left"
-RIGHT        = "right"
-JUMP         = "z"
-SHOOT        = "x"
-DASH         = "lshift"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
@@ -27,7 +21,13 @@ Bullets = {
     mega_blast = MegaBlast
 }
 
-return function (x, y)
+return function (x, y, controls)
+    local controls = require(controls)
+    local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
+
+    MovementModule = require("player_movement")
+    XBuster        = require("arm_cannon")
+
     local will_move = nil
     local maneuver  = nil
     local shooting  = false
@@ -78,8 +78,8 @@ return function (x, y)
         return entity.get(key) == HOLDING
     end
 
-    local movement = MovementModule(entity)
-    local x_buster = XBuster(entity)
+    local movement = MovementModule(entity, controls)
+    local x_buster = XBuster(entity, controls)
 
     local controls = {}
 
@@ -139,13 +139,14 @@ return function (x, y)
         local bullet_type  = x_buster.getState()
         local bullet_count = entity.get(bullet_type)
         local bullet
+        local direction = (entity.get("facing") == LEFT and -1 or 1)
 
         if entity.get("facing") == LEFT then
             offset = 0 - fat_gun_dim*2
         end
 
         if not bullet_count or bullet_count < max_bullets then
-            bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity)
+            bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity, direction)
         end
 
         return bullet
@@ -238,7 +239,8 @@ return function (x, y)
         for k, v in pairs(controls) do
             -- the player is holding a key as long as it is down, and we
             -- received input in this or some previous update
-            if (entity.pressed(k) or entity.holding(k)) and love.keyboard.isDown(k) then
+
+            if (entity.pressed(k) or entity.holding(k)) and Input:isState(k) then
                 entity.set(k, HOLDING)
 
                 v(dt)
@@ -292,7 +294,7 @@ return function (x, y)
             end
         end
 
-        if x_buster.is("pellet") or x_buster.is("cool_down") or x_buster.is("charging") then
+        if x_buster.isSet("shoot") or x_buster.is("cool_down") then
             local offset = width
 
             if entity.get("facing") == LEFT then

@@ -2,13 +2,11 @@
 -- bullet returns a constructor for a bullet type
 BulletFactory = function (speed, w, h, damage, color, name)
 
-    return function (x, y, owner)
+    return function (x, y, owner, direction)
         local entity = Entity(x, y - h/2, w, h)
         entity.set('isBullet', true)
         entity.set("owner_id", owner.get("id"))
         entity.set("damage", damage)
-
-        local direction = (owner.get("facing") == LEFT and -1 or 1)
 
         if owner.get(name) then
             local count = owner.get(name)

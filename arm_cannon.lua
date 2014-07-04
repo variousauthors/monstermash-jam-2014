@@ -1,5 +1,6 @@
 
-return function (entity)
+return function (entity, controls)
+    local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local cannon     = FSM()
     local cool_down  = 10
     local relax      = 20

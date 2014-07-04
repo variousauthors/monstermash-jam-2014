@@ -1,8 +1,9 @@
 
-return function (entity, verbose)
-    local movement         = FSM(verbose)
-    local dash_duration    = 30
-    local damaged_duration = 30
+return function (entity, controls, verbose)
+    local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
+    local movement                       = FSM(verbose)
+    local dash_duration                  = 30
+    local damaged_duration               = 20
 
     movement.addState({
         name = "standing",
@@ -209,6 +210,8 @@ return function (entity, verbose)
         from = "damaged",
         to = "standing",
         condition = function ()
+            print(movement.getCount())
+            print(damaged_duration)
             return movement.getCount() > damaged_duration
         end
     })
