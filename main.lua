@@ -7,6 +7,29 @@ require "libs/utility"
 
 Viewport  = require("libs/viewport")
 
+local joysticks = love.joystick.getJoysticks()
+joystick = joysticks[1]
+
+-- this is for ZIGGY JOYSTICK
+love.joystick.setGamepadMapping( joystick:getGUID(), "dpup", "button", 1)
+love.joystick.setGamepadMapping( joystick:getGUID(), "dpdown", "button", 2)
+love.joystick.setGamepadMapping( joystick:getGUID(), "dpleft", "button", 3)
+love.joystick.setGamepadMapping( joystick:getGUID(), "dpright", "button", 4)
+love.joystick.setGamepadMapping( joystick:getGUID(), "a", "button", 5)
+love.joystick.setGamepadMapping( joystick:getGUID(), "b", "button", 6)
+love.joystick.setGamepadMapping( joystick:getGUID(), "x", "button", 7)
+love.joystick.setGamepadMapping( joystick:getGUID(), "y", "button", 8)
+love.joystick.setGamepadMapping( joystick:getGUID(), "leftshoulder", "button", 9)
+love.joystick.setGamepadMapping( joystick:getGUID(), "rightshoulder", "button", 10)
+love.joystick.setGamepadMapping( joystick:getGUID(), "back", "button", 11)
+love.joystick.setGamepadMapping( joystick:getGUID(), "start", "button", 12)
+love.joystick.setGamepadMapping( joystick:getGUID(), "guide", "button", 13)
+love.joystick.setGamepadMapping( joystick:getGUID(), "leftstick", "button", 14)
+love.joystick.setGamepadMapping( joystick:getGUID(), "rightstick", "button", 15)
+love.joystick.setGamepadMapping( joystick:getGUID(), "leftx", "axis", 1)
+love.joystick.setGamepadMapping( joystick:getGUID(), "triggerright", "axis", 5)
+love.joystick.setGamepadMapping( joystick:getGUID(), "triggerleft", "axis", 6)
+
 -- This is global because it will be queried from lots of places.
 Input = require("libs/input"):new({
     p1_left   = {"k_left", "j1_leftx-", "j1_dpleft"},
@@ -29,6 +52,7 @@ Boss   = require("boss")
 function love.focus(f) gameIsPaused = not f end
 
 function love.load()
+
     love.graphics.setBackgroundColor(0, 0, 0)
     viewport = Viewport:new({width = global.screen_width,
                              height = global.screen_height,
