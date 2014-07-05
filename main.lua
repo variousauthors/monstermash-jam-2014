@@ -18,7 +18,7 @@ Input = require("libs/input"):new({
     p2_right  = {"j2_leftx+", "j2_dpright"},
     p2_jump   = {"j2_a"},
     p2_shoot  = {"j2_x"},
-    p2_dash   = {"j2_y"}
+    p2_dash   = {"j2_y", "j2_triggerright+1"}
 })
 
 World  = require("world")
@@ -30,7 +30,9 @@ function love.focus(f) gameIsPaused = not f end
 
 function love.load()
     love.graphics.setBackgroundColor(0, 0, 0)
-    viewport = Viewport:new({width = global.screen_width, height = global.screen_height})
+    viewport = Viewport:new({width = global.screen_width,
+                             height = global.screen_height,
+                             scale = global.scale})
 
     world         = World:new()
     megaman      = Player(32, 140, "p1_controls")
