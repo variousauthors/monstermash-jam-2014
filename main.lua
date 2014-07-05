@@ -10,22 +10,25 @@ Viewport  = require("libs/viewport")
 local joysticks = love.joystick.getJoysticks()
 joystick = joysticks[1]
 
-print(joystick:isGamepad())
-inspect({ joystick:getHatCount() })
-inspect({ joystick:getButtonCount() })
-inspect({ joystick:getAxisCount() })
-love.joystick.setGamepadMapping( joystick:getGUID(), "a", "button", 1)
-love.joystick.setGamepadMapping( joystick:getGUID(), "b", "button", 2)
-love.joystick.setGamepadMapping( joystick:getGUID(), "x", "button", 3)
-love.joystick.setGamepadMapping( joystick:getGUID(), "y", "button", 4)
-love.joystick.setGamepadMapping( joystick:getGUID(), "leftshoulder", "button", 5)
-love.joystick.setGamepadMapping( joystick:getGUID(), "rightshoulder", "button", 6)
-love.joystick.setGamepadMapping( joystick:getGUID(), "back", "button", 7)
-love.joystick.setGamepadMapping( joystick:getGUID(), "start", "button", 8)
-love.joystick.setGamepadMapping( joystick:getGUID(), "guide", "button", 9)
-love.joystick.setGamepadMapping( joystick:getGUID(), "leftstick", "button", 10)
-love.joystick.setGamepadMapping( joystick:getGUID(), "rightstick", "button", 11)
+-- this is for ZIGGY JOYSTICK
+love.joystick.setGamepadMapping( joystick:getGUID(), "dpup", "button", 1)
+love.joystick.setGamepadMapping( joystick:getGUID(), "dpdown", "button", 2)
+love.joystick.setGamepadMapping( joystick:getGUID(), "dpleft", "button", 3)
+love.joystick.setGamepadMapping( joystick:getGUID(), "dpright", "button", 4)
+love.joystick.setGamepadMapping( joystick:getGUID(), "a", "button", 5)
+love.joystick.setGamepadMapping( joystick:getGUID(), "b", "button", 6)
+love.joystick.setGamepadMapping( joystick:getGUID(), "x", "button", 7)
+love.joystick.setGamepadMapping( joystick:getGUID(), "y", "button", 8)
+love.joystick.setGamepadMapping( joystick:getGUID(), "leftshoulder", "button", 9)
+love.joystick.setGamepadMapping( joystick:getGUID(), "rightshoulder", "button", 10)
+love.joystick.setGamepadMapping( joystick:getGUID(), "back", "button", 11)
+love.joystick.setGamepadMapping( joystick:getGUID(), "start", "button", 12)
+love.joystick.setGamepadMapping( joystick:getGUID(), "guide", "button", 13)
+love.joystick.setGamepadMapping( joystick:getGUID(), "leftstick", "button", 14)
+love.joystick.setGamepadMapping( joystick:getGUID(), "rightstick", "button", 15)
 love.joystick.setGamepadMapping( joystick:getGUID(), "leftx", "axis", 1)
+love.joystick.setGamepadMapping( joystick:getGUID(), "triggerright", "axis", 5)
+love.joystick.setGamepadMapping( joystick:getGUID(), "triggerleft", "axis", 6)
 
 -- This is global because it will be queried from lots of places.
 Input = require("libs/input"):new({
@@ -119,7 +122,6 @@ function love.keypressed(key, isrepeat)
 
     local i = Input:pressed(key)
     if i then
-        print('keypressed', i)
         game_state.keypressed(i)
     end
 end
@@ -127,38 +129,28 @@ end
 function love.keyreleased(key)
     local i = Input:released(key)
     if i then
-        print('keyreleased', i)
         game_state.keyreleased(i)
     end
 end
 
 function love.gamepadpressed(joystick, button)
-    print("in gamepadpressed")
-    inspect({ joystick, button })
     local i = Input:pressed(joystick, button)
     if i then
-        print('gamepadpressed', i)
         game_state.keypressed(i)
     end
 
 end
 
 function love.gamepadreleased(joystick, button)
-    print("in gamepadreleased")
-    inspect({ joystick, button })
     local i = Input:released(joystick, button)
     if i then
-        print('gamepadreleased', i)
         game_state.keyreleased(i)
     end
 end
 
 function love.gamepadaxis(joystick, axis, value)
-    print("in gamepadaxis")
-    inspect({ joystick, axis, value })
     local i = Input:axis(joystick, axis, value)
     if i then
-        print('gamepadaxis', i)
         game_state.keypressed(i)
     end
 end
