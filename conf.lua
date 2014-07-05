@@ -1,7 +1,7 @@
 -- globals having to do with the tile library
 global           = {}
 global.tile_size = 16
-global.scale     = 1
+global.scale     = 0
 global.screen_width = 256
 global.screen_height = 224
 
