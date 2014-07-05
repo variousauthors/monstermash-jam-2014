@@ -7,6 +7,26 @@ require "libs/utility"
 
 Viewport  = require("libs/viewport")
 
+local joysticks = love.joystick.getJoysticks()
+joystick = joysticks[1]
+
+print(joystick:isGamepad())
+inspect({ joystick:getHatCount() })
+inspect({ joystick:getButtonCount() })
+inspect({ joystick:getAxisCount() })
+love.joystick.setGamepadMapping( joystick:getGUID(), "a", "button", 1)
+love.joystick.setGamepadMapping( joystick:getGUID(), "b", "button", 2)
+love.joystick.setGamepadMapping( joystick:getGUID(), "x", "button", 3)
+love.joystick.setGamepadMapping( joystick:getGUID(), "y", "button", 4)
+love.joystick.setGamepadMapping( joystick:getGUID(), "leftshoulder", "button", 5)
+love.joystick.setGamepadMapping( joystick:getGUID(), "rightshoulder", "button", 6)
+love.joystick.setGamepadMapping( joystick:getGUID(), "back", "button", 7)
+love.joystick.setGamepadMapping( joystick:getGUID(), "start", "button", 8)
+love.joystick.setGamepadMapping( joystick:getGUID(), "guide", "button", 9)
+love.joystick.setGamepadMapping( joystick:getGUID(), "leftstick", "button", 10)
+love.joystick.setGamepadMapping( joystick:getGUID(), "rightstick", "button", 11)
+love.joystick.setGamepadMapping( joystick:getGUID(), "leftx", "axis", 1)
+
 -- This is global because it will be queried from lots of places.
 Input = require("libs/input"):new({
     p1_left   = {"k_left", "j1_leftx-", "j1_dpleft"},
@@ -29,6 +49,7 @@ Boss   = require("boss")
 function love.focus(f) gameIsPaused = not f end
 
 function love.load()
+
     love.graphics.setBackgroundColor(0, 0, 0)
     viewport = Viewport:new({width = global.screen_width, height = global.screen_height})
 
@@ -112,6 +133,8 @@ function love.keyreleased(key)
 end
 
 function love.gamepadpressed(joystick, button)
+    print("in gamepadpressed")
+    inspect({ joystick, button })
     local i = Input:pressed(joystick, button)
     if i then
         print('gamepadpressed', i)
@@ -121,6 +144,8 @@ function love.gamepadpressed(joystick, button)
 end
 
 function love.gamepadreleased(joystick, button)
+    print("in gamepadreleased")
+    inspect({ joystick, button })
     local i = Input:released(joystick, button)
     if i then
         print('gamepadreleased', i)
@@ -129,6 +154,8 @@ function love.gamepadreleased(joystick, button)
 end
 
 function love.gamepadaxis(joystick, axis, value)
+    print("in gamepadaxis")
+    inspect({ joystick, axis, value })
     local i = Input:axis(joystick, axis, value)
     if i then
         print('gamepadaxis', i)
