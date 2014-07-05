@@ -3,8 +3,8 @@ if not BulletFactory then require("bullet_factory") end
 
 -- TODO convert these to unique constants
 -- rather than strings
-PRESSED = "pressed"
-HOLDING = "holding"
+PRESSED      = "pressed"
+HOLDING      = "holding"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
@@ -81,13 +81,10 @@ return function (x, y, controls)
     local movement = MovementModule(entity, controls)
     local x_buster = XBuster(entity, controls)
 
-    local controls = {}
-
     local move = function (direction, speed)
-        if movement.is("dashing") then return end
-
         local sign = (direction == LEFT) and -1 or 1
 
+        print(entity.get("dash_jump"))
         if entity.get("dash_jump") then
             speed = horizontal_speed*2
         end
@@ -98,15 +95,15 @@ return function (x, y, controls)
         entity.set("facing", direction)
     end
 
-    controls[LEFT] = function ()
+    entity.resolveLeft = function ()
         move(LEFT, horizontal_speed)
     end
 
-    controls[RIGHT] = function ()
+    entity.resolveRight = function ()
         move(RIGHT, horizontal_speed)
     end
 
-    controls[JUMP] = function (dt)
+    entity.resolveJump = function (dt)
         -- even if the jump button is down, we don't
         -- want to run this function unless the player is jumping
         if not movement.is("jumping") and not movement.is("dash_jump") then return end
@@ -120,9 +117,7 @@ return function (x, y, controls)
         end
     end
 
-    controls[DASH] = function (dt)
-        if not movement.is("dashing") then return end
-
+    entity.resolveDash = function (dt)
         local speed = horizontal_speed*2
         local sign = 1
 
@@ -131,10 +126,7 @@ return function (x, y, controls)
         entity.setX(entity.getX() + sign*speed)
     end
 
-    controls[SHOOT] = function (dt)
-    end
-
-    local shoot = function (dt)
+    entity.resolveShoot = function (dt)
         local offset       = width
         local bullet_type  = x_buster.getState()
         local bullet_count = entity.get(bullet_type)
@@ -149,10 +141,11 @@ return function (x, y, controls)
             bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity, direction)
         end
 
+        inspect(bullet)
         return bullet
     end
 
-    local falling = function (dt)
+    entity.resolveFall = function (dt)
         if movement.is('jumping') then return end
 
         -- face forward but slide back
@@ -163,10 +156,6 @@ return function (x, y, controls)
         entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
 
         entity.setY(entity.getY() + entity.get("vs"))
-    end
-
-    local willMove = function ()
-        return will_move ~= nil
     end
 
     entity.resolveObstacleCollide = function(world)
@@ -236,33 +225,37 @@ return function (x, y, controls)
     end
 
     entity.update = function (dt, world)
-        for k, v in pairs(controls) do
-            -- the player is holding a key as long as it is down, and we
-            -- received input in this or some previous update
-
-            if (entity.pressed(k) or entity.holding(k)) and Input:isState(k) then
-                entity.set(k, HOLDING)
-
-                v(dt)
-            else
-                entity.set(k, false)
+        for i, key in pairs(controls) do
+            if entity.pressed(key) then
+                entity.set(key, HOLDING)
             end
         end
 
-        if x_buster.isSet("shoot") then
-            local bullet = shoot(dt)
-
-            if bullet then world:register(bullet) end
-        end
-
-        falling(dt)
-
-        -- Resolve collision
+        entity.resolveFall(dt)
         entity.resolveObstacleCollide(world)
         entity.resolveBulletCollide(world)
 
-        movement.update()
-        x_buster.update()
+        if x_buster.isSet("shoot") then
+            local bullet = entity.resolveShoot()
+            if bullet then world:register(bullet) end
+        end
+
+        movement.update(dt)
+        x_buster.update(dt)
+    end
+
+    entity.keypressed = function (key)
+        entity.set(key, PRESSED)
+
+        movement.keypressed(key)
+        x_buster.keypressed(key)
+    end
+
+    entity.keyreleased = function (key)
+        entity.set(key, false)
+
+        movement.keyreleased(key)
+        x_buster.keyreleased(key)
     end
 
     entity.draw       = function ()
@@ -335,17 +328,6 @@ return function (x, y, controls)
         end
 
         love.graphics.setColor(COLOR.WHITE)
-    end
-
-    entity.keypressed = function (key)
-        entity.set(key, PRESSED)
-
-        movement.update()
-        x_buster.update()
-    end
-
-    entity.keyreleased = function (key)
-        entity.set(key, false)
     end
 
     return entity

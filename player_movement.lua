@@ -1,3 +1,9 @@
+-- resolveLeft
+-- resolveReft
+-- resolveShoot
+-- resolveFall
+-- resolveDash
+-- resolveJump
 
 return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
@@ -14,11 +20,25 @@ return function (entity, controls, verbose)
     })
 
     movement.addState({
-        name = "running"
+        name = "running",
+        update = function ()
+            if entity.holding(LEFT) then
+                entity.resolveLeft()
+            end
+
+            if entity.holding(RIGHT) then
+                entity.resolveRight()
+            end
+        end
     })
 
     movement.addState({
-        name = "dashing"
+        name = "dashing",
+        update = function ()
+            if entity.holding(DASH) then
+                entity.resolveDash()
+            end
+        end
     })
 
     movement.addState({
@@ -33,6 +53,19 @@ return function (entity, controls, verbose)
         init = function ()
             entity.startJump()
             entity.setJumpOrigin()
+        end,
+        update = function ()
+            if entity.holding(LEFT) then
+                entity.resolveLeft()
+            end
+
+            if entity.holding(RIGHT) then
+                entity.resolveRight()
+            end
+
+            if entity.holding(JUMP) then
+                entity.resolveJump()
+            end
         end
     })
 
@@ -41,6 +74,15 @@ return function (entity, controls, verbose)
         init = function ()
             entity.set("vs", 0)
             entity.set(FALLING, true)
+        end,
+        update = function ()
+            if entity.holding(LEFT) then
+                entity.resolveLeft()
+            end
+
+            if entity.holding(RIGHT) then
+                entity.resolveRight()
+            end
         end
     })
 
@@ -152,7 +194,6 @@ return function (entity, controls, verbose)
         from = "dashing",
         to = "falling",
         condition = function ()
-            entity.set("dash_jump", true)
 
             return entity.get("vs") > 0
         end

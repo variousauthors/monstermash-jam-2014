@@ -61,7 +61,6 @@ FSM = function (verbose)
         return current_state.count
     end
 
-
     local transitionTo = function (next_state)
         -- TODO currently no states have cleanup steps, and I'm debating whether they need'em
         -- most "cleanup steps" could be their own states with automatic transitions...
@@ -75,7 +74,7 @@ FSM = function (verbose)
         if current_state.init then current_state.init() end
     end
 
-    local update = function (dt)
+    local stateTransition = function ()
         -- iterate over the transitions for the current state
         local next_state = {}
 
@@ -110,26 +109,34 @@ FSM = function (verbose)
         if verbose then
             print("in " .. current_state.name)
         end
+    end
+
+    -- in update, if a key is "set" then it is "held". It was pressed
+    -- in the keypressed function
+    local update = function (dt)
+        stateTransition()
 
         if current_state.update then current_state.update(dt) end
     end
 
-    local draw = function ()
-        if current_state.draw then current_state.draw() end
-    end
-
     local keypressed = function (key)
-        -- transition to draw or win
+        stateTransition()
+
         set(key)
 
         if current_state.keypressed then current_state.keypressed(key) end
     end
 
     local keyreleased = function (key)
-        -- transition to draw or win
+        stateTransition()
+
         unset(key)
 
         if current_state.keyreleased then current_state.keyreleased(key) end
+    end
+
+    local draw = function ()
+        if current_state.draw then current_state.draw() end
     end
 
     local textinput = function (key)
