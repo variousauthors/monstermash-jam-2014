@@ -80,9 +80,11 @@ return function (x, y, controls)
         return entity.get(key) == HOLDING
     end
 
+    local image     = love.graphics.newImage('assets/tempjumpsheet.png')
+
     local movement  = MovementModule(entity, controls)
     local x_buster  = XBuster(entity, controls)
-    local animation = AnimationModule(entity, movement, x_buster)
+    local animation = AnimationModule(entity, image, movement, x_buster, controls)
 
     local move = function (direction, speed)
         local sign = (direction == LEFT) and -1 or 1
@@ -342,9 +344,9 @@ return function (x, y, controls)
     end
 
     entity.draw       = function ()
-
         local draw_x = entity.getX()
         local draw_y = entity.getY()
+
 
         -- get the facing for flip
         if entity.get("facing") == LEFT then
@@ -443,9 +445,9 @@ return function (x, y, controls)
             end
         end
 
-
         movement.draw()
         love.graphics.setColor(COLOR.WHITE)
+        animation.draw(draw_x - width, draw_y - height/4)
     end
 
     return entity

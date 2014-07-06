@@ -129,6 +129,7 @@ function love.load()
     })
 
     Sound:playSoundRegionLoop("assets/music/bossbattle.mp3", "music", 4.25490, 32.431358)
+
     game_state.start()
 end
 
