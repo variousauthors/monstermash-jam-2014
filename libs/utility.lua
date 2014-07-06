@@ -1,3 +1,4 @@
+require('love.math')
 
 local i = require("vendor/inspect/inspect")
 inspect = function (a, b)
@@ -11,7 +12,22 @@ function math.round(val, decimal)
   return math.ceil(val * exp - 0.5) / exp
 end
 
-rng = love.math.newRandomGenerator(os.time())
+function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+rng = love.math.newRandomGenerator(love.timer.getTime())
 
 COLOR = {
     RED    = { 200, 55, 55 },
