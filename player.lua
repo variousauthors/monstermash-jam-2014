@@ -28,8 +28,11 @@ return function (x, y, controls)
     MovementModule = require("player_movement")
     XBuster        = require("arm_cannon")
 
-    local timer     = 0
-    local rings     = 1
+    local ring_timer       = 0
+    local ring_timer_limit = 100
+    local ring_count       = 1
+    local ring_speed       = 40
+    local ring_limit       = 2
 
     -- back of glove to beginning of red thing
     -- red thing is top
@@ -276,17 +279,17 @@ return function (x, y, controls)
         end
 
         if movement.is("destroyed") then
-            if rings < 2 then
+            if ring_count < ring_limit then
 
-                rings = rings + 1
+                ring_count = ring_count + 1
             end
         end
     end
 
     entity.update = function (dt, world)
         if movement.is("destroyed") then
-            timer = timer + 40*dt
-            if timer/2 > 50 then
+            ring_timer = ring_timer + ring_speed*dt
+            if ring_timer > ring_timer_limit then
                 entity._unregister()
             end
 
@@ -412,15 +415,15 @@ return function (x, y, controls)
                 if movement.is("destroyed") then
 
                     love.graphics.setColor(COLOR.CYAN)
-                    for j = 1, rings do
-                        local r = timer/j
+                    for j = 1, ring_count do
+                        local r = ring_timer/j
 
                         for i = 1, 8 do
-                            local rad = i*math.pi/4 + timer
+                            local rad = i*math.pi/4 + ring_timer
                             local x = r*4*math.cos(rad)
                             local y = r*4*math.sin(rad)
 
-                            local rad2 = i*math.pi/4 + timer + math.pi/3
+                            local rad2 = i*math.pi/4 + ring_timer + math.pi/3
                             local x2 = r*4.2*math.cos(rad2)
                             local y2 = r*4.2*math.sin(rad2)
 
