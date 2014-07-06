@@ -2,11 +2,15 @@ local class = require('vendor/middleclass/middleclass')
 
 local Viewport = class('Viewport')
 
+local roundDownToNearest = function(val, multiple)
+    return multiple * (math.floor(val/multiple))
+end
+
 function Viewport:initialize(opts)
     opts = opts or {}
     setmetatable(opts,{__index={
         width  = 640,
-        height = 480,
+        height = 360,
         scale  = 0,
         fs     = false
     }})
@@ -33,17 +37,18 @@ function Viewport:setupScreen()
 end
 
 function Viewport:setScale(scale)
-    local scale = math.floor(scale)
+    local scale = roundDownToNearest(scale, 0.5)
     self.scale = scale
 
     local screen_w, screen_h = love.window.getDesktopDimensions()
     if (not self.fs) then
         -- subtract some height so that windowed mode doesn't scale
         -- beyond titlebar + application bar height in windows
+        screen_w = screen_w - 64
         screen_h = screen_h - 96
     end
-    local max_scale = math.min(math.floor(screen_w / self.width),
-                               math.floor(screen_h / self.height))
+    local max_scale = math.min(roundDownToNearest(screen_w / self.width, 0.5),
+                               roundDownToNearest(screen_h / self.height, 0.5))
 
     if ((scale or 0) <= 0 or (scale or 0) > max_scale) then
         self.r_scale = max_scale
