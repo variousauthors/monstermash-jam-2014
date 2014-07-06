@@ -33,14 +33,14 @@ end
 -- playSound(source, tags, [volume, srcType])
 --
 function Sound:playSound(source, tags, ...)
-    self.sendMessage({'playSound', source, tags, unpack({...})})
+    self:sendMessage({'playSound', source, tags, unpack({...})})
 end
 
 --
 -- playSoundLooping(source, tags, [volume, srcType])
 --
 function Sound:playSoundLoop(source, tags, ...)
-    self.sendMessage({'playSoundLoop', source, tags, unpack({...})})
+    self:sendMessage({'playSoundLoop', source, tags, unpack({...})})
 end
 
 --
@@ -48,7 +48,7 @@ end
 --   Sound plays until it reaches "regionEnd" then seeks to "regionStart"
 --
 function Sound:playSoundRegionLoop(source, tags, ...)
-    self.sendMessage({'playSoundRegionLoop', source, tags, unpack({...})})
+    self:sendMessage({'playSoundRegionLoop', source, tags, unpack({...})})
 end
 
 --
@@ -56,28 +56,28 @@ end
 --   Sound plays until end, then seeks to "regionStart
 --
 function Sound:playSoundPartialLoop(source, tags, ...)
-    self.sendMessage({'playSoundPartialLoop', source, tags, unpack({...})})
+    self:sendMessage({'playSoundPartialLoop', source, tags, unpack({...})})
 end
 
 --
 --
 --
 function Sound:stop(tags)
-   self.sendMessage({'stop', tags})
+   self:sendMessage({'stop', tags})
 end
 
 --
 --
 --
 function Sound:pause(tags)
-    self.sendMessage({'stop', tags})
+    self:sendMessage({'resume', tags})
 end
 
 --
 --
 --
 function Sound:resume(tags)
-    self.sendMessage({'stop', tags})
+    self:sendMessage({'resume', tags})
 end
 
 --
