@@ -38,7 +38,6 @@ return function (x, y, controls)
     local width       = 15
     local max_bullets = 3
 
-    local jump_origin
     local fat_gun_dim             = 3
     local horizontal_speed        = 1.5
     local damaged_speed           = 1
@@ -47,11 +46,17 @@ return function (x, y, controls)
     local gravity                 = 0.25
 
     local entity         = Entity(x, y, width, height)
+    local senses         = Entity(x - width/2, y, width*2, height)
+
     local obstacleFilter = entity.getFilterFor('isObstacle')
     local bulletFilter = function (other)
         return other.get and other.get("isBullet") == true and other.get("owner_id") ~= entity.get("id")
     end
 
+    entity.register = function (world)
+        world.bump:add(entity, entity.getBoundingBox())
+        world.bump:add(senses, senses.getBoundingBox())
+    end
 
     entity.set("facing", RIGHT)
     entity.set("vs", 0)
@@ -61,10 +66,6 @@ return function (x, y, controls)
     -- this is just to test
     entity.set("isBullet", true)
     entity.set("damage", 1)
-
-    entity.setJumpOrigin = function ()
-        jump_origin = Point(entity.getX(), entity.getY())
-    end
 
     entity.startJump = function ()
         entity.set("vs", initial_vs)
@@ -84,7 +85,6 @@ return function (x, y, controls)
     local move = function (direction, speed)
         local sign = (direction == LEFT) and -1 or 1
 
-        print(entity.get("dash_jump"))
         if entity.get("dash_jump") then
             speed = horizontal_speed*2
         end
@@ -92,6 +92,7 @@ return function (x, y, controls)
         entity.set(DASH, false)
 
         entity.setX(entity.getX() + sign*speed)
+        senses.setX(senses.getX() + sign*speed)
         entity.set("facing", direction)
     end
 
@@ -104,17 +105,18 @@ return function (x, y, controls)
     end
 
     entity.resolveJump = function (dt)
-        -- even if the jump button is down, we don't
-        -- want to run this function unless the player is jumping
-        if not movement.is("jumping") and not movement.is("dash_jump") then return end
+        if entity.get("wall_jump") then
+            local facing = entity.get("near_a_wall") == LEFT and RIGHT or LEFT
+
+            move(facing, 10)
+            entity.set("wall_jump", false)
+            entity.set("near_a_wall", nil)
+        end
 
         entity.set("vs", math.max(entity.get("vs") - gravity, 0))
 
         entity.setY(entity.getY() - entity.get("vs"))
-
-        if entity.get("vs") == 0 then
-            entity.set(FALLING, true)
-        end
+        senses.setY(senses.getY() - entity.get("vs"))
     end
 
     entity.resolveDash = function (dt)
@@ -124,6 +126,7 @@ return function (x, y, controls)
         if entity.get("facing") == LEFT then sign = -1 end
 
         entity.setX(entity.getX() + sign*speed)
+        senses.setX(senses.getX() + sign*speed)
     end
 
     entity.resolveShoot = function (dt)
@@ -141,7 +144,6 @@ return function (x, y, controls)
             bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity, direction)
         end
 
-        inspect(bullet)
         return bullet
     end
 
@@ -156,33 +158,56 @@ return function (x, y, controls)
         entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
 
         entity.setY(entity.getY() + entity.get("vs"))
+        senses.setY(senses.getY() + entity.get("vs"))
     end
 
     entity.resolveObstacleCollide = function(world)
         local new_x, new_y = entity.getX(), entity.getY()
         local cols, len = world.bump:check(entity, new_x, new_y, obstacleFilter)
+
         if len == 0 then
             world.bump:move(entity, new_x, new_y)
+            world.bump:move(senses, new_x - width/2, new_y)
         else
             local col, tx, ty, sx, sy
             while len > 0 do
                 local col = cols[1]
                 local tx, ty, nx, ny, sx, sy = col:getSlide()
+
                 if(ny == -1) then
+                    -- we've landed on something
                     entity.set("vs", 0)
                     entity.set(FALLING, false)
                 elseif(ny == 1) then
+                    -- we bonked out head
                     entity.set("vs", 0)
                     entity.set(FALLING, true)
                 end
+
+                -- megaman hits a wall
+                if (nx == 1 or nx == -1) then
+                    if movement.is("falling") or movement.is("climbing") then
+                        movement.set("climbing")
+                        entity.set("vs", 0)
+                        sy = sy + 1
+                    end
+                end
+
                 entity.setX(tx)
+                senses.setX(tx)
                 entity.setY(ty)
+                senses.setY(ty)
                 world.bump:move(entity, tx, ty)
+                world.bump:move(senses, tx - width/2, ty)
+
                 cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
                 if len == 0 then
                     entity.setX(sx)
+                    senses.setX(sx)
                     entity.setY(sy)
+                    senses.setY(sy)
                     world.bump:move(entity, sx, sy)
+                    world.bump:move(senses, sx - width/2, sy)
                 end
             end
         end
@@ -215,6 +240,33 @@ return function (x, y, controls)
         end
     end
 
+    entity.resolveWallProximity = function(world)
+        local cols, len = world.bump:check(senses, new_x, new_y, obstacleFilter)
+
+        if len == 0 then
+            -- if megaman falls away from a wall, then he loses the
+            -- wall kick
+            if movement.is("falling") then
+                entity.set("near_a_wall", nil)
+            end
+        else
+            local col, tx, ty, sx, sy
+
+            for i, col in ipairs(cols) do
+                local tx, ty, nx, ny, sx, sy = col:getSlide()
+
+                -- megaman is near a wall he picks up a "near a wall"
+                -- which he can use to kick off a wall from falling
+                if movement.is("jumping") then
+                    if (nx == 1) then
+                        entity.set("near_a_wall", LEFT)
+                    elseif (nx == -1) then
+                        entity.set("near_a_wall", RIGHT)
+                    end
+                end
+            end
+        end
+    end
     -- every tick, set the current maneuver
     entity.tic = function (dt)
         if entity.get("invulnerable") and entity.get("invulnerable") > 0 then
@@ -231,10 +283,6 @@ return function (x, y, controls)
             end
         end
 
-        entity.resolveFall(dt)
-        entity.resolveObstacleCollide(world)
-        entity.resolveBulletCollide(world)
-
         if x_buster.isSet("shoot") then
             local bullet = entity.resolveShoot()
             if bullet then world:register(bullet) end
@@ -242,6 +290,12 @@ return function (x, y, controls)
 
         movement.update(dt)
         x_buster.update(dt)
+
+        entity.resolveFall(dt)
+
+        entity.resolveObstacleCollide(world)
+        entity.resolveBulletCollide(world)
+        entity.resolveWallProximity(world)
     end
 
     entity.keypressed = function (key)
@@ -262,11 +316,13 @@ return function (x, y, controls)
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
-        love.graphics.setColor(COLOR.BLACK)
+        love.graphics.setColor(COLOR.RED)
         if entity.get("facing") == LEFT then
             love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
+            love.graphics.line(draw_x-1, draw_y, draw_x-1, draw_y + height)
         else
             love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
+            love.graphics.line(draw_x + width +1, draw_y, draw_x + width +1, draw_y + height)
         end
 
         if movement.is("running") then
@@ -275,6 +331,8 @@ return function (x, y, controls)
             love.graphics.setColor(COLOR.GREEN)
         elseif movement.is("falling") then
             love.graphics.setColor(COLOR.PURPLE)
+        elseif movement.is("climbing") then
+            love.graphics.setColor(COLOR.GREY)
         else
             love.graphics.setColor(COLOR.BLUE)
         end
@@ -326,6 +384,8 @@ return function (x, y, controls)
                 love.graphics.rectangle("fill", draw_x, draw_y, width, height)
             end
         end
+
+        love.graphics.rectangle("line", draw_x - width/2, draw_y, width*2, height)
 
         love.graphics.setColor(COLOR.WHITE)
     end

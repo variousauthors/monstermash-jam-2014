@@ -46,7 +46,12 @@ end
 
 function World:register(entity)
     self.entities[entity.get("id")] = entity
-    self.bump:add(entity, entity.getBoundingBox())
+
+    if entity.register then
+        entity.register(self)
+    else
+        self.bump:add(entity, entity.getBoundingBox())
+    end
 
     entity._unregister = function ()
         world:unregister(entity)

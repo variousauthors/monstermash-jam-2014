@@ -16,6 +16,7 @@ return function (entity, controls, verbose)
         init = function ()
             entity.set("dash_jump", false)
             entity.set("shocked", false)
+            entity.set("near_a_wall", nil)
         end
     })
 
@@ -51,20 +52,26 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "jumping",
         init = function ()
+            -- if a jump starts near a wall, kick off
+            if entity.get("near_a_wall") ~= nil then
+                entity.set("wall_jump", true)
+            end
+
             entity.startJump()
-            entity.setJumpOrigin()
         end,
         update = function ()
+            -- as long as you are holding jump, keep jumping
+            if entity.holding(JUMP) then
+                entity.resolveJump()
+            end
+
+            -- air control
             if entity.holding(LEFT) then
                 entity.resolveLeft()
             end
 
             if entity.holding(RIGHT) then
                 entity.resolveRight()
-            end
-
-            if entity.holding(JUMP) then
-                entity.resolveJump()
             end
         end
     })
@@ -83,6 +90,34 @@ return function (entity, controls, verbose)
             if entity.holding(RIGHT) then
                 entity.resolveRight()
             end
+        end
+    })
+
+    movement.addState({
+        name = "climbing",
+        init = function ()
+            entity.set("dash_jump", false)
+        end,
+        update = function ()
+            if entity.holding(LEFT) then
+                entity.resolveLeft()
+            end
+
+            if entity.holding(RIGHT) then
+                entity.resolveRight()
+            end
+
+            -- megaman faces away from the wall
+            local facing = entity.get("facing") == LEFT and RIGHT or LEFT
+            entity.set("facing", facing)
+        end
+    })
+
+    movement.addState({
+        name = "wall_jump",
+        init = function ()
+            entity.set(FALLING, false)
+            entity.set("wall_jump", true)
         end
     })
 
@@ -219,7 +254,7 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "falling",
         condition = function ()
-            return entity.get(FALLING) or not entity.holding(JUMP)
+            return entity.get("vs") == 0 or not entity.holding(JUMP)
         end
     })
 
@@ -240,6 +275,58 @@ return function (entity, controls, verbose)
     })
 
     movement.addTransition({
+        from = "falling",
+        to = "climbing",
+        condition = function ()
+            return movement.isSet("climbing") and entity.get(FALLING) and entity.get("vs") == 0
+        end
+    })
+
+    movement.addTransition({
+        from = "falling",
+        to = "jumping",
+        condition = function ()
+
+            return entity.get("near_a_wall") ~= nil and entity.pressed(JUMP)
+        end
+    })
+
+
+    movement.addTransition({
+        from = "climbing",
+        to = "standing",
+        condition = function ()
+            return not entity.get(FALLING)
+        end
+    })
+
+    movement.addTransition({
+        from = "climbing",
+        to = "jumping",
+        condition = function ()
+            return entity.get(FALLING) and entity.pressed(JUMP)
+        end
+    })
+
+    movement.addTransition({
+        from = "climbing",
+        to = "falling",
+        condition = function ()
+            local clinging = entity.get("facing") == LEFT and RIGHT or LEFT
+
+            return entity.get(FALLING) and not entity.holding(clinging)
+        end
+    })
+
+    movement.addTransition({
+        from = "wall_jump",
+        to = "jumping",
+        condition = function ()
+            return true
+        end
+    })
+
+    movement.addTransition({
         from = "any",
         to = "damaged",
         condition = function ()
@@ -251,8 +338,6 @@ return function (entity, controls, verbose)
         from = "damaged",
         to = "standing",
         condition = function ()
-            print(movement.getCount())
-            print(damaged_duration)
             return movement.getCount() > damaged_duration
         end
     })
