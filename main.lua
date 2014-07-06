@@ -20,6 +20,7 @@ Input = require("libs/input"):new({
     p2_shoot  = {"j2_x"},
     p2_dash   = {"j2_y", "j2_triggerright+1"}
 })
+Sound = require("libs/sound"):new()
 
 World  = require("world")
 Player = require("player")
@@ -83,11 +84,22 @@ function love.load()
         end
     })
 
+    Sound:sendMessage({"playSoundRegionLoop", "assets/music/bossbattle.mp3", "music", 4.25490, 32.431358})
     game_state.start()
 end
 
 function love.update(dt)
     game_state.update(dt)
+
+    while Sound:getDebugMessageCount() > 0 do
+        local msg = Sound:getDebugMessage()
+        if msg then
+            if(type(msg) == 'string') then print(msg) else
+                print(inspectr(msg))
+            end
+        end
+    end
+
 end
 
 function love.keypressed(key, isrepeat)
