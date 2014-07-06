@@ -3,8 +3,8 @@ if not BulletFactory then require("bullet_factory") end
 
 -- TODO convert these to unique constants
 -- rather than strings
-PRESSED = "pressed"
-HOLDING = "holding"
+PRESSED      = "pressed"
+HOLDING      = "holding"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
@@ -28,9 +28,11 @@ return function (x, y, controls)
     MovementModule = require("player_movement")
     XBuster        = require("arm_cannon")
 
-    local will_move = nil
-    local maneuver  = nil
-    local shooting  = false
+    local ring_timer       = 0
+    local ring_timer_limit = 100
+    local ring_count       = 1
+    local ring_speed       = 40
+    local ring_limit       = 2
 
     -- back of glove to beginning of red thing
     -- red thing is top
@@ -38,7 +40,6 @@ return function (x, y, controls)
     local width       = 15
     local max_bullets = 3
 
-    local jump_origin
     local fat_gun_dim             = 3
     local horizontal_speed        = 1.5
     local damaged_speed           = 1
@@ -47,24 +48,26 @@ return function (x, y, controls)
     local gravity                 = 0.25
 
     local entity         = Entity(x, y, width, height)
+    local senses         = Entity(x - width/2, y, width*2, height)
+
     local obstacleFilter = entity.getFilterFor('isObstacle')
     local bulletFilter = function (other)
         return other.get and other.get("isBullet") == true and other.get("owner_id") ~= entity.get("id")
     end
 
+    entity.register = function (world)
+        world.bump:add(entity, entity.getBoundingBox())
+        world.bump:add(senses, senses.getBoundingBox())
+    end
 
     entity.set("facing", RIGHT)
     entity.set("vs", 0)
-    entity.set("hp", 10)
+    entity.set("hp", 1)
 
     -- TODO player's collide with enemies causing damage
     -- this is just to test
     entity.set("isBullet", true)
     entity.set("damage", 1)
-
-    entity.setJumpOrigin = function ()
-        jump_origin = Point(entity.getX(), entity.getY())
-    end
 
     entity.startJump = function ()
         entity.set("vs", initial_vs)
@@ -81,11 +84,7 @@ return function (x, y, controls)
     local movement = MovementModule(entity, controls)
     local x_buster = XBuster(entity, controls)
 
-    local controls = {}
-
     local move = function (direction, speed)
-        if movement.is("dashing") then return end
-
         local sign = (direction == LEFT) and -1 or 1
 
         if entity.get("dash_jump") then
@@ -95,46 +94,44 @@ return function (x, y, controls)
         entity.set(DASH, false)
 
         entity.setX(entity.getX() + sign*speed)
+        senses.setX(senses.getX() + sign*speed)
         entity.set("facing", direction)
     end
 
-    controls[LEFT] = function ()
+    entity.resolveLeft = function ()
         move(LEFT, horizontal_speed)
     end
 
-    controls[RIGHT] = function ()
+    entity.resolveRight = function ()
         move(RIGHT, horizontal_speed)
     end
 
-    controls[JUMP] = function (dt)
-        -- even if the jump button is down, we don't
-        -- want to run this function unless the player is jumping
-        if not movement.is("jumping") and not movement.is("dash_jump") then return end
+    entity.resolveJump = function (dt)
+        if entity.get("wall_jump") then
+            local facing = entity.get("near_a_wall") == LEFT and RIGHT or LEFT
+
+            move(facing, 10)
+            entity.set("wall_jump", false)
+            entity.set("near_a_wall", nil)
+        end
 
         entity.set("vs", math.max(entity.get("vs") - gravity, 0))
 
         entity.setY(entity.getY() - entity.get("vs"))
-
-        if entity.get("vs") == 0 then
-            entity.set(FALLING, true)
-        end
+        senses.setY(senses.getY() - entity.get("vs"))
     end
 
-    controls[DASH] = function (dt)
-        if not movement.is("dashing") then return end
-
+    entity.resolveDash = function (dt)
         local speed = horizontal_speed*2
         local sign = 1
 
         if entity.get("facing") == LEFT then sign = -1 end
 
         entity.setX(entity.getX() + sign*speed)
+        senses.setX(senses.getX() + sign*speed)
     end
 
-    controls[SHOOT] = function (dt)
-    end
-
-    local shoot = function (dt)
+    entity.resolveShoot = function (dt)
         local offset       = width
         local bullet_type  = x_buster.getState()
         local bullet_count = entity.get(bullet_type)
@@ -152,7 +149,7 @@ return function (x, y, controls)
         return bullet
     end
 
-    local falling = function (dt)
+    entity.resolveFall = function (dt)
         if movement.is('jumping') then return end
 
         -- face forward but slide back
@@ -163,37 +160,56 @@ return function (x, y, controls)
         entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
 
         entity.setY(entity.getY() + entity.get("vs"))
-    end
-
-    local willMove = function ()
-        return will_move ~= nil
+        senses.setY(senses.getY() + entity.get("vs"))
     end
 
     entity.resolveObstacleCollide = function(world)
         local new_x, new_y = entity.getX(), entity.getY()
         local cols, len = world.bump:check(entity, new_x, new_y, obstacleFilter)
+
         if len == 0 then
             world.bump:move(entity, new_x, new_y)
+            world.bump:move(senses, new_x - width/2, new_y)
         else
             local col, tx, ty, sx, sy
             while len > 0 do
                 local col = cols[1]
                 local tx, ty, nx, ny, sx, sy = col:getSlide()
+
                 if(ny == -1) then
+                    -- we've landed on something
                     entity.set("vs", 0)
                     entity.set(FALLING, false)
                 elseif(ny == 1) then
+                    -- we bonked out head
                     entity.set("vs", 0)
                     entity.set(FALLING, true)
                 end
+
+                -- megaman hits a wall
+                if (nx == 1 or nx == -1) then
+                    if movement.is("falling") or movement.is("climbing") then
+                        movement.set("climbing")
+                        entity.set("vs", 0)
+                        sy = sy + 1
+                    end
+                end
+
                 entity.setX(tx)
+                senses.setX(tx)
                 entity.setY(ty)
+                senses.setY(ty)
                 world.bump:move(entity, tx, ty)
+                world.bump:move(senses, tx - width/2, ty)
+
                 cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
                 if len == 0 then
                     entity.setX(sx)
+                    senses.setX(sx)
                     entity.setY(sy)
+                    senses.setY(sy)
                     world.bump:move(entity, sx, sy)
+                    world.bump:move(senses, sx - width/2, sy)
                 end
             end
         end
@@ -226,54 +242,114 @@ return function (x, y, controls)
         end
     end
 
-    -- every tick, set the current maneuver
+    entity.resolveWallProximity = function(world)
+        local cols, len = world.bump:check(senses, new_x, new_y, obstacleFilter)
+
+        if len == 0 then
+            -- if megaman falls away from a wall, then he loses the
+            -- wall kick
+            if movement.is("falling") then
+                entity.set("near_a_wall", nil)
+            end
+        else
+            local col, tx, ty, sx, sy
+
+            for i, col in ipairs(cols) do
+                local tx, ty, nx, ny, sx, sy = col:getSlide()
+
+                -- megaman is near a wall he picks up a "near a wall"
+                -- which he can use to kick off a wall from falling
+                if movement.is("jumping") then
+                    if (nx == 1) then
+                        entity.set("near_a_wall", LEFT)
+                    elseif (nx == -1) then
+                        entity.set("near_a_wall", RIGHT)
+                    end
+                end
+            end
+        end
+    end
+
     entity.tic = function (dt)
+
         if entity.get("invulnerable") and entity.get("invulnerable") > 0 then
             entity.set("invulnerable", math.max(entity.get("invulnerable") - 1, 0))
 
             if entity.get("invulnerable") == 0 then entity.set("invulnerable", nil) end
         end
+
+        if movement.is("destroyed") then
+            if ring_count < ring_limit then
+
+                ring_count = ring_count + 1
+            end
+        end
     end
 
     entity.update = function (dt, world)
-        for k, v in pairs(controls) do
-            -- the player is holding a key as long as it is down, and we
-            -- received input in this or some previous update
+        if movement.is("destroyed") then
+            if world.bump:hasItem(entity) then
+                world.bump:remove(entity)
+                world.bump:remove(senses)
+            end
 
-            if (entity.pressed(k) or entity.holding(k)) and Input:isState(k) then
-                entity.set(k, HOLDING)
+            ring_timer = ring_timer + ring_speed*dt
+            if ring_timer > ring_timer_limit then
+                entity._unregister()
+            end
 
-                v(dt)
-            else
-                entity.set(k, false)
+            return
+        end
+
+        for i, key in pairs(controls) do
+            if entity.pressed(key) then
+                entity.set(key, HOLDING)
             end
         end
 
         if x_buster.isSet("shoot") then
-            local bullet = shoot(dt)
-
+            local bullet = entity.resolveShoot()
             if bullet then world:register(bullet) end
         end
 
-        falling(dt)
+        movement.update(dt)
+        x_buster.update(dt)
 
-        -- Resolve collision
+        if not movement.is("dashing") then
+            entity.resolveFall(dt)
+        end
+
         entity.resolveObstacleCollide(world)
         entity.resolveBulletCollide(world)
+        entity.resolveWallProximity(world)
+    end
 
-        movement.update()
-        x_buster.update()
+    entity.keypressed = function (key)
+        entity.set(key, PRESSED)
+
+        movement.keypressed(key)
+        x_buster.keypressed(key)
+    end
+
+    entity.keyreleased = function (key)
+        entity.set(key, false)
+
+        movement.keyreleased(key)
+        x_buster.keyreleased(key)
     end
 
     entity.draw       = function ()
+
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
-        love.graphics.setColor(COLOR.BLACK)
+        love.graphics.setColor(COLOR.RED)
         if entity.get("facing") == LEFT then
             love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
+            love.graphics.line(draw_x-1, draw_y, draw_x-1, draw_y + height)
         else
             love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
+            love.graphics.line(draw_x + width +1, draw_y, draw_x + width +1, draw_y + height)
         end
 
         if movement.is("running") then
@@ -282,15 +358,24 @@ return function (x, y, controls)
             love.graphics.setColor(COLOR.GREEN)
         elseif movement.is("falling") then
             love.graphics.setColor(COLOR.PURPLE)
+        elseif movement.is("climbing") then
+            love.graphics.setColor(COLOR.GREY)
         else
             love.graphics.setColor(COLOR.BLUE)
         end
 
+        local flicker = 0
         if x_buster.is("charging") then
+
             love.graphics.setColor(COLOR.CYAN)
 
             if x_buster.isSet("mega_blast") then
                 love.graphics.setColor(COLOR.YELLOW)
+            end
+
+            flicker = rng:random(0, 1)
+            if flicker == 1 then
+                love.graphics.setColor(COLOR.BLACK)
             end
         end
 
@@ -309,6 +394,10 @@ return function (x, y, controls)
             love.graphics.setColor(COLOR.YELLOW)
             love.graphics.rectangle("fill", draw_x - 5, draw_y - 5, width + 10, height + 10)
             love.graphics.setColor({ r, g, b })
+        end
+
+        if movement.is("destroyed") then
+            love.graphics.setColor(COLOR.BLACK)
         end
 
         -- TODO ha ha ha
@@ -330,22 +419,34 @@ return function (x, y, controls)
 
                 love.graphics.polygon("fill", verts)
             else
-                love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+                if movement.is("destroyed") then
+
+                    love.graphics.setColor(COLOR.CYAN)
+                    for j = 1, ring_count do
+                        local r = ring_timer/j
+
+                        for i = 1, 8 do
+                            local rad = i*math.pi/4 + ring_timer
+                            local x = r*4*math.cos(rad)
+                            local y = r*4*math.sin(rad)
+
+                            local rad2 = i*math.pi/4 + ring_timer + math.pi/3
+                            local x2 = r*4.2*math.cos(rad2)
+                            local y2 = r*4.2*math.sin(rad2)
+
+                            love.graphics.rectangle("fill", draw_x + x, draw_y + y, 5, 5)
+                            love.graphics.rectangle("fill", draw_x + x2, draw_y + y2, 5, 5)
+                        end
+                    end
+                else
+                    love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+                end
             end
         end
 
+
+        movement.draw()
         love.graphics.setColor(COLOR.WHITE)
-    end
-
-    entity.keypressed = function (key)
-        entity.set(key, PRESSED)
-
-        movement.update()
-        x_buster.update()
-    end
-
-    entity.keyreleased = function (key)
-        entity.set(key, false)
     end
 
     return entity
