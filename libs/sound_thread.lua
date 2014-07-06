@@ -3,10 +3,11 @@ require('love.filesystem')
 require('love.audio')
 require('love.sound')
 
-local i = require("vendor/inspect/inspect")
-
+local inspect = require("vendor/inspect/inspect")
 local SoundObject = require('libs/sound_object')
 SoundObjects = SoundObjects or {}
+
+-- All the important numbers/counters
 
 local _stop = false
 local _epsilon = 0.0000001
@@ -24,20 +25,7 @@ local tChannel = love.thread.getChannel("sound")
 local dChannel = love.thread.getChannel("sound_debug")
 local callbacks = {}
 
---Functions
-local soundTick = function(dt)
-    for k, v in ipairs(SoundObjects) do
-        if v.source:isStopped() then
-            if v.callbacks['onStop'] and v.callbacks['onStop'](v, dt) then
-                -- no-op
-            else
-                table.remove(SoundObjects, k)
-            end
-        elseif v.callbacks['onTick'] then
-            v.callbacks['onTick'](v, dt)
-        end
-    end
-end
+-- Callbacks
 
 callbacks['playSound'] = function(...)
     local snd = SoundObject:new(...)
@@ -59,7 +47,6 @@ callbacks['playSoundRegionLoop'] = function(...)
     local cb = function(self, dt)
         if(self.source:tell("seconds") >= regionEnd) then
             self.source:seek(regionStart, "seconds")
-            dChannel:push("DEBUG: Restarted Loop", regionStart)
         end
     end
 
@@ -82,21 +69,45 @@ callbacks['playSoundPartialLoop'] = function(...)
     snd:play()
 end
 
-callbacks['stopTag'] = function(tag)
+callbacks['stop'] = function(tag)
+    tag = tag or 'all'
     for i, sound in ipairs(SoundObjects) do
-        if sound:hasTag(tag) then sound:stop() end
+        if (tag == "all" or sound:hasTag(tag)) then sound:stop() end
     end
 end
 
-callbacks['pauseTag'] = function(tag)
+callbacks['pause'] = function(tag)
+    tag = tag or 'all'
     for i, sound in ipairs(SoundObjects) do
-        if sound:hasTag(tag) then sound:pause() end
+        if (tag == "all" or sound:hasTag(tag)) then sound:pause() end
     end
 end
 
-callbacks['resumeTag'] = function(tag)
+callbacks['resume'] = function(tag)
+    tag = tag or 'all'
     for i, sound in ipairs(SoundObjects) do
-        if sound:hasTag(tag) then sound:resume() end
+        if (tag == "all" or sound:hasTag(tag)) then sound:resume() end
+    end
+end
+
+callbacks['kill'] = function()
+    callbacks['stop']()
+    _stop = true
+end
+
+-- Tick Function
+
+local soundTick = function(dt)
+    for k, v in ipairs(SoundObjects) do
+        if v.source:isStopped() then
+            if v.callbacks['onStop'] and v.callbacks['onStop'](v, dt) then
+                -- no-op
+            else
+                table.remove(SoundObjects, k)
+            end
+        elseif v.callbacks['onTick'] then
+            v.callbacks['onTick'](v, dt)
+        end
     end
 end
 
