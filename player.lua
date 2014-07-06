@@ -28,9 +28,8 @@ return function (x, y, controls)
     MovementModule = require("player_movement")
     XBuster        = require("arm_cannon")
 
-    local will_move = nil
-    local maneuver  = nil
-    local shooting  = false
+    local timer     = 0
+    local rings     = 1
 
     -- back of glove to beginning of red thing
     -- red thing is top
@@ -60,7 +59,7 @@ return function (x, y, controls)
 
     entity.set("facing", RIGHT)
     entity.set("vs", 0)
-    entity.set("hp", 10)
+    entity.set("hp", 1)
 
     -- TODO player's collide with enemies causing damage
     -- this is just to test
@@ -267,16 +266,33 @@ return function (x, y, controls)
             end
         end
     end
-    -- every tick, set the current maneuver
+
     entity.tic = function (dt)
+
         if entity.get("invulnerable") and entity.get("invulnerable") > 0 then
             entity.set("invulnerable", math.max(entity.get("invulnerable") - 1, 0))
 
             if entity.get("invulnerable") == 0 then entity.set("invulnerable", nil) end
         end
+
+        if movement.is("destroyed") then
+            if rings < 2 then
+
+                rings = rings + 1
+            end
+        end
     end
 
     entity.update = function (dt, world)
+        if movement.is("destroyed") then
+            timer = timer + 40*dt
+            if timer/2 > 50 then
+                entity._unregister()
+            end
+
+            return
+        end
+
         for i, key in pairs(controls) do
             if entity.pressed(key) then
                 entity.set(key, HOLDING)
@@ -313,6 +329,7 @@ return function (x, y, controls)
     end
 
     entity.draw       = function ()
+
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
@@ -369,6 +386,10 @@ return function (x, y, controls)
             love.graphics.setColor({ r, g, b })
         end
 
+        if movement.is("destroyed") then
+            love.graphics.setColor(COLOR.BLACK)
+        end
+
         -- TODO ha ha ha
         local flicker = 0
         if entity.get("invulnerable") then
@@ -388,12 +409,33 @@ return function (x, y, controls)
 
                 love.graphics.polygon("fill", verts)
             else
-                love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+                if movement.is("destroyed") then
+
+                    love.graphics.setColor(COLOR.CYAN)
+                    for j = 1, rings do
+                        local r = timer/j
+
+                        for i = 1, 8 do
+                            local rad = i*math.pi/4 + timer
+                            local x = r*4*math.cos(rad)
+                            local y = r*4*math.sin(rad)
+
+                            local rad2 = i*math.pi/4 + timer + math.pi/3
+                            local x2 = r*4.2*math.cos(rad2)
+                            local y2 = r*4.2*math.sin(rad2)
+
+                            love.graphics.rectangle("fill", draw_x + x, draw_y + y, 5, 5)
+                            love.graphics.rectangle("fill", draw_x + x2, draw_y + y2, 5, 5)
+                        end
+                    end
+                else
+                    love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+                end
             end
         end
 
-        love.graphics.rectangle("line", draw_x - width/2, draw_y, width*2, height)
 
+        movement.draw()
         love.graphics.setColor(COLOR.WHITE)
     end
 

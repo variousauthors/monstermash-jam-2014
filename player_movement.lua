@@ -21,6 +21,10 @@ return function (entity, controls, verbose)
     })
 
     movement.addState({
+        name = "destroyed"
+    })
+
+    movement.addState({
         name = "running",
         update = function ()
             if entity.holding(LEFT) then
@@ -129,7 +133,7 @@ return function (entity, controls, verbose)
             entity.set("invulnerable", 1)
             entity.set("dash_jump", false)
             entity.set("shocked", true)
-        end
+        end,
     })
 
     movement.addTransition({
@@ -330,7 +334,15 @@ return function (entity, controls, verbose)
         from = "any",
         to = "damaged",
         condition = function ()
-            return entity.get("damage_queue") and entity.get("damage_queue") > 0
+            return entity.get("hp") > 0 and entity.get("damage_queue") and entity.get("damage_queue") > 0
+        end
+    })
+
+    movement.addTransition({
+        from = "any",
+        to = "destroyed",
+        condition = function ()
+            return entity.get("hp") < 1
         end
     })
 
