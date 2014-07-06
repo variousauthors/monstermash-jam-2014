@@ -288,6 +288,11 @@ return function (x, y, controls)
 
     entity.update = function (dt, world)
         if movement.is("destroyed") then
+            if world.bump:hasItem(entity) then
+                world.bump:remove(entity)
+                world.bump:remove(senses)
+            end
+
             ring_timer = ring_timer + ring_speed*dt
             if ring_timer > ring_timer_limit then
                 entity._unregister()
@@ -310,7 +315,9 @@ return function (x, y, controls)
         movement.update(dt)
         x_buster.update(dt)
 
-        entity.resolveFall(dt)
+        if not movement.is("dashing") then
+            entity.resolveFall(dt)
+        end
 
         entity.resolveObstacleCollide(world)
         entity.resolveBulletCollide(world)

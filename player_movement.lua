@@ -148,7 +148,7 @@ return function (entity, controls, verbose)
         from = "standing",
         to = "falling",
         condition = function ()
-            return entity.get("vs") > 0
+            return entity.get("vs") > 0 and not (entity.holding(LEFT) or entity.holding(RIGHT))
         end
     })
 
@@ -173,7 +173,7 @@ return function (entity, controls, verbose)
         from = "running",
         to = "standing",
         condition = function ()
-            return not entity.pressed(DASH) and not entity.holding(LEFT) and not entity.holding(RIGHT)
+            return not entity.pressed(DASH) and not entity.holding(LEFT) and not entity.holding(RIGHT) and entity.get("vs") == 0
         end
     })
 
@@ -182,7 +182,7 @@ return function (entity, controls, verbose)
         to = "jumping",
         condition = function ()
 
-            return entity.pressed(JUMP)
+            return entity.pressed(JUMP) and entity.get("vs") == 0
         end
     })
 
@@ -199,7 +199,7 @@ return function (entity, controls, verbose)
         from = "running",
         to = "falling",
         condition = function ()
-            return entity.get("vs") > 0
+            return entity.get("vs") > 0 and not entity.pressed(DASH)
         end
     })
 
@@ -223,20 +223,21 @@ return function (entity, controls, verbose)
             local dash_done   = movement.getCount() > dash_duration
             local standing    = not entity.pressed(RIGHT) and not entity.pressed(LEFT)
 
-            return (not entity.pressed(JUMP) and not entity.get(FALLING)) and (not entity.holding(DASH) or (dash_done and standing))
+            return not entity.pressed(JUMP) and (not entity.holding(DASH) or (dash_done and standing))
         end
     })
 
     -- rather than dashing to falling, we will do dashing to dash_jump
     -- but in a situation where you aren't jumping
-    movement.addTransition({
-        from = "dashing",
-        to = "falling",
-        condition = function ()
+--  movement.addTransition({
+--      from = "dashing",
+--      to = "falling",
+--      condition = function ()
+--          local dash_done   = movement.getCount() > dash_duration
 
-            return entity.get("vs") > 0
-        end
-    })
+--          return dash_done or not entity.holding(DASH)
+--      end
+--  })
 
     movement.addTransition({
         from = "dashing",
@@ -258,7 +259,15 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "falling",
         condition = function ()
-            return entity.get("vs") == 0 or not entity.holding(JUMP)
+            return entity.get("vs") == 0 or not entity.holding(JUMP) and not entity.holding(DASH)
+        end
+    })
+
+    movement.addTransition({
+        from = "jumping",
+        to = "dashing",
+        condition = function ()
+            return entity.holding(DASH)
         end
     })
 
@@ -274,7 +283,15 @@ return function (entity, controls, verbose)
         from = "falling",
         to = "standing",
         condition = function ()
-            return not entity.get(FALLING)
+            return not entity.get(FALLING) and not entity.pressed(DASH)
+        end
+    })
+
+    movement.addTransition({
+        from = "falling",
+        to = "dashing",
+        condition = function ()
+            return entity.pressed(DASH)
         end
     })
 
@@ -282,7 +299,7 @@ return function (entity, controls, verbose)
         from = "falling",
         to = "climbing",
         condition = function ()
-            return movement.isSet("climbing") and entity.get(FALLING) and entity.get("vs") == 0
+            return movement.isSet("climbing") and entity.get(FALLING) and entity.get("vs") == 0 and not entity.pressed(DASH)
         end
     })
 
@@ -291,7 +308,7 @@ return function (entity, controls, verbose)
         to = "jumping",
         condition = function ()
 
-            return entity.get("near_a_wall") ~= nil and entity.pressed(JUMP)
+            return entity.get("near_a_wall") ~= nil and entity.pressed(JUMP) and not entity.pressed(DASH)
         end
     })
 
@@ -301,6 +318,14 @@ return function (entity, controls, verbose)
         to = "standing",
         condition = function ()
             return not entity.get(FALLING)
+        end
+    })
+
+    movement.addTransition({
+        from = "climbing",
+        to = "dashing",
+        condition = function ()
+            return entity.pressed(DASH)
         end
     })
 
