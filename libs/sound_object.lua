@@ -3,17 +3,41 @@ local class = require('vendor/middleclass/middleclass')
 local SoundObject = class("SoundObject")
 
 SoundObjects = SoundObjects or {}
+SoundResources = SoundResources or {}
+
+function SoundObject.static:getResource(source, srcType)
+    srcType = srcType or 'stream'
+    local key = table.concat({source, '_', srcType})
+    if SoundResources[key] then return SoundResources[key] end
+
+    local ext = string.match(source, "%.([^.]+)$")
+    if (ext) then
+        if(ext ~= 'wav') then
+            SoundResources[key] = love.sound.newDecoder(source)
+            if(srcType == 'static') then
+                SoundResources[key] = love.sound.newSoundData(SoundResources[key])
+            end
+        else
+            if(srcType == 'stream') then
+                SoundResources[key] = love.sound.newDecoder(source)
+            elseif(srcType == 'static') then
+                SoundResources[key] = love.sound.newSoundData(source)
+            end
+        end
+        return SoundResources[key]
+    end
+end
 
 function SoundObject:initialize(source, tags, volume, srcType, callbacks)
-    self.source = love.audio.newSource(source, srcType)
+    local resource = SoundObject:getResource(source, srcType)
+    self.source = love.audio.newSource(resource, srcType)
     self.source:setVolume(volume or 1)
 
-    if (type(tags) == 'table') then
-        self.tags = tags
-    elseif(not tags) then
-        self.tags = {}
-    else
-        self.tags = {tags}
+    self.tags = {}
+    if tags then
+        for token in string.gmatch(tags,"([^%,%;%s]+)") do
+            table.insert(self.tags, token)
+        end
     end
 
     self.callbacks = callbacks or {}

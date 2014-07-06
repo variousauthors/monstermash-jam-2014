@@ -45,6 +45,9 @@ function love.load()
     world:register(protoman)
     -- world:register(chill_penguin)
 
+    Sound:addShortcut("pellet", "playSound", "assets/sfx/pellet.wav", "sfx", 1, "static")
+    Sound:addShortcut("mainMusic","playSoundRegionLoop", "assets/music/bossbattle.mp3", "music", 4.25490, 32.431358)
+
     game_state = FSM()
 
     game_state.addState({
@@ -62,8 +65,10 @@ function love.load()
 
         end,
         keyreleased = function (key)
-            megaman.keyreleased(key) -- queues up the megaman's next move
+            rock.keyreleased(key) -- queues up the rock's next move
             protoman.keyreleased(key)
+            opera.keyreleased(key)
+            vile.keyreleased(key)
         end
     })
 
@@ -84,7 +89,8 @@ function love.load()
         end
     })
 
-    Sound:playSoundRegionLoop("assets/music/bossbattle.mp3", "music", 4.25490, 32.431358)
+    Sound:runShortcut("mainMusic")
+
     game_state.start()
 end
 
@@ -108,6 +114,8 @@ function love.keypressed(key, isrepeat)
         viewport:setupScreen()
     elseif (key == 'f10') then
         love.event.quit()
+    elseif (key == 'p') then
+        Sound:runShortcut("pellet")
     end
 
     local i = Input:pressed(key)
@@ -142,13 +150,13 @@ function love.gamepadreleased(joystick, button)
     end
 end
 
-function love.gamepadaxis(joystick, axis, value)
-    local i = Input:axis(joystick, axis, value)
-    if i then
-        print('gamepadaxis', i)
-        game_state.keypressed(i)
-    end
-end
+-- function love.gamepadaxis(joystick, axis, value)
+--     local i = Input:axis(joystick, axis, value)
+--     if i then
+--         print('gamepadaxis', i)
+--         game_state.keypressed(i)
+--     end
+-- end
 
 function love.textinput(text)
     game_state.textinput(text)

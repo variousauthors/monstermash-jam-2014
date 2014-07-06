@@ -13,6 +13,7 @@ return function (entity, controls)
     cannon.addState({
         name = "pellet",
         init = function ()
+            Sound:runShortcut("pellet")
             cannon.set("shoot")
         end
     })

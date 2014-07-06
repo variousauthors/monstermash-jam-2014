@@ -2,10 +2,11 @@ require('love.timer')
 require('love.filesystem')
 require('love.audio')
 require('love.sound')
+require('libs/utility')
 
-local inspect = require("vendor/inspect/inspect")
 local SoundObject = require('libs/sound_object')
 SoundObjects = SoundObjects or {}
+SoundResources = SoundResources or {}
 
 -- All the important numbers/counters
 
@@ -137,7 +138,7 @@ while not _stop do
 
     -- Debug / EndLoop
     _debugAcc = _debugAcc + _dt
-    if(_debugAcc > 2) then
+    if(_debugAcc > 5) then
         dChannel:push({"DEBUG: ",_loopCount, _threadTime, _loopRate})
         _debugAcc = 0
     end
