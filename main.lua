@@ -130,7 +130,7 @@ function love.update(dt)
         local msg = Sound:getDebugMessage()
         if msg then
             if(type(msg) == 'string') then print(msg) else
-                print(inspectr(msg))
+                print(inspect(msg))
             end
         end
     end
