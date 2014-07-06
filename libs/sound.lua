@@ -3,6 +3,7 @@ local class = require('vendor/middleclass/middleclass')
 local Sound = class("Sound")
 
 function Sound:initialize()
+    self.shortcuts = {}
     self.thread = love.thread.newThread('libs/sound_thread.lua')
     self.dChannel = love.thread.getChannel('sound_debug')
     self.tChannel = love.thread.getChannel('sound')
@@ -78,6 +79,25 @@ end
 --
 function Sound:resume(tags)
     self:sendMessage({'resume', tags})
+end
+
+--
+--
+--
+function Sound:addShortcut(name, command, source, tags, ...)
+    tags = table.concat({name, ';', tags})
+    self.shortcuts[name] = {command, source, tags, unpack({...})}
+    inspect(self.shortcuts[name])
+    return self.shortcuts[name]
+end
+
+--
+--
+--
+function Sound:runShortcut(name, tags)
+    local msg = deepcopy(self.shortcuts[name])
+    if msg and tags then msg[3] = table.concat({tags, ';', msg[3]}) end
+    self:sendMessage(msg)
 end
 
 --

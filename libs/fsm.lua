@@ -127,8 +127,12 @@ FSM = function (verbose)
         if current_state.keypressed then current_state.keypressed(key) end
     end
 
-    local keyreleased = function (key)
-        stateTransition()
+    local keyreleased = function (key, skip_transition)
+        if skip_transition then
+            -- no-op
+        else
+            stateTransition()
+        end
 
         unset(key)
 
