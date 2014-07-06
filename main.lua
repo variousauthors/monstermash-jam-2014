@@ -210,6 +210,10 @@ function love.draw()
     viewport:popScale()
 end
 
+function love.resize(w, h)
+    viewport:fixSize(w, h)
+end
+
 function love.threaderror(thread, errorstr)
     print("Thread error!\n"..errorstr)
 end
