@@ -8,8 +8,9 @@ HOLDING      = "holding"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
-MovementModule = require("player_movement")
-XBuster        = require("arm_cannon")
+MovementModule  = require("player_movement")
+AnimationModule = require("player_animation")
+XBuster         = require("arm_cannon")
 
 Pellet    = BulletFactory(3, 4, 4, 1, COLOR.YELLOW, "pellet")
 Blast     = BulletFactory(4, 20, 5, 2, COLOR.GREEN, "blast")
@@ -24,9 +25,6 @@ Bullets = {
 return function (x, y, controls)
     local controls = require(controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-
-    MovementModule = require("player_movement")
-    XBuster        = require("arm_cannon")
 
     local ring_timer       = 0
     local ring_timer_limit = 100
@@ -62,6 +60,7 @@ return function (x, y, controls)
 
     entity.set("facing", RIGHT)
     entity.set("vs", 0)
+    entity.set("initial_vs", initial_vs)
     entity.set("hp", 16)
 
     -- TODO player's collide with enemies causing damage
@@ -81,8 +80,9 @@ return function (x, y, controls)
         return entity.get(key) == HOLDING
     end
 
-    local movement = MovementModule(entity, controls)
-    local x_buster = XBuster(entity, controls)
+    local movement  = MovementModule(entity, controls)
+    local x_buster  = XBuster(entity, controls)
+    local animation = AnimationModule(entity, movement, x_buster)
 
     local move = function (direction, speed)
         local sign = (direction == LEFT) and -1 or 1
@@ -316,6 +316,7 @@ return function (x, y, controls)
 
         movement.update(dt)
         x_buster.update(dt)
+        animation.update(dt)
 
         if not movement.is("dashing") then
             entity.resolveFall(dt)
@@ -345,13 +346,9 @@ return function (x, y, controls)
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
-        love.graphics.setColor(COLOR.RED)
+        -- get the facing for flip
         if entity.get("facing") == LEFT then
-            love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
-            love.graphics.line(draw_x-1, draw_y, draw_x-1, draw_y + height)
         else
-            love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
-            love.graphics.line(draw_x + width +1, draw_y, draw_x + width +1, draw_y + height)
         end
 
         if movement.is("running") then
