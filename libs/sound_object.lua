@@ -22,10 +22,8 @@ function SoundObject:initialize(source, tags, volume, srcType, callbacks)
 end
 
 function SoundObject:hasTag(tag)
-    for k,v in ipairs(self.tags) do
-        if (tag == "all" or v == tag) then
-            return true
-        end
+    for k, v in ipairs(self.tags) do
+        if (v == tag) then return true end
     end
 end
 
@@ -59,14 +57,17 @@ end
 function SoundObject:fadeOut(time)
     time = time or 5
     self.source:setLooping(false)
-    self.callbacks["onStop"] = function() return false end
+    self.callbacks["onStop"] = nil
+
+    self.callbacks["_onTick"] = self.callbacks["onTick"] or (function() return end)
     self.callbacks["onTick"] = function(self, dt)
+        self.callbacks["_onTick"](self, dt)
         local volume = self.source:getVolume()
         if (volume <= 0) then
             self.callbacks = {}
             self.source:stop()
         else
-            self.source:setVolume(volume - (time / dt))
+            self.source:setVolume(volume - (dt / time))
         end
     end
 end
