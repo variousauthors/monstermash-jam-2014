@@ -13,3 +13,9 @@
 [submodule "vendor/middleclass"]
 	path = vendor/middleclass
 	url = git@github.com:kikito/middleclass.git
+[submodule "vendor/luajson"]
+	path = vendor/luajson
+url=git@github.com:harningt/luajson.git
+[submodule "vendor/lua4json"]
+	path = vendor/lua4json
+	url = git@github.com:craigmj/json4lua.git

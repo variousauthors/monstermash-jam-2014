@@ -7,18 +7,52 @@ require "libs/utility"
 
 Viewport  = require("libs/viewport")
 
+-- this is for ZIGGY JOYSTICK
+local joysticks = love.joystick.getJoysticks()
+local joystick = joysticks[1]
+if (joystick and not joystick:isGamepad()) then
+    love.joystick.setGamepadMapping( joystick:getGUID(), "dpup", "button", 1)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "dpdown", "button", 2)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "dpleft", "button", 3)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "dpright", "button", 4)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "a", "button", 5)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "b", "button", 6)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "x", "button", 7)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "y", "button", 8)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "leftshoulder", "button", 9)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "rightshoulder", "button", 10)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "back", "button", 11)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "start", "button", 12)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "guide", "button", 13)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "leftstick", "button", 14)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "rightstick", "button", 15)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "leftx", "axis", 1)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "triggerright", "axis", 5)
+    love.joystick.setGamepadMapping( joystick:getGUID(), "triggerleft", "axis", 6)
+end
+
 -- This is global because it will be queried from lots of places.
 Input = require("libs/input"):new({
-    p1_left   = {"k_left", "j1_leftx-", "j1_dpleft"},
-    p1_right  = {"k_right", "j1_leftx+", "j1_dpright"},
+    p1_left   = {"k_left", "j1_dpleft"},
+    p1_right  = {"k_right", "j1_dpright"},
     p1_jump   = {"k_z", "j1_a"},
     p1_shoot  = {"k_x", "j1_x"},
-    p1_dash   = {"k_lshift", "j1_y", "j1_triggerright+1"},
-    p2_left   = {"j2_leftx-", "j2_dpleft"},
-    p2_right  = {"j2_leftx+", "j2_dpright"},
+    p1_dash   = {"k_lshift", "j1_rightshoulder"},
+    p2_left   = {"j2_dpleft"},
+    p2_right  = {"j2_dpright"},
     p2_jump   = {"j2_a"},
     p2_shoot  = {"j2_x"},
-    p2_dash   = {"j2_y", "j2_triggerright+1"}
+    p2_dash   = {"j2_rightshoulder"},
+    p3_left   = {"j3_dpleft"},
+    p3_right  = {"j3_dpright"},
+    p3_jump   = {"j3_a"},
+    p3_shoot  = {"j3_x"},
+    p3_dash   = {"j3_rightshoulder"},
+    p4_left   = {"j4_dpleft"},
+    p4_right  = {"j4_dpright"},
+    p4_jump   = {"j4_a"},
+    p4_shoot  = {"j4_x"},
+    p4_dash   = {"j4_rightshoulder"}
 })
 Sound = require("libs/sound"):new()
 
@@ -30,19 +64,25 @@ Boss   = require("boss")
 function love.focus(f) gameIsPaused = not f end
 
 function love.load()
+
     love.graphics.setBackgroundColor(0, 0, 0)
     viewport = Viewport:new({width = global.screen_width,
                              height = global.screen_height,
                              scale = global.scale})
 
-    world         = World:new()
-    megaman      = Player(32, 140, "p1_controls")
-    protoman     = Player(96, 140, "p2_controls")
+    world    = World:new()
+    rock     = Player(32, 140, "p1_controls")
+    opera    = Player(110, 300, "p2_controls")
+    protoman = Player(370, 300, "p3_controls")
+    vile     = Player(560, 140, "p4_controls")
+
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
-    world:register(megaman)
+    world:register(rock)
     world:register(protoman)
+    world:register(vile)
+    world:register(opera)
     -- world:register(chill_penguin)
 
     Sound:addShortcut("pellet", "playSound", "assets/sfx/pellet.wav", "sfx", 1, "static")
@@ -60,8 +100,10 @@ function love.load()
             world:update(dt)
         end,
         keypressed = function (key)
-            megaman.keypressed(key) -- queues up the megaman's next move
+            rock.keypressed(key) -- queues up the rock's next move
             protoman.keypressed(key)
+            opera.keypressed(key)
+            vile.keypressed(key)
 
         end,
         keyreleased = function (key)
@@ -80,7 +122,7 @@ function love.load()
       --keypressed = game.keypressed
     })
 
-    -- start the game when the megaman chooses a menu option
+    -- start the game when the rock chooses a menu option
     game_state.addTransition({
         from      = "start",
         to        = "stop",
@@ -101,7 +143,7 @@ function love.update(dt)
         local msg = Sound:getDebugMessage()
         if msg then
             if(type(msg) == 'string') then print(msg) else
-                print(inspectr(msg))
+                print(stringspect(msg))
             end
         end
     end

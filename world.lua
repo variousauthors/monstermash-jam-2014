@@ -2,6 +2,7 @@ if not Entity then require("entity") end
 
 local class = require('vendor/middleclass/middleclass')
 local bump = require('vendor/bump/bump')
+require('vendor/lua4json/json4lua/json/json')
 
 local World = class('World')
 
@@ -31,14 +32,16 @@ function World:initialize()
 
     self.obstacles = {}
     self.bump = bump.newWorld(64)
-    addObstacle(self, 0,   0,   256, 15)
-    addObstacle(self, 0,   15,  16,  176)
-    addObstacle(self, 240, 15,  16,  176)
-    addObstacle(self, 0,   191, 256, 32)
-    addObstacle(self, 80, 135, 32, 8)
-    addObstacle(self, 160, 145, 32, 8)
 
-    self.background_image = love.graphics.newImage("assets/chillpenguinstage.png")
+    local contents, size = love.filesystem.read("assets/arena_highway.json")
+    local data = json.decode(contents)
+
+    for i, v in pairs(data["layers"][2]["objects"]) do
+        addObstacle(self, v.x, v.y, v.width, v.height)
+    end
+
+    self.background_image = love.graphics.newImage("assets/arena_highway_bg.png")
+    self.foreground_image = love.graphics.newImage("assets/arena_highway_fg.png")
 
     self.timer = 0
     self.tic_duration = 1
@@ -46,7 +49,12 @@ end
 
 function World:register(entity)
     self.entities[entity.get("id")] = entity
-    self.bump:add(entity, entity.getBoundingBox())
+
+    if entity.register then
+        entity.register(self)
+    else
+        self.bump:add(entity, entity.getBoundingBox())
+    end
 
     entity._unregister = function ()
         world:unregister(entity)
@@ -56,7 +64,10 @@ end
 function World:unregister(entity)
     self.entities[entity.get("id")] = nil
     entity.cleanup()
-    self.bump:remove(entity)
+
+    if world.bump:hasItem(entity) then
+        self.bump:remove(entity)
+    end
 end
 
 function World:tic(dt)
@@ -84,15 +95,14 @@ function World:update(dt)
 end
 
 function World:draw(dt)
+    love.graphics.setColor(COLOR.WHITE)
     love.graphics.draw(self.background_image)
 
     for i, entity in pairs(self.entities) do
         entity.draw(dt)
     end
 
-    for i, obstacle in pairs(self.obstacles) do
-        drawBox(obstacle, 255,0,0)
-    end
+    love.graphics.draw(self.foreground_image)
 end
 
 return World
