@@ -159,3 +159,7 @@ function love.draw()
     game_state.draw()
     viewport:popScale()
 end
+
+function love.threaderror(thread, errorstr)
+    print("Thread error!\n"..errorstr)
+end
