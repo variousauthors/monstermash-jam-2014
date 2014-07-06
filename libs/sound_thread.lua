@@ -28,6 +28,15 @@ local callbacks = {}
 
 -- Callbacks
 
+callbacks['touchResource'] = function(...)
+    local args = {...}
+    srcType = 'stream'
+    for _, e in ipairs(args) do
+        if(e == 'static') then srcType = 'static' end
+    end
+    SoundObject:getResource(args[1], srcType)
+end
+
 callbacks['playSound'] = function(...)
     local snd = SoundObject:new(...)
     snd:play()

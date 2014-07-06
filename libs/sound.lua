@@ -87,7 +87,8 @@ end
 function Sound:addShortcut(name, command, source, tags, ...)
     tags = table.concat({name, ';', tags})
     self.shortcuts[name] = {command, source, tags, unpack({...})}
-    inspect(self.shortcuts[name])
+    self:sendMessage({'touchResource', source, tags, unpack({...})})
+    --inspect(self.shortcuts[name])
     return self.shortcuts[name]
 end
 
