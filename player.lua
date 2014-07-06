@@ -58,7 +58,11 @@ return function (x, y, controls)
         world.bump:add(senses, senses.getBoundingBox())
     end
 
-    entity.set("facing", RIGHT)
+    entity.setFacing = function (facing)
+        entity.set("facing", facing)
+    end
+
+    entity.setFacing(RIGHT)
     entity.set("vs", 0)
     entity.set("initial_vs", initial_vs)
     entity.set("hp", 16)
@@ -97,7 +101,7 @@ return function (x, y, controls)
 
         entity.setX(entity.getX() + sign*speed)
         senses.setX(senses.getX() + sign*speed)
-        entity.set("facing", direction)
+        entity.setFacing(direction)
     end
 
     entity.resolveLeft = function ()
@@ -231,7 +235,7 @@ return function (x, y, controls)
             local facing        = (entity_center > bullet_center) and LEFT or RIGHT
 
             entity.set("damage_queue", bullet.get("damage"))
-            entity.set("facing", facing) -- megaman always turns to face the damage source
+            entity.setFacing(facing)
             movement.update()
             x_buster.start("inactive")
 
@@ -418,7 +422,7 @@ return function (x, y, controls)
                     verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
                 end
 
-                love.graphics.polygon("fill", verts)
+                --love.graphics.polygon("fill", verts)
             else
                 if movement.is("destroyed") then
 
@@ -440,7 +444,7 @@ return function (x, y, controls)
                         end
                     end
                 else
-                    love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+                    --love.graphics.rectangle("fill", draw_x, draw_y, width, height)
                 end
             end
         end

@@ -15,28 +15,28 @@ return function (entity, image, movement, x_buster, controls, verbose)
     local anim, duration
     local facing = entity.get("facing")
 
-    -- start the animation flipped horizontally if rock is left
-    local _old = anim8.newAnimation
-    anim8.newAnimation = function (a, b)
-        local anim = _old(a, b)
-        if entity.get("facing") == LEFT then
-            anim:flipH()
-        end
-
-        return anim
-    end
-
     local g = anim8.newGrid(51, 51, image:getWidth(), image:getHeight())
 
     local update_facing = function ()
-        local old_facing = facing
+        local old = facing
         facing = entity.get("facing")
 
-        if old_facing ~= facing then
-            print("FLIP")
+        if old ~= facing then
             anim:flipH()
         end
     end
+
+    local _old = anim8.newAnimation
+    anim8.newAnimation = function (a, b)
+        local result = _old(a, b)
+
+        if entity.get("facing") == LEFT then
+            result:flipH()
+        end
+
+        return result
+    end
+
     -- by default the state updates will just update the
     -- animation (after any transitions etc)
     local _update = animation.update
@@ -58,7 +58,6 @@ return function (entity, image, movement, x_buster, controls, verbose)
         name = "standing",
         init = function ()
             anim = anim8.newAnimation(g(1, 1), 0.1)
-            print("standing")
         end
     })
 
@@ -66,9 +65,8 @@ return function (entity, image, movement, x_buster, controls, verbose)
     animation.addState({
         name = "into_jumping",
         init = function ()
-            duration = 0.5
-            anim = anim8.newAnimation(g(2,1, 3,1), duration, 'pauseAtEnd')
-            print("into_jumping")
+            duration = 0.2
+            anim = anim8.newAnimation(g('2-4',1), duration, 'pauseAtEnd')
             timer = 0
         end,
         update = function (dt)
@@ -81,7 +79,6 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
             timer = timer + speed*dt
             -- here we update the animation
-            print(timer)
 
             update_facing()
             anim:update(speed*dt)
@@ -93,8 +90,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     animation.addState({
         name = "jumping",
         init = function ()
-            anim = anim8.newAnimation(g(4,1), 1)
-            print("jumping")
+            anim = anim8.newAnimation(g(4,1), 1, 'pauseAtEnd')
         end,
     })
 
@@ -103,8 +99,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         name = "into_falling",
         init = function ()
             duration = 0.2
-            anim = anim8.newAnimation(g(5,1), duration, 'pauseAtEnd')
-            print("into_falling")
+            anim = anim8.newAnimation(g('4-5',1), duration, 'pauseAtEnd')
             timer = 0
         end,
         update = function (dt)
@@ -117,7 +112,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
             timer = timer + speed*dt
             -- here we update the animation
-            print(timer)
+
             update_facing()
             anim:update(speed*dt)
         end
@@ -128,7 +123,6 @@ return function (entity, image, movement, x_buster, controls, verbose)
         name = "falling",
         init = function ()
             anim = anim8.newAnimation(g(6,1), 0.1)
-            print("falling")
         end,
     })
 
@@ -168,7 +162,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "falling",
         to = "standing",
         condition = function ()
-            return movement.is("standing")
+            return not movement.is("falling")
         end
     })
 
