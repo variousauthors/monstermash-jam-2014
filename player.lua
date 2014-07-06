@@ -62,12 +62,12 @@ return function (x, y, controls)
 
     entity.set("facing", RIGHT)
     entity.set("vs", 0)
-    entity.set("hp", 1)
+    entity.set("hp", 16)
 
     -- TODO player's collide with enemies causing damage
     -- this is just to test
     entity.set("isBullet", true)
-    entity.set("damage", 1)
+    entity.set("damage", 4)
 
     entity.startJump = function ()
         entity.set("vs", initial_vs)

@@ -60,14 +60,17 @@ function love.load()
                              height = global.screen_height,
                              scale = global.scale})
 
-    world         = World:new()
-    megaman      = Player(32, 140, "p1_controls")
-    protoman     = Player(96, 140, "p2_controls")
+    world    = World:new()
+    megaman  = Player(32, 140, "p1_controls")
+    protoman = Player(300, 140, "p2_controls")
+    vile     = Player(560, 140, "p3_controls")
+
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
     world:register(megaman)
     world:register(protoman)
+    world:register(vile)
     -- world:register(chill_penguin)
 
     game_state = FSM()
@@ -84,11 +87,13 @@ function love.load()
         keypressed = function (key)
             megaman.keypressed(key) -- queues up the megaman's next move
             protoman.keypressed(key)
+            vile.keypressed(key)
 
         end,
         keyreleased = function (key)
             megaman.keyreleased(key) -- queues up the megaman's next move
             protoman.keyreleased(key)
+            vile.keyreleased(key)
         end
     })
 
