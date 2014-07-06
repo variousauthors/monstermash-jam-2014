@@ -7,11 +7,10 @@ require "libs/utility"
 
 Viewport  = require("libs/viewport")
 
-local joysticks = love.joystick.getJoysticks()
-joystick = joysticks[1]
-
 -- this is for ZIGGY JOYSTICK
-if joystick then
+local joysticks = love.joystick.getJoysticks()
+local joystick = joysticks[1]
+if (joystick and not joystick:isGamepad()) then
     love.joystick.setGamepadMapping( joystick:getGUID(), "dpup", "button", 1)
     love.joystick.setGamepadMapping( joystick:getGUID(), "dpdown", "button", 2)
     love.joystick.setGamepadMapping( joystick:getGUID(), "dpleft", "button", 3)
@@ -34,16 +33,26 @@ end
 
 -- This is global because it will be queried from lots of places.
 Input = require("libs/input"):new({
-    p1_left   = {"k_left", "j1_leftx-", "j1_dpleft"},
-    p1_right  = {"k_right", "j1_leftx+", "j1_dpright"},
+    p1_left   = {"k_left", "j1_dpleft"},
+    p1_right  = {"k_right", "j1_dpright"},
     p1_jump   = {"k_z", "j1_a"},
     p1_shoot  = {"k_x", "j1_x"},
-    p1_dash   = {"k_lshift", "j1_y", "j1_triggerright+1"},
-    p2_left   = {"j2_leftx-", "j2_dpleft"},
-    p2_right  = {"j2_leftx+", "j2_dpright"},
+    p1_dash   = {"k_lshift", "j1_rightshoulder"},
+    p2_left   = {"j2_dpleft"},
+    p2_right  = {"j2_dpright"},
     p2_jump   = {"j2_a"},
     p2_shoot  = {"j2_x"},
-    p2_dash   = {"j2_y", "j2_triggerright+1"}
+    p2_dash   = {"j2_rightshoulder"},
+    p3_left   = {"j3_dpleft"},
+    p3_right  = {"j3_dpright"},
+    p3_jump   = {"j3_a"},
+    p3_shoot  = {"j3_x"},
+    p3_dash   = {"j3_rightshoulder"},
+    p4_left   = {"j4_dpleft"},
+    p4_right  = {"j4_dpright"},
+    p4_jump   = {"j4_a"},
+    p4_shoot  = {"j4_x"},
+    p4_dash   = {"j4_rightshoulder"}
 })
 Sound = require("libs/sound"):new()
 
@@ -94,12 +103,12 @@ function love.load()
             vile.keypressed(key)
 
         end,
-        keyreleased = function (key)
-            rock.keyreleased(key) -- queues up the rock's next move
-            protoman.keyreleased(key)
-            opera.keypressed(key)
-            vile.keyreleased(key)
-        end
+        -- keyreleased = function (key)
+        --     rock.keyreleased(key) -- queues up the rock's next move
+        --     protoman.keyreleased(key)
+        --     opera.keyreleased(key)
+        --     vile.keyreleased(key)
+        -- end
     })
 
     game_state.addState({
@@ -147,42 +156,46 @@ function love.keypressed(key, isrepeat)
 
     local i = Input:pressed(key)
     if i then
+        print('pressed', i)
         game_state.keypressed(i)
     end
 end
 
-function love.keyreleased(key)
-    local i = Input:released(key)
-    if i then
-        game_state.keyreleased(i)
-    end
-end
+-- function love.keyreleased(key)
+--     local i = Input:released(key)
+--     if i then
+--         print('released', i)
+--         game_state.keyreleased(i)
+--     end
+-- end
 
 function love.gamepadpressed(joystick, button)
     local i = Input:pressed(joystick, button)
     if i then
+        print('pressed', i)
         game_state.keypressed(i)
     end
 
 end
 
-function love.gamepadreleased(joystick, button)
-    local i = Input:released(joystick, button)
-    if i then
-        game_state.keyreleased(i)
-    end
-end
+-- function love.gamepadreleased(joystick, button)
+--     local i = Input:released(joystick, button)
+--     if i then
+--         print('released', i)
+--         game_state.keyreleased(i)
+--     end
+-- end
 
-function love.gamepadaxis(joystick, axis, value)
-    local i = Input:axis(joystick, axis, value)
-    if i then
-        game_state.keypressed(i)
-    end
-end
+-- function love.gamepadaxis(joystick, axis, value)
+--     local i = Input:axis(joystick, axis, value)
+--     if i then
+--         game_state.keypressed(i)
+--     end
+-- end
 
-function love.textinput(text)
-    game_state.textinput(text)
-end
+-- function love.textinput(text)
+--     game_state.textinput(text)
+-- end
 
 function love.draw()
     viewport:pushScale()
