@@ -337,11 +337,18 @@ return function (x, y, controls)
             love.graphics.setColor(COLOR.BLUE)
         end
 
+        local flicker = 0
         if x_buster.is("charging") then
+
             love.graphics.setColor(COLOR.CYAN)
 
             if x_buster.isSet("mega_blast") then
                 love.graphics.setColor(COLOR.YELLOW)
+            end
+
+            flicker = rng:random(0, 1)
+            if flicker == 1 then
+                love.graphics.setColor(COLOR.BLACK)
             end
         end
 
