@@ -113,7 +113,7 @@ return function (entity, controls, verbose)
 
             -- megaman faces away from the wall
             local facing = entity.get("facing") == LEFT and RIGHT or LEFT
-            entity.set("facing", facing)
+            entity.setFacing(facing)
         end
     })
 

@@ -8,8 +8,9 @@ HOLDING      = "holding"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
-MovementModule = require("player_movement")
-XBuster        = require("arm_cannon")
+MovementModule  = require("player_movement")
+AnimationModule = require("player_animation")
+XBuster         = require("arm_cannon")
 
 Pellet    = BulletFactory(3, 4, 4, 1, COLOR.YELLOW, "pellet")
 Blast     = BulletFactory(4, 20, 5, 2, COLOR.GREEN, "blast")
@@ -24,9 +25,6 @@ Bullets = {
 return function (x, y, controls)
     local controls = require(controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-
-    MovementModule = require("player_movement")
-    XBuster        = require("arm_cannon")
 
     local ring_timer       = 0
     local ring_timer_limit = 100
@@ -60,8 +58,13 @@ return function (x, y, controls)
         world.bump:add(senses, senses.getBoundingBox())
     end
 
-    entity.set("facing", RIGHT)
+    entity.setFacing = function (facing)
+        entity.set("facing", facing)
+    end
+
+    entity.setFacing(RIGHT)
     entity.set("vs", 0)
+    entity.set("initial_vs", initial_vs)
     entity.set("hp", 16)
 
     -- TODO player's collide with enemies causing damage
@@ -81,8 +84,11 @@ return function (x, y, controls)
         return entity.get(key) == HOLDING
     end
 
-    local movement = MovementModule(entity, controls)
-    local x_buster = XBuster(entity, controls)
+    local image     = love.graphics.newImage('assets/tempjumpsheet.png')
+
+    local movement  = MovementModule(entity, controls)
+    local x_buster  = XBuster(entity, controls)
+    local animation = AnimationModule(entity, image, movement, x_buster, controls)
 
     local move = function (direction, speed)
         local sign = (direction == LEFT) and -1 or 1
@@ -95,7 +101,7 @@ return function (x, y, controls)
 
         entity.setX(entity.getX() + sign*speed)
         senses.setX(senses.getX() + sign*speed)
-        entity.set("facing", direction)
+        entity.setFacing(direction)
     end
 
     entity.resolveLeft = function ()
@@ -229,7 +235,7 @@ return function (x, y, controls)
             local facing        = (entity_center > bullet_center) and LEFT or RIGHT
 
             entity.set("damage_queue", bullet.get("damage"))
-            entity.set("facing", facing) -- megaman always turns to face the damage source
+            entity.setFacing(facing)
             movement.update()
             x_buster.start("inactive")
 
@@ -316,6 +322,7 @@ return function (x, y, controls)
 
         movement.update(dt)
         x_buster.update(dt)
+        animation.update(dt)
 
         if not movement.is("dashing") then
             entity.resolveFall(dt)
@@ -341,17 +348,13 @@ return function (x, y, controls)
     end
 
     entity.draw       = function ()
-
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
-        love.graphics.setColor(COLOR.RED)
+
+        -- get the facing for flip
         if entity.get("facing") == LEFT then
-            love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
-            love.graphics.line(draw_x-1, draw_y, draw_x-1, draw_y + height)
         else
-            love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
-            love.graphics.line(draw_x + width +1, draw_y, draw_x + width +1, draw_y + height)
         end
 
         if movement.is("running") then
@@ -419,7 +422,7 @@ return function (x, y, controls)
                     verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
                 end
 
-                love.graphics.polygon("fill", verts)
+                --love.graphics.polygon("fill", verts)
             else
                 if movement.is("destroyed") then
 
@@ -441,14 +444,14 @@ return function (x, y, controls)
                         end
                     end
                 else
-                    love.graphics.rectangle("fill", draw_x, draw_y, width, height)
+                    --love.graphics.rectangle("fill", draw_x, draw_y, width, height)
                 end
             end
         end
 
-
         movement.draw()
         love.graphics.setColor(COLOR.WHITE)
+        animation.draw(draw_x - width, draw_y - height/4)
     end
 
     return entity
