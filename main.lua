@@ -62,16 +62,18 @@ function love.load()
                              scale = global.scale})
 
     world    = World:new()
-    megaman  = Player(32, 140, "p1_controls")
-    protoman = Player(300, 140, "p2_controls")
-    vile     = Player(560, 140, "p3_controls")
+    rock     = Player(32, 140, "p1_controls")
+    opera    = Player(110, 300, "p2_controls")
+    protoman = Player(370, 300, "p3_controls")
+    vile     = Player(560, 140, "p4_controls")
 
     chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
-    world:register(megaman)
+    world:register(rock)
     world:register(protoman)
     world:register(vile)
+    world:register(opera)
     -- world:register(chill_penguin)
 
     game_state = FSM()
@@ -86,14 +88,16 @@ function love.load()
             world:update(dt)
         end,
         keypressed = function (key)
-            megaman.keypressed(key) -- queues up the megaman's next move
+            rock.keypressed(key) -- queues up the rock's next move
             protoman.keypressed(key)
+            opera.keypressed(key)
             vile.keypressed(key)
 
         end,
         keyreleased = function (key)
-            megaman.keyreleased(key) -- queues up the megaman's next move
+            rock.keyreleased(key) -- queues up the rock's next move
             protoman.keyreleased(key)
+            opera.keypressed(key)
             vile.keyreleased(key)
         end
     })
@@ -106,7 +110,7 @@ function love.load()
       --keypressed = game.keypressed
     })
 
-    -- start the game when the megaman chooses a menu option
+    -- start the game when the rock chooses a menu option
     game_state.addTransition({
         from      = "start",
         to        = "stop",
