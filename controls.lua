@@ -1,8 +1,8 @@
 local controls = {}
 
 controls["statemappings"] = {
-    p1_left   = {"k_left", "j1_dpleft"},
-    p1_right  = {"k_right", "j1_dpright"},
+    p1_left   = {"k_left", "j1_dpleft", "j1_leftx-0.75"},
+    p1_right  = {"k_right", "j1_dpright", "j1_leftx+0.75"},
     p1_jump   = {"k_z", "j1_a"},
     p1_shoot  = {"k_x", "j1_x"},
     p1_dash   = {"k_lshift", "j1_rightshoulder"},
