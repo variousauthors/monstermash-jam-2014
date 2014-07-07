@@ -28,25 +28,25 @@ function SoundObject.getResource(source, srcType)
 end
 
 function SoundObject.new(source, tags, volume, srcType, callbacks)
-    local i = {}
-    setmetatable(i, SoundObject)
+    local self = {}
+    setmetatable(self, SoundObject)
 
     local resource = SoundObject.getResource(source, srcType)
-    i.source = love.audio.newSource(resource, srcType)
-    i.source:setVolume(volume or 1)
+    self.source = love.audio.newSource(resource, srcType)
+    self.source:setVolume(volume or 1)
 
-    i.tags = {}
+    self.tags = {}
     if tags then
         for token in string.gmatch(tags,"([^%,%;%s]+)") do
-            table.insert(i.tags, token)
+            table.insert(self.tags, token)
         end
     end
 
-    i.callbacks = callbacks or {}
+    self.callbacks = callbacks or {}
 
-    table.insert(SoundObjects, i)
+    table.insert(SoundObjects, self)
 
-    return i
+    return self
 end
 
 function SoundObject:hasTag(tags)

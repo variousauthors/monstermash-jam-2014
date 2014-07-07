@@ -28,28 +28,28 @@ end
 --Public Methods
 
 function World.new()
-    local i = {}
-    setmetatable(i, World)
+    local self = {}
+    setmetatable(self, World)
 
-    i.entities = {}
+    self.entities = {}
 
-    i.obstacles = {}
-    i.bump = bump.newWorld(64)
+    self.obstacles = {}
+    self.bump = bump.newWorld(32)
 
     local contents, size = love.filesystem.read("assets/arena_highway.json")
     local data = json.decode(contents)
 
     for i, v in pairs(data["layers"][2]["objects"]) do
-        addObstacle(i, v.x, v.y, v.width, v.height)
+        addObstacle(self, v.x, v.y, v.width, v.height)
     end
 
-    i.background_image = love.graphics.newImage("assets/arena_highway_bg.png")
-    i.foreground_image = love.graphics.newImage("assets/arena_highway_fg.png")
+    self.background_image = love.graphics.newImage("assets/arena_highway_bg.png")
+    self.foreground_image = love.graphics.newImage("assets/arena_highway_fg.png")
 
-    i.timer = 0
-    i.tic_duration = 1
+    self.timer = 0
+    self.tic_duration = 1
 
-    return i
+    return self
 end
 
 function World:register(entity)
@@ -84,6 +84,18 @@ function World:tic(dt)
         end
 
         self.timer = 0
+    end
+end
+
+function World:keypressed(key)
+    for i, entity in pairs(self.entities) do
+        if entity.keypressed then entity.keypressed(key) end
+    end
+end
+
+function World:keyreleased(key)
+    for i, entity in pairs(self.entities) do
+        if entity.keyreleased then entity.keyreleased(key) end
     end
 end
 

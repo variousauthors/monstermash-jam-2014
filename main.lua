@@ -1,5 +1,4 @@
 
-require "libs/audio"
 require "libs/fsm"
 require "libs/gamejolt"
 require "libs/vector"
@@ -70,7 +69,7 @@ function love.load()
                              height = global.screen_height,
                              scale = global.scale})
 
-    world    = World:new()
+    world    = World.new()
     rock     = Player(32, 140, "p1_controls")
     opera    = Player(110, 300, "p2_controls")
     protoman = Player(370, 300, "p3_controls")
@@ -99,49 +98,7 @@ function love.load()
     -- Music
     Sound:add("mainMusic","playSoundRegionLoop", "assets/music/bossbattle.mp3", "music", 4.25490, 32.431358)
 
-
-    game_state = FSM()
-
-    game_state.addState({
-        name       = "start",
-      --init       = game.init,
-        draw       = function ()
-            world:draw()
-        end,
-        update     = function (dt)
-            world:update(dt)
-        end,
-        keypressed = function (key)
-            rock.keypressed(key) -- queues up the rock's next move
-            protoman.keypressed(key)
-            opera.keypressed(key)
-            vile.keypressed(key)
-
-        end,
-        keyreleased = function (key)
-            rock.keyreleased(key) -- queues up the rock's next move
-            protoman.keyreleased(key)
-            opera.keyreleased(key)
-            vile.keyreleased(key)
-        end
-    })
-
-    game_state.addState({
-        name       = "stop",
-      --init       = game.init,
-      --draw       = game.drawfunction,
-      --update     = game.update,
-      --keypressed = game.keypressed
-    })
-
-    -- start the game when the rock chooses a menu option
-    game_state.addTransition({
-        from      = "start",
-        to        = "stop",
-        condition = function ()
-            return false
-        end
-    })
+    game_state = require("game")(world)
 
     Sound:run("mainMusic")
 

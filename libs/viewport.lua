@@ -6,8 +6,8 @@ local roundDownToNearest = function(val, multiple)
 end
 
 function Viewport.new(opts)
-    local i = {}
-    setmetatable(i, Viewport)
+    local self = {}
+    setmetatable(self, Viewport)
 
     opts = opts or {}
     setmetatable(opts,{__index={
@@ -17,13 +17,13 @@ function Viewport.new(opts)
         fs     = false
     }})
 
-    i:setWidth(opts.width)
-    i:setHeight(opts.height)
-    i:setScale(opts.scale)
-    i:setFullscreen(opts.fs)
-    i:setupScreen()
+    self:setWidth(opts.width)
+    self:setHeight(opts.height)
+    self:setScale(opts.scale)
+    self:setFullscreen(opts.fs)
+    self:setupScreen()
 
-    return i
+    return self
 end
 
 function Viewport:setupScreen()

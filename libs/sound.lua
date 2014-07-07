@@ -2,16 +2,16 @@ local Sound = {}
 Sound.__index = Sound
 
 function Sound.new()
-    local i = {}
-    setmetatable(i, Sound)
+    local self = {}
+    setmetatable(self, Sound)
 
-    i.shortcuts = {}
-    i.thread = love.thread.newThread('libs/sound_thread.lua')
-    i.dChannel = love.thread.getChannel('sound_debug')
-    i.tChannel = love.thread.getChannel('sound')
-    i.thread:start()
+    self.shortcuts = {}
+    self.thread = love.thread.newThread('libs/sound_thread.lua')
+    self.dChannel = love.thread.getChannel('sound_debug')
+    self.tChannel = love.thread.getChannel('sound')
+    self.thread:start()
 
-    return i
+    return self
 end
 
 function Sound:reInitialize()
