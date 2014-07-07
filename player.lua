@@ -84,7 +84,7 @@ return function (x, y, controls)
         return entity.get(key) == HOLDING
     end
 
-    local image     = love.graphics.newImage('assets/fullsheet_hitboxetc.png')
+    local image     = love.graphics.newImage('assets/spirtesheetv1.png')
 
     local movement  = MovementModule(entity, controls)
     local x_buster  = XBuster(entity, controls)

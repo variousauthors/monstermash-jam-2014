@@ -209,6 +209,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     animation.addState({
         name = "hurt",
         init = animation.getInit(0.1),
+        update = update_transition_animation
     })
 
     animation.addState({
@@ -452,6 +453,30 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "climbing",
+        to = "to_dashing",
+        condition = function ()
+            return movement.is("dashing")
+        end
+    })
+
+    animation.addTransition({
+        from = "climbing",
+        to = "to_falling",
+        condition = function ()
+            return movement.is("falling")
+        end
+    })
+
+    animation.addTransition({
+        from = "climbing",
+        to = "standing",
+        condition = function ()
+            return movement.is("standing")
+        end
+    })
+
+    animation.addTransition({
+        from = "climbing",
         to = "climbing_to_jump",
         condition = function ()
             return movement.is("jumping")
@@ -477,6 +502,14 @@ return function (entity, image, movement, x_buster, controls, verbose)
     animation.addTransition({
         from = "to_hurt",
         to = "hurt",
+        condition = function ()
+            return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "hurt",
+        to = "standing",
         condition = function ()
             return animation.isFinished()
         end
