@@ -34,8 +34,8 @@ return function (x, y, controls)
 
     -- back of glove to beginning of red thing
     -- red thing is top
-    local height      = 30
-    local width       = 15
+    local height      = 29
+    local width       = 12
     local max_bullets = 3
 
     local fat_gun_dim             = 3
@@ -58,7 +58,19 @@ return function (x, y, controls)
         world.bump:add(senses, senses.getBoundingBox())
     end
 
+    local sprite_box_offset_x = 20
+    local sprite_box_offset_y = 9
+
     entity.setFacing = function (facing)
+        -- we have to flip his collision box
+        if facing == LEFT and entity.get("facing") ~= facing then
+            sprite_box_offset_x = 17
+        end
+
+        if facing == RIGHT and entity.get("facing") ~= facing then
+            sprite_box_offset_x = 22
+        end
+
         entity.set("facing", facing)
     end
 
@@ -445,14 +457,17 @@ return function (x, y, controls)
                         end
                     end
                 else
-                    --love.graphics.rectangle("fill", draw_x, draw_y, width, height)
                 end
             end
         end
 
         movement.draw()
         love.graphics.setColor(COLOR.WHITE)
-        animation.draw(draw_x - width, draw_y - height/4)
+        animation.draw(draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y)
+
+      --love.graphics.rectangle("line", draw_x, draw_y, width, height)
+      --love.graphics.rectangle("line", draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y, 51, 51)
+      --love.graphics.line(draw_x - sprite_box_offset_x + sprite_width/2, draw_y - sprite_diff, draw_x - sprite_box_offset_x + sprite_width/2, draw_y + sprite_box_offset_y + sprite_diff)
     end
 
     return entity
