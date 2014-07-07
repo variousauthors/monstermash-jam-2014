@@ -3,7 +3,10 @@ return function(world)
 
   fsm.addState({
       name       = "start",
-    --init       = game.init,
+      init       = function ()
+          Sound:stop("music")
+          Sound:run("mainMusic")
+      end,
       draw       = function ()
           world:draw()
       end,
