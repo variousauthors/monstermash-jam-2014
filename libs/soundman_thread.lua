@@ -159,11 +159,11 @@ while not _stop do
     end
 
     -- Debug / EndLoop
-    _debugAcc = _debugAcc + _dt
-    if(_debugAcc > 5) then
-        dChannel:push({"DEBUG: ",_loopCount, _threadTime, _loopRate})
-        _debugAcc = 0
-    end
+    -- _debugAcc = _debugAcc + _dt
+    -- if(_debugAcc > 5) then
+    --     dChannel:push({"DEBUG: ",_loopCount, _threadTime, _loopRate})
+    --     _debugAcc = 0
+    -- end
 
     --Throttle
     if (_loopRate > _throttle) then love.timer.sleep(0.001) end

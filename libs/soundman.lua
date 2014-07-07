@@ -18,7 +18,7 @@ end
 
 function SoundMan:reInitialize()
     if self.thread and self.thread:isRunning() then
-        self.tChannel:supply('kill')
+        self.tChannel:supply({'kill'})
     end
     self.thread = love.thread.newThread('libs/sound_thread.lua')
     self.thread:start()
