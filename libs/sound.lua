@@ -1,13 +1,17 @@
-local class = require('vendor/middleclass/middleclass')
+local Sound = {}
+Sound.__index = Sound
 
-local Sound = class("Sound")
+function Sound.new()
+    local i = {}
+    setmetatable(i, Sound)
 
-function Sound:initialize()
-    self.shortcuts = {}
-    self.thread = love.thread.newThread('libs/sound_thread.lua')
-    self.dChannel = love.thread.getChannel('sound_debug')
-    self.tChannel = love.thread.getChannel('sound')
-    self.thread:start()
+    i.shortcuts = {}
+    i.thread = love.thread.newThread('libs/sound_thread.lua')
+    i.dChannel = love.thread.getChannel('sound_debug')
+    i.tChannel = love.thread.getChannel('sound')
+    i.thread:start()
+
+    return i
 end
 
 function Sound:reInitialize()

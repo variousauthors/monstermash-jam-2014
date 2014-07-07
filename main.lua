@@ -54,7 +54,7 @@ Input = require("libs/input"):new({
     p4_shoot  = {"j4_x"},
     p4_dash   = {"j4_rightshoulder"}
 })
-Sound = require("libs/sound"):new()
+Sound = require("libs/sound").new()
 
 World  = require("world")
 Player = require("player")
@@ -66,7 +66,7 @@ function love.focus(f) gameIsPaused = not f end
 function love.load()
 
     love.graphics.setBackgroundColor(0, 0, 0)
-    viewport = Viewport:new({width = global.screen_width,
+    viewport = Viewport.new({width = global.screen_width,
                              height = global.screen_height,
                              scale = global.scale})
 
@@ -175,7 +175,7 @@ function love.keypressed(key, isrepeat)
     local i = Input:pressed(key)
     if i then
         print('keypressed', i)
-        game_state.keypressed(i)
+        game_state:keypressed(i)
     end
 end
 

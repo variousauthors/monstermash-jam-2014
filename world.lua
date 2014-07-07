@@ -1,10 +1,10 @@
 if not Entity then require("entity") end
 
-local class = require('vendor/middleclass/middleclass')
 local bump = require('vendor/bump/bump')
 require('vendor/lua4json/json4lua/json/json')
 
-local World = class('World')
+local World = {}
+World.__index = World
 
 --Private Methods
 
@@ -27,24 +27,29 @@ end
 
 --Public Methods
 
-function World:initialize()
-    self.entities = {}
+function World.new()
+    local i = {}
+    setmetatable(i, World)
 
-    self.obstacles = {}
-    self.bump = bump.newWorld(64)
+    i.entities = {}
+
+    i.obstacles = {}
+    i.bump = bump.newWorld(64)
 
     local contents, size = love.filesystem.read("assets/arena_highway.json")
     local data = json.decode(contents)
 
     for i, v in pairs(data["layers"][2]["objects"]) do
-        addObstacle(self, v.x, v.y, v.width, v.height)
+        addObstacle(i, v.x, v.y, v.width, v.height)
     end
 
-    self.background_image = love.graphics.newImage("assets/arena_highway_bg.png")
-    self.foreground_image = love.graphics.newImage("assets/arena_highway_fg.png")
+    i.background_image = love.graphics.newImage("assets/arena_highway_bg.png")
+    i.foreground_image = love.graphics.newImage("assets/arena_highway_fg.png")
 
-    self.timer = 0
-    self.tic_duration = 1
+    i.timer = 0
+    i.tic_duration = 1
+
+    return i
 end
 
 function World:register(entity)

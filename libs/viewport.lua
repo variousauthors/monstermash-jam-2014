@@ -1,12 +1,14 @@
-local class = require('vendor/middleclass/middleclass')
-
-local Viewport = class('Viewport')
+local Viewport = {}
+Viewport.__index = Viewport
 
 local roundDownToNearest = function(val, multiple)
     return multiple * (math.floor(val/multiple))
 end
 
-function Viewport:initialize(opts)
+function Viewport.new(opts)
+    local i = {}
+    setmetatable(i, Viewport)
+
     opts = opts or {}
     setmetatable(opts,{__index={
         width  = 640,
@@ -14,11 +16,14 @@ function Viewport:initialize(opts)
         scale  = 0,
         fs     = false
     }})
-    self:setWidth(opts.width)
-    self:setHeight(opts.height)
-    self:setScale(opts.scale)
-    self:setFullscreen(opts.fs)
-    self:setupScreen()
+
+    i:setWidth(opts.width)
+    i:setHeight(opts.height)
+    i:setScale(opts.scale)
+    i:setFullscreen(opts.fs)
+    i:setupScreen()
+
+    return i
 end
 
 function Viewport:setupScreen()

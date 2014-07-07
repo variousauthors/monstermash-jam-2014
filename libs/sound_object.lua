@@ -1,11 +1,10 @@
-local class = require('vendor/middleclass/middleclass')
-
-local SoundObject = class("SoundObject")
+local SoundObject = {}
+SoundObject.__index = SoundObject
 
 SoundObjects = SoundObjects or {}
 SoundResources = SoundResources or {}
 
-function SoundObject.static:getResource(source, srcType)
+function SoundObject.getResource(source, srcType)
     srcType = srcType or 'stream'
     local key = table.concat({source, '_', srcType})
     if SoundResources[key] then return SoundResources[key] end
@@ -28,21 +27,26 @@ function SoundObject.static:getResource(source, srcType)
     end
 end
 
-function SoundObject:initialize(source, tags, volume, srcType, callbacks)
-    local resource = SoundObject:getResource(source, srcType)
-    self.source = love.audio.newSource(resource, srcType)
-    self.source:setVolume(volume or 1)
+function SoundObject.new(source, tags, volume, srcType, callbacks)
+    local i = {}
+    setmetatable(i, SoundObject)
 
-    self.tags = {}
+    local resource = SoundObject.getResource(source, srcType)
+    i.source = love.audio.newSource(resource, srcType)
+    i.source:setVolume(volume or 1)
+
+    i.tags = {}
     if tags then
         for token in string.gmatch(tags,"([^%,%;%s]+)") do
-            table.insert(self.tags, token)
+            table.insert(i.tags, token)
         end
     end
 
-    self.callbacks = callbacks or {}
+    i.callbacks = callbacks or {}
 
-    table.insert(SoundObjects, self)
+    table.insert(SoundObjects, i)
+
+    return i
 end
 
 function SoundObject:hasTag(tags)

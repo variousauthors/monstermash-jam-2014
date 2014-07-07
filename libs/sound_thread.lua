@@ -45,16 +45,16 @@ callbacks['touchResource'] = function(...)
     for _, e in ipairs(args) do
         if(e == 'static') then srcType = 'static' end
     end
-    SoundObject:getResource(args[1], srcType)
+    SoundObject.getResource(args[1], srcType)
 end
 
 callbacks['playSound'] = function(...)
-    local snd = SoundObject:new(...)
+    local snd = SoundObject.new(...)
     snd:play()
 end
 
 callbacks['playSoundLoop'] = function(...)
-    local snd = SoundObject:new(...)
+    local snd = SoundObject.new(...)
     snd.source:setLooping(true)
     snd:play()
 end
@@ -71,7 +71,7 @@ callbacks['playSoundRegionLoop'] = function(...)
         end
     end
 
-    local snd = SoundObject:new(source, tags, volume, srcType, {onTick = cb})
+    local snd = SoundObject.new(source, tags, volume, srcType, {onTick = cb})
     snd:play()
 end
 
@@ -86,7 +86,7 @@ callbacks['playSoundPartialLoop'] = function(...)
         return true
     end
 
-    local snd = SoundObject:new(source, tags, volume, srcType, {onStop = cb})
+    local snd = SoundObject.new(source, tags, volume, srcType, {onStop = cb})
     snd:play()
 end
 
