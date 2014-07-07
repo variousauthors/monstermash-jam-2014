@@ -11,7 +11,7 @@ local frames = require("animation_index")
 return function (entity, image, movement, x_buster, controls, verbose)
     -- I think we won't need this
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local animation        = FSM(verbose)
+    local animation        = FSM(true)
     local timer            = 0
     local anim, duration
     local facing = entity.get("facing")
@@ -61,6 +61,16 @@ return function (entity, image, movement, x_buster, controls, verbose)
             duration, timer = d, 0
             anim = anim8.newAnimation(g(frames.get(animation.getState())), duration, args)
         end
+    end
+
+    update_transition_animation = function (dt)
+        local speed = 1
+
+        timer = timer + speed*dt
+        -- here we update the animation
+
+        update_facing()
+        anim:update(speed*dt)
     end
 
     --- ANIMATION STATES ---
@@ -136,20 +146,13 @@ return function (entity, image, movement, x_buster, controls, verbose)
     animation.addState({
         name = "falling_to_standing",
         init = animation.getInit(0.1, 'pauseAtEnd'),
-        update = function (dt)
-            local speed = 1
-
-            timer = timer + speed*dt
-            -- here we update the animation
-
-            update_facing()
-            anim:update(speed*dt)
-        end
+        update = update_transition_animation
     })
 
     animation.addState({
         name = "to_running",
         init = animation.getInit(0.1),
+        update = update_transition_animation
     })
 
     animation.addState({
@@ -160,11 +163,13 @@ return function (entity, image, movement, x_buster, controls, verbose)
     animation.addState({
         name = "from_running",
         init = animation.getInit(0.1),
+        update = update_transition_animation
     })
 
     animation.addState({
         name = "to_dashing",
         init = animation.getInit(0.1),
+        update = update_transition_animation
     })
 
     animation.addState({
@@ -175,11 +180,13 @@ return function (entity, image, movement, x_buster, controls, verbose)
     animation.addState({
         name = "from_dashing",
         init = animation.getInit(0.1),
+        update = update_transition_animation
     })
 
     animation.addState({
         name = "to_climbing",
         init = animation.getInit(0.1),
+        update = update_transition_animation
     })
 
     animation.addState({
@@ -190,11 +197,13 @@ return function (entity, image, movement, x_buster, controls, verbose)
     animation.addState({
         name = "climbing_to_jump",
         init = animation.getInit(0.1),
+        update = update_transition_animation
     })
 
     animation.addState({
         name = "to_hurt",
         init = animation.getInit(0.1),
+        update = update_transition_animation
     })
 
     animation.addState({
