@@ -18,7 +18,7 @@ function love.focus(f) gameIsPaused = not f end
 function love.load()
 
     love.graphics.setBackgroundColor(0, 0, 0)
-    View = Viewport.new({width = global.screen_width,
+    view = Viewport.new({width = global.screen_width,
                              height = global.screen_height,
                              scale = global.scale})
 
@@ -39,8 +39,6 @@ function love.load()
 
     game_state = require("game")(world)
 
-    Sound:run("mainMusic")
-
     game_state.start()
 end
 
@@ -60,8 +58,8 @@ end
 
 function love.keypressed(key, isrepeat)
     if (key == 'f11') then
-        View:setFullscreen()
-        View:setupScreen()
+        view:setFullscreen()
+        view:setupScreen()
     elseif (key == 'f10') then
         love.event.quit()
     end
@@ -103,13 +101,13 @@ end
 -- end
 
 function love.draw()
-    View:pushScale()
+    view:pushScale()
     game_state.draw()
-    View:popScale()
+    view:popScale()
 end
 
 function love.resize(w, h)
-    View:fixSize(w, h)
+    view:fixSize(w, h)
 end
 
 function love.threaderror(thread, errorstr)
