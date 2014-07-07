@@ -63,38 +63,45 @@ end
 --
 --
 --
-function Sound:stop(tags)
-   self:sendMessage({'stop', tags})
+function Sound:stop(...)
+    local tags = {...}
+    if #tags > 0 then tags = table.concat(tags, ';') else tags = nil end
+    self:sendMessage({'stop', tags})
 end
 
 --
 --
 --
-function Sound:pause(tags)
+function Sound:pause(...)
+    local tags = {...}
+    if #tags > 0 then tags = table.concat(tags, ';') else tags = nil end
     self:sendMessage({'resume', tags})
 end
 
 --
 --
 --
-function Sound:resume(tags)
+function Sound:resume(...)
+    local tags = {...}
+    if #tags > 0 then tags = table.concat(tags, ';') else tags = nil end
     self:sendMessage({'resume', tags})
 end
 
 --
 --
 --
-function Sound:addShortcut(name, command, source, tags, ...)
+function Sound:add(name, command, source, tags, ...)
     tags = table.concat({name, ';', tags})
     self.shortcuts[name] = {command, source, tags, unpack({...})}
-    inspect(self.shortcuts[name])
+    self:sendMessage({'touchResource', source, tags, unpack({...})})
+    --inspect(self.shortcuts[name])
     return self.shortcuts[name]
 end
 
 --
 --
 --
-function Sound:runShortcut(name, tags)
+function Sound:run(name, tags)
     local msg = deepcopy(self.shortcuts[name])
     if msg and tags then msg[3] = table.concat({tags, ';', msg[3]}) end
     self:sendMessage(msg)
