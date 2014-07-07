@@ -125,14 +125,12 @@ function love.keypressed(key, isrepeat)
         viewport:setupScreen()
     elseif (key == 'f10') then
         love.event.quit()
-    elseif (key == 'p') then
-        Sound:runShortcut("pellet")
     end
 
     local i = Input:pressed(key)
     if i then
         print('keypressed', i)
-        game_state:keypressed(i)
+        game_state.keypressed(i)
     end
 end
 
@@ -161,17 +159,9 @@ function love.gamepadreleased(joystick, button)
     end
 end
 
--- function love.gamepadaxis(joystick, axis, value)
---     local i = Input:axis(joystick, axis, value)
---     if i then
---         print('gamepadaxis', i)
---         game_state.keypressed(i)
---     end
+-- function love.textinput(text)
+--     game_state.textinput(text)
 -- end
-
-function love.textinput(text)
-    game_state.textinput(text)
-end
 
 function love.draw()
     viewport:pushScale()
