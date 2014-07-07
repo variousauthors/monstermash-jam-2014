@@ -24,7 +24,7 @@ local _loopCount = 0
 local _loopRate = _epsilon
 local _debugAcc = 0
 
-local tChannel = love.thread.getChannel("sound")
+local cChannel = love.thread.getChannel("sound_commands")
 local dChannel = love.thread.getChannel("sound_debug")
 local callbacks = {}
 
@@ -146,24 +146,27 @@ while not _stop do
 
     soundTick(_dt)
 
-    local msg = tChannel:pop()
+    local msg = cChannel:pop()
     if type(msg) == 'table' then
         local callback = table.remove(msg, 1)
-        dChannel:push({"SOUND: ", callback, unpack(msg)})
+        dChannel:push({"COMMAND", callback, unpack(msg)})
 
         if(callbacks[callback]) then
             local result = callbacks[callback](unpack(msg))
         else
-            dChannel:push({"ERROR: ", callback, "doesn't exist"})
+            dChannel:push({"ERROR", callback, "doesn't exist"})
         end
     end
 
     -- Debug / EndLoop
-    -- _debugAcc = _debugAcc + _dt
-    -- if(_debugAcc > 5) then
-    --     dChannel:push({"DEBUG: ",_loopCount, _threadTime, _loopRate})
-    --     _debugAcc = 0
-    -- end
+    _debugAcc = _debugAcc + _dt
+    if(_debugAcc > 10) then
+        dChannel:push({"STATUS",
+            loopCount = _loopCount,
+            threadTime =_threadTime,
+            loopRate = _loopRate})
+        _debugAcc = 0
+    end
 
     --Throttle
     if (_loopRate > _throttle) then love.timer.sleep(0.001) end

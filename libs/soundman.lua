@@ -1,6 +1,8 @@
 local SoundMan = {}
 SoundMan.__index = SoundMan
 
+if not stringspect then stringspect = require('vendor/inspect/inspect') end
+
 local path = string.match(debug.getinfo(1).short_src,"(.-)[^\\/]-%.?[^%.\\/]*$")
 
 function SoundMan.new()
@@ -9,8 +11,8 @@ function SoundMan.new()
 
     self.shortcuts = {}
     self.thread = love.thread.newThread(path..'/soundman_thread.lua')
+    self.cChannel = love.thread.getChannel('sound_commands')
     self.dChannel = love.thread.getChannel('sound_debug')
-    self.tChannel = love.thread.getChannel('sound')
     self.thread:start()
 
     return self
@@ -24,30 +26,31 @@ function SoundMan:reInitialize()
     self.thread:start()
 end
 
-function SoundMan:getDebugMessageCount()
-    return self.dChannel:getCount()
+function SoundMan:sendCommand(msg)
+    self.cChannel:push(msg)
 end
 
-function SoundMan:getDebugMessage()
-    return self.dChannel:pop()
-end
-
-function SoundMan:sendMessage(msg)
-    self.tChannel:push(msg)
+function SoundMan:printDebugQueue()
+    while self.dChannel:getCount() > 0 do
+        local msg = self.dChannel:pop()
+        if(type(msg) == 'string') then print(msg) else
+            print("SOUND-D", stringspect(msg))
+        end
+    end
 end
 
 --
 -- playSound(source, tags, [volume, srcType])
 --
 function SoundMan:playSound(source, tags, ...)
-    self:sendMessage({'playSound', source, tags, unpack({...})})
+    self:sendCommand({'playSound', source, tags, unpack({...})})
 end
 
 --
 -- playSoundLooping(source, tags, [volume, srcType])
 --
 function SoundMan:playSoundLoop(source, tags, ...)
-    self:sendMessage({'playSoundLoop', source, tags, unpack({...})})
+    self:sendCommand({'playSoundLoop', source, tags, unpack({...})})
 end
 
 --
@@ -55,7 +58,7 @@ end
 --   Sound plays until it reaches "regionEnd" then seeks to "regionStart"
 --
 function SoundMan:playSoundRegionLoop(source, tags, ...)
-    self:sendMessage({'playSoundRegionLoop', source, tags, unpack({...})})
+    self:sendCommand({'playSoundRegionLoop', source, tags, unpack({...})})
 end
 
 --
@@ -63,7 +66,7 @@ end
 --   Sound plays until end, then seeks to "regionStart
 --
 function SoundMan:playSoundPartialLoop(source, tags, ...)
-    self:sendMessage({'playSoundPartialLoop', source, tags, unpack({...})})
+    self:sendCommand({'playSoundPartialLoop', source, tags, unpack({...})})
 end
 
 --
@@ -72,7 +75,7 @@ end
 function SoundMan:stop(...)
     local tags = {...}
     if #tags > 0 then tags = table.concat(tags, ';') else tags = nil end
-    self:sendMessage({'stop', tags})
+    self:sendCommand({'stop', tags})
 end
 
 --
@@ -81,7 +84,7 @@ end
 function SoundMan:pause(...)
     local tags = {...}
     if #tags > 0 then tags = table.concat(tags, ';') else tags = nil end
-    self:sendMessage({'resume', tags})
+    self:sendCommand({'resume', tags})
 end
 
 --
@@ -90,7 +93,7 @@ end
 function SoundMan:resume(...)
     local tags = {...}
     if #tags > 0 then tags = table.concat(tags, ';') else tags = nil end
-    self:sendMessage({'resume', tags})
+    self:sendCommand({'resume', tags})
 end
 
 --
@@ -99,8 +102,7 @@ end
 function SoundMan:add(name, command, source, tags, ...)
     tags = table.concat({name, ';', tags})
     self.shortcuts[name] = {command, source, tags, unpack({...})}
-    self:sendMessage({'touchResource', source, tags, unpack({...})})
-    --inspect(self.shortcuts[name])
+    self:sendCommand({'touchResource', source, tags, unpack({...})})
     return self.shortcuts[name]
 end
 
@@ -110,7 +112,7 @@ end
 function SoundMan:run(name, tags)
     local msg = deepcopy(self.shortcuts[name])
     if msg and tags then msg[3] = table.concat({tags, ';', msg[3]}) end
-    self:sendMessage(msg)
+    self:sendCommand(msg)
 end
 
 --

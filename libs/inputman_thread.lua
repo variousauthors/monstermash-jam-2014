@@ -26,8 +26,12 @@ local _loopCount = 0
 local _loopRate = _epsilon
 local _debugAcc = 0
 
-local eChannel = love.thread.getChannel("input_events")
 local cChannel = love.thread.getChannel("input_commands")
+local eChannel = love.thread.getChannel("input_events")
+
+local pChannel = love.thread.getChannel("input_pollstate")
+local rChannel = love.thread.getChannel("input_pollresponse")
+
 local dChannel = love.thread.getChannel("input_debug")
 local callbacks = {}
 
@@ -42,7 +46,7 @@ callbacks['updateJoysticks'] = function()
     InputMapper:updateJoysticks()
 end
 
-local inputTick = function(dt)
+local updateStates = function()
     local active = InputMapper:getStates()
     local kactive = {}
     local pressed = {'keypressed'}
@@ -85,24 +89,31 @@ while not _stop do
     _loopCount = _loopCount + 1
     _loopRate = _loopCount / _threadTime
 
-    inputTick(_dt)
+    updateStates()
+
+    local pollstate = pChannel:pop()
+    if pollstate then rChannel:push(InputMapper:isState(pollstate)) end
 
     local msg = cChannel:pop()
-
     if type(msg) == 'table' then
         local callback = table.remove(msg, 1)
-        dChannel:push({"INPUT: ", callback, unpack(msg)})
+        dChannel:push({"COMMAND", callback, unpack(msg)})
         if(callbacks[callback]) then
             local result = callbacks[callback](unpack(msg))
         else
-            dChannel:push({"INPUT ERROR: ", callback, "doesn't exist"})
+            dChannel:push({"ERROR", callback, "doesn't exist"})
         end
     end
 
     -- Debug / EndLoop
     _debugAcc = _debugAcc + _dt
-    if(_debugAcc > 5) then
-        dChannel:push({"INPUT-DEBUG: ",_loopCount, _threadTime, _loopRate, pressCount, releaseCount})
+    if(_debugAcc > 10) then
+        dChannel:push({"STATUS",
+            loopCount = _loopCount,
+            threadTime =_threadTime,
+            loopRate = _loopRate,
+            pressCount = pressCount,
+            releaseCount = releaseCount})
         _debugAcc = 0
     end
 
