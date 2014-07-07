@@ -7,13 +7,19 @@ return function (entity, controls)
     local mega_blast = 40
 
     cannon.addState({
-        name = "inactive"
+        name = "inactive",
+        init = function()
+            local id = entity.get("id")
+            Sound:stop("charge", id)
+        end
     })
 
     cannon.addState({
         name = "pellet",
         init = function ()
-            Sound:runShortcut("pellet")
+            local id = entity.get("id")
+            Sound:stop("charge", id)
+            Sound:run("pellet", id)
             cannon.set("shoot")
         end
     })
@@ -21,6 +27,9 @@ return function (entity, controls)
     cannon.addState({
         name = "blast",
         init = function ()
+            local id = entity.get("id")
+            Sound:stop("charge", id)
+            Sound:run("blast", id)
             cannon.set("shoot")
         end
     })
@@ -28,12 +37,19 @@ return function (entity, controls)
     cannon.addState({
         name = "mega_blast",
         init = function ()
+            local id = entity.get("id")
+            Sound:stop("charge", id)
+            Sound:run("mega_blast", id)
             cannon.set("shoot")
         end
     })
 
     cannon.addState({
         name = "charging",
+        init = function()
+            local id = entity.get("id")
+            Sound:run("charge", id)
+        end,
         update = function (dt)
             if cannon.getCount() > mega_blast then
                 cannon.set("mega_blast")
