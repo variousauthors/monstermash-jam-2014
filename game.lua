@@ -1,43 +1,42 @@
 return function(world)
-  local fsm = FSM()
+    local fsm = FSM()
 
-  fsm.addState({
-      name       = "start",
-      init       = function ()
-          Sound:stop("music")
-          Sound:run("mainMusic")
-      end,
-      draw       = function ()
-          world:draw()
-      end,
-      update     = function (dt)
-          world:update(dt)
-      end,
-      keypressed = function (key)
-          world:keypressed(key)
+    fsm.addState({
+        name       = "start",
+        init       = function ()
+            Sound:stop("music")
+            Sound:run("mainMusic")
+        end,
+        draw       = function ()
+            world:draw()
+        end,
+        update     = function (dt)
+              world:update(dt)
+        end,
+        keypressed = function (key)
+            world:keypressed(key)
+        end,
+        keyreleased = function (key)
+            world:keyreleased(key)
+        end
+      })
 
-      end,
-      keyreleased = function (key)
-          world:keyreleased(key)
-      end
-  })
+    fsm.addState({
+        name       = "stop",
+        --init       = game.init,
+        --draw       = game.drawfunction,
+        --update     = game.update,
+        --keypressed = game.keypressed
+    })
 
-  fsm.addState({
-      name       = "stop",
-    --init       = game.init,
-    --draw       = game.drawfunction,
-    --update     = game.update,
-    --keypressed = game.keypressed
-  })
+    -- start the game when the rock chooses a menu option
+    fsm.addTransition({
+        from      = "start",
+        to        = "stop",
+        condition = function ()
+            return false
+        end
+    })
 
-  -- start the game when the rock chooses a menu option
-  fsm.addTransition({
-      from      = "start",
-      to        = "stop",
-      condition = function ()
-          return false
-      end
-  })
-
-  return fsm
+    return fsm
 end

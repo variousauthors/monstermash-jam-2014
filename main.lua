@@ -43,54 +43,76 @@ function love.load()
     game_state.start()
 end
 
+local cbCount = {
+    keypressed = 0,
+    keyreleased = 0,
+    gamepadpressed = 0,
+    gamepadreleased = 0,
+}
+local cbCountCounter = 0
+
 function love.update(dt)
+    cbCountCounter = cbCountCounter + dt
+    if(cbCountCounter >= 5) then
+        cbCountCounter = 0
+    end
+
+    while Input:getEventMessageCount() > 0 do
+        local event = Input:getEventMessage()
+        local cb = table.remove(event, 1)
+        for i,v in ipairs(event) do
+            if game_state[cb] then game_state[cb](v) end
+        end
+    end
+
     game_state.update(dt)
 
     while Sound:getDebugMessageCount() > 0 do
         local msg = Sound:getDebugMessage()
-        if msg then
-            if(type(msg) == 'string') then print(msg) else
-                --print(stringspect(msg))
-            end
+        if(type(msg) == 'string') then print(msg) else
+            print(stringspect(msg))
         end
     end
 
+    while Input:getDebugMessageCount() > 0 do
+        local msg = Input:getDebugMessage()
+        if(type(msg) == 'string') then print(msg) else
+            print(stringspect(msg))
+        end
+    end
 end
 
+
+
 function love.keypressed(key, isrepeat)
+    if (not love.window.hasFocus()) then return end
+
+    cbCount['keypressed'] = cbCount['keypressed'] + 1
+
     if (key == 'f11') then
         view:setFullscreen()
         view:setupScreen()
     elseif (key == 'f10') then
         love.event.quit()
     end
-
-    local i = Input:pressed(key)
-    if i then
-        game_state.keypressed(i)
-    end
 end
 
 function love.keyreleased(key)
-    local i = Input:released(key)
-    if i then
-        game_state.keyreleased(i)
-    end
+    if (not love.window.hasFocus()) then return end
+
+    cbCount['keyreleased'] = cbCount['keyreleased'] + 1
 end
 
 function love.gamepadpressed(joystick, button)
-    local i = Input:pressed(joystick, button)
-    if i then
-        game_state.keypressed(i)
-    end
+    if (not love.window.hasFocus()) then return end
 
+    cbCount['gamepadpressed'] = cbCount['gamepadpressed'] + 1
 end
 
 function love.gamepadreleased(joystick, button)
-    local i = Input:released(joystick, button)
-    if i then
-        game_state.keyreleased(i)
-    end
+    if (not love.window.hasFocus()) then return end
+
+    cbCount['gamepadreleased'] = cbCount['gamepadreleased'] + 1
 end
 
 function love.draw()
@@ -105,4 +127,12 @@ end
 
 function love.threaderror(thread, errorstr)
     print("Thread error!\n"..errorstr)
+end
+
+function love.joystickadded (j)
+    Input:updateJoysticks()
+end
+
+function love.joystickremoved (j)
+    Input:updateJoysticks()
 end
