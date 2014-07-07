@@ -4,7 +4,9 @@ require('love.audio')
 require('love.sound')
 require('libs/utility')
 
-local SoundObject = require('libs/sound_object')
+local path = string.match(debug.getinfo(1).short_src,"(.-)[^\\/]-%.?[^%.\\/]*$")
+
+local SoundObject = require(path..'/soundman_object')
 SoundObjects = SoundObjects or {}
 SoundResources = SoundResources or {}
 
