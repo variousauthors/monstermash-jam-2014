@@ -1,4 +1,5 @@
 local anim8 = require("vendor/anim8/anim8")
+local frames = require("animation_index")
 
 -- resolveLeft
 -- resolveReft
@@ -51,24 +52,44 @@ return function (entity, image, movement, x_buster, controls, verbose)
     end
 
     animation.isFinished = function ()
+        print("d:", duration)
         return timer > duration
     end
 
+    animation.getInit = function (d, ...)
+        local args = ...
+        return function ()
+            print(d)
+            duration = d
+            timer = 0
+            print(animation.getState(), duration, args)
+            anim = anim8.newAnimation(g(frames.get(animation.getState())), duration, args)
+        end
+    end
+
+    animation.addState({
+        name = "into_standing",
+        init = animation.getInit(0.1, 'pauseAtEnd'),
+        update = function (dt)
+            local speed = 1
+
+            timer = timer + speed*dt
+            -- here we update the animation
+
+            update_facing()
+            anim:update(speed*dt)
+        end
+    })
+
     animation.addState({
         name = "standing",
-        init = function ()
-            anim = anim8.newAnimation(g(1, 1), 0.1)
-        end
+        init = animation.getInit(0.1)
     })
 
     -- going into the jump animation
     animation.addState({
         name = "into_jumping",
-        init = function ()
-            duration = 0.2
-            anim = anim8.newAnimation(g('2-4',1), duration, 'pauseAtEnd')
-            timer = 0
-        end,
+        init = animation.getInit(0.2, 'pauseAtEnd'),
         update = function (dt)
             local speed = 1
 
@@ -89,19 +110,13 @@ return function (entity, image, movement, x_buster, controls, verbose)
     -- frame played forever
     animation.addState({
         name = "jumping",
-        init = function ()
-            anim = anim8.newAnimation(g(4,1), 1, 'pauseAtEnd')
-        end,
+        init = animation.getInit(1)
     })
 
     -- going into falling
     animation.addState({
         name = "into_falling",
-        init = function ()
-            duration = 0.2
-            anim = anim8.newAnimation(g('4-5',1), duration, 'pauseAtEnd')
-            timer = 0
-        end,
+        init = animation.getInit(0.2, 'pauseAtEnd'),
         update = function (dt)
             local speed = 1
 
@@ -121,9 +136,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     -- peak falling
     animation.addState({
         name = "falling",
-        init = function ()
-            anim = anim8.newAnimation(g(6,1), 0.1)
-        end,
+        init = animation.getInit(0.1),
     })
 
     animation.addTransition({
@@ -160,9 +173,17 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "falling",
+        to = "into_standing",
+        condition = function ()
+            return movement.is("standing")
+        end
+    })
+
+    animation.addTransition({
+        from = "into_standing",
         to = "standing",
         condition = function ()
-            return not movement.is("falling")
+            return animation.isFinished()
         end
     })
 
