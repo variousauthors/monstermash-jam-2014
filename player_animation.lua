@@ -11,7 +11,7 @@ local frames = require("animation_index")
 return function (entity, image, movement, x_buster, controls, verbose)
     -- I think we won't need this
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local animation        = FSM(true)
+    local animation        = FSM()
     local timer            = 0
     local anim, duration
     local facing = entity.get("facing")
@@ -19,21 +19,18 @@ return function (entity, image, movement, x_buster, controls, verbose)
     local g = anim8.newGrid(51, 51, image:getWidth(), image:getHeight())
 
     local update_facing = function ()
-        local old = facing
         facing = entity.get("facing")
 
-        if old ~= facing then
-            anim:flipH()
-        end
+        anim:setFlipped(facing == LEFT)
     end
 
     local _old = anim8.newAnimation
     anim8.newAnimation = function (frames, durations, onLoop)
         local result = _old(frames, durations, onLoop)
 
-        if entity.get("facing") == LEFT then
-            result:flipH()
-        end
+        facing = entity.get("facing")
+
+        result:setFlipped(facing == LEFT)
 
         return result
     end

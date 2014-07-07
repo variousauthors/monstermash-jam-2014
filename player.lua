@@ -127,9 +127,10 @@ return function (x, y, controls)
 
     entity.resolveJump = function (dt)
         if entity.get("wall_jump") then
-            local facing = entity.get("near_a_wall") == LEFT and RIGHT or LEFT
+            local away = entity.get("near_a_wall") == LEFT and RIGHT or LEFT
 
-            move(facing, 10)
+            move(away, 10)
+            entity.setFacing(entity.get("near_a_wall"))
             entity.set("wall_jump", false)
             entity.set("near_a_wall", nil)
         end
@@ -307,6 +308,7 @@ return function (x, y, controls)
     end
 
     entity.update = function (dt, world)
+        print("facing " .. entity.get("facing"))
         if movement.is("destroyed") then
             if world.bump:hasItem(entity) then
                 world.bump:remove(entity)

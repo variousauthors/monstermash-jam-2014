@@ -74,6 +74,7 @@ return function (entity, controls, verbose)
             -- if a jump starts near a wall, kick off
             if entity.get("near_a_wall") ~= nil then
                 entity.set("wall_jump", true)
+                entity.setFacing(entity.get("near_a_wall"))
                 Sound:run('wall_jump', id)
             else
                 Sound:run('jump', id)
