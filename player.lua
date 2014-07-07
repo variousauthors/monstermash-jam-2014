@@ -254,7 +254,7 @@ return function (x, y, controls)
         if len == 0 then
             -- if megaman falls away from a wall, then he loses the
             -- wall kick
-            if movement.is("falling") then
+            if entity.get("near_a_wall") ~= nil and movement.is("falling") then
                 entity.set("near_a_wall", nil)
             end
         else
@@ -265,10 +265,11 @@ return function (x, y, controls)
 
                 -- megaman is near a wall he picks up a "near a wall"
                 -- which he can use to kick off a wall from falling
-                if movement.is("jumping") then
+                if movement.is("jumping") or movement.is("falling") then
                     if (nx == 1) then
                         entity.set("near_a_wall", LEFT)
                     elseif (nx == -1) then
+
                         entity.set("near_a_wall", RIGHT)
                     end
                 end
