@@ -372,17 +372,17 @@ return function (x, y, controls)
             -- love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
         end
 
-        if movement.is("running") then
-            love.graphics.setColor(COLOR.RED)
-        elseif movement.is("jumping") then
-            love.graphics.setColor(COLOR.GREEN)
-        elseif movement.is("falling") then
-            love.graphics.setColor(COLOR.PURPLE)
-        elseif movement.is("climbing") then
-            love.graphics.setColor(COLOR.GREY)
-        else
-            love.graphics.setColor(COLOR.BLUE)
-        end
+      --if movement.is("running") then
+      --    love.graphics.setColor(COLOR.RED)
+      --elseif movement.is("jumping") then
+      --    love.graphics.setColor(COLOR.GREEN)
+      --elseif movement.is("falling") then
+      --    love.graphics.setColor(COLOR.PURPLE)
+      --elseif movement.is("climbing") then
+      --    love.graphics.setColor(COLOR.GREY)
+      --else
+      --    love.graphics.setColor(COLOR.BLUE)
+      --end
 
         local flicker = 0
         if x_buster.is("charging") then
@@ -411,9 +411,9 @@ return function (x, y, controls)
 
         if movement.is("damaged") then
             local r, g, b = love.graphics.getColor()
-            love.graphics.setColor(COLOR.YELLOW)
-            love.graphics.rectangle("fill", draw_x - 5, draw_y - 5, width + 10, height + 10)
-            love.graphics.setColor({ r, g, b })
+          --love.graphics.setColor(COLOR.YELLOW)
+          --love.graphics.rectangle("fill", draw_x - 5, draw_y - 5, width + 10, height + 10)
+          --love.graphics.setColor({ r, g, b })
         end
 
         if movement.is("destroyed") then
@@ -427,49 +427,35 @@ return function (x, y, controls)
         end
 
         if flicker == 0 then
-            if movement.is("dashing") then
-                local verts
-                local lean = 5
+            if movement.is("destroyed") then
 
-                if entity.get("facing") == LEFT then
-                    verts = { draw_x - lean, draw_y, draw_x + width - lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
-                else
-                    verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
-                end
+                love.graphics.setColor(COLOR.CYAN)
+                for j = 1, ring_count do
+                    local r = ring_timer/j
 
-                --love.graphics.polygon("fill", verts)
-            else
-                if movement.is("destroyed") then
+                    for i = 1, 8 do
+                        local rad = i*math.pi/4 + ring_timer
+                        local x = r*4*math.cos(rad)
+                        local y = r*4*math.sin(rad)
 
-                    love.graphics.setColor(COLOR.CYAN)
-                    for j = 1, ring_count do
-                        local r = ring_timer/j
+                        local rad2 = i*math.pi/4 + ring_timer + math.pi/3
+                        local x2 = r*4.2*math.cos(rad2)
+                        local y2 = r*4.2*math.sin(rad2)
 
-                        for i = 1, 8 do
-                            local rad = i*math.pi/4 + ring_timer
-                            local x = r*4*math.cos(rad)
-                            local y = r*4*math.sin(rad)
-
-                            local rad2 = i*math.pi/4 + ring_timer + math.pi/3
-                            local x2 = r*4.2*math.cos(rad2)
-                            local y2 = r*4.2*math.sin(rad2)
-
-                            love.graphics.rectangle("fill", draw_x + x, draw_y + y, 5, 5)
-                            love.graphics.rectangle("fill", draw_x + x2, draw_y + y2, 5, 5)
-                        end
+                        love.graphics.rectangle("fill", draw_x + x, draw_y + y, 5, 5)
+                        love.graphics.rectangle("fill", draw_x + x2, draw_y + y2, 5, 5)
                     end
-                else
                 end
+            else
+                animation.draw(draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y)
             end
         end
 
-        movement.draw()
-        love.graphics.setColor(COLOR.WHITE)
-        animation.draw(draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y)
 
       --love.graphics.rectangle("line", draw_x, draw_y, width, height)
       --love.graphics.rectangle("line", draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y, 51, 51)
       --love.graphics.line(draw_x - sprite_box_offset_x + sprite_width/2, draw_y - sprite_diff, draw_x - sprite_box_offset_x + sprite_width/2, draw_y + sprite_box_offset_y + sprite_diff)
+        love.graphics.setColor(COLOR.WHITE)
     end
 
     return entity
