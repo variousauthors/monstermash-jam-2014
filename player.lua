@@ -113,15 +113,16 @@ return function (x, y, controls)
 
         entity.setX(entity.getX() + sign*speed)
         senses.setX(senses.getX() + sign*speed)
-        entity.setFacing(direction)
     end
 
     entity.resolveLeft = function ()
         move(LEFT, horizontal_speed)
+        entity.setFacing(LEFT)
     end
 
     entity.resolveRight = function ()
         move(RIGHT, horizontal_speed)
+        entity.setFacing(RIGHT)
     end
 
     entity.resolveJump = function (dt)
@@ -364,10 +365,10 @@ return function (x, y, controls)
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
-
-        -- get the facing for flip
         if entity.get("facing") == LEFT then
+            love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
         else
+            love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
         end
 
         if movement.is("running") then
