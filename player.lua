@@ -22,7 +22,7 @@ Bullets = {
 }
 
 return function (x, y, controls)
-    local controls = require(controls)
+    local controls = require('controls')[controls]
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
 
     MovementModule = require("player_movement")
