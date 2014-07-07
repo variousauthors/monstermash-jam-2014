@@ -15,8 +15,8 @@ local releaseCount = 0
 -- All the important numbers/counters
 
 local _stop = false
-local _epsilon = 0.0000001
-local _throttle = 3000
+local _epsilon = 0.0001
+local _throttle = 1250 -- Faster than 1ms precision
 local _time = love.timer.getTime()
 local _threadStart = _time
 local _dt = 0
@@ -95,7 +95,7 @@ while not _stop do
     if pollstate then rChannel:push(InputMapper:isState(pollstate)) end
 
     local msg = cChannel:pop()
-    if type(msg) == 'table' then
+    if (type(msg) == 'table') then
         local callback = table.remove(msg, 1)
         dChannel:push({"COMMAND", callback, unpack(msg)})
         if(callbacks[callback]) then

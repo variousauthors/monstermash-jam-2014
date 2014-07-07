@@ -13,8 +13,8 @@ SoundResources = SoundResources or {}
 -- All the important numbers/counters
 
 local _stop = false
-local _epsilon = 0.0000001
-local _throttle = 100000
+local _epsilon = 0.0001
+local _throttle = 72000 -- 50% above 44800khz
 local _time = love.timer.getTime()
 local _threadStart = _time
 local _dt = 0
@@ -147,7 +147,7 @@ while not _stop do
     soundTick(_dt)
 
     local msg = cChannel:pop()
-    if type(msg) == 'table' then
+    if (type(msg) == 'table') then
         local callback = table.remove(msg, 1)
         dChannel:push({"COMMAND", callback, unpack(msg)})
 

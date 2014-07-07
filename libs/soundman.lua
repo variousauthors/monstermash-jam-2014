@@ -27,6 +27,7 @@ function SoundMan:reInitialize()
 end
 
 function SoundMan:sendCommand(msg)
+    if (msg == nil) then return end
     self.cChannel:push(msg)
 end
 
