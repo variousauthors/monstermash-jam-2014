@@ -112,7 +112,6 @@ function World:update(dt)
 end
 
 function World:draw(dt)
-    love.graphics.setColor(COLOR.WHITE)
     love.graphics.draw(self.background_image)
 
     for i, entity in pairs(self.entities) do
