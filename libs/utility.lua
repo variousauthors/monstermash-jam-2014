@@ -27,6 +27,12 @@ function deepcopy(orig)
     return copy
 end
 
+function table.find(table, element)
+  for k, v in pairs(table) do
+    if (v == element) then return k end
+  end
+end
+
 rng = love.math.newRandomGenerator(love.timer.getTime())
 
 COLOR = {

@@ -26,7 +26,27 @@ local tChannel = love.thread.getChannel("sound")
 local dChannel = love.thread.getChannel("sound_debug")
 local callbacks = {}
 
+local parseTagString = function(tags)
+    if not tags then return end
+    tagTable = {}
+    if tags then
+        for token in string.gmatch(tags,"([^%,%;%s]+)") do
+            table.insert(tagTable, token)
+        end
+    end
+    return tagTable
+end
+
 -- Callbacks
+
+callbacks['touchResource'] = function(...)
+    local args = {...}
+    srcType = 'stream'
+    for _, e in ipairs(args) do
+        if(e == 'static') then srcType = 'static' end
+    end
+    SoundObject:getResource(args[1], srcType)
+end
 
 callbacks['playSound'] = function(...)
     local snd = SoundObject:new(...)
@@ -70,24 +90,24 @@ callbacks['playSoundPartialLoop'] = function(...)
     snd:play()
 end
 
-callbacks['stop'] = function(tag)
-    tag = tag or 'all'
+callbacks['stop'] = function(tags)
+    tags = parseTagString(tags) or 'all'
     for i, sound in ipairs(SoundObjects) do
-        if (tag == "all" or sound:hasTag(tag)) then sound:stop() end
+        if (tag == "all" or sound:hasTag(tags)) then sound:stop() end
     end
 end
 
-callbacks['pause'] = function(tag)
-    tag = tag or 'all'
+callbacks['pause'] = function(tags)
+    tags = parseTagString(tags) or 'all'
     for i, sound in ipairs(SoundObjects) do
-        if (tag == "all" or sound:hasTag(tag)) then sound:pause() end
+        if (tags == "all" or sound:hasTag(tags)) then sound:pause() end
     end
 end
 
-callbacks['resume'] = function(tag)
-    tag = tag or 'all'
+callbacks['resume'] = function(tags)
+    tags = parseTagString(tags) or 'all'
     for i, sound in ipairs(SoundObjects) do
-        if (tag == "all" or sound:hasTag(tag)) then sound:resume() end
+        if (tags == "all" or sound:hasTag(tags)) then sound:resume() end
     end
 end
 
