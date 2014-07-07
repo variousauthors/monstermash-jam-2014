@@ -45,9 +45,12 @@ function SoundObject:initialize(source, tags, volume, srcType, callbacks)
     table.insert(SoundObjects, self)
 end
 
-function SoundObject:hasTag(tag)
+function SoundObject:hasTag(tags)
+    if(type(tags) == "string") then tags = {tags} end
+    local toFind = #tags
     for k, v in ipairs(self.tags) do
-        if (v == tag) then return true end
+        if table.find(tags, v) then toFind = toFind - 1 end
+        if (toFind == 0) then return true end
     end
 end
 
