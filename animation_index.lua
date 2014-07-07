@@ -27,7 +27,7 @@ animation_index = {
     to_hurt = { 1,11 },
     hurt    = { '2-11', 11 },
 
-    death = { 1,11 }
+    death = { '1-4', 12 }
 }
 
 animation_index.get = function (string)

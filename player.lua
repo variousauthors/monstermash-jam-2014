@@ -308,7 +308,6 @@ return function (x, y, controls)
     end
 
     entity.update = function (dt, world)
-        print("facing " .. entity.get("facing"))
         if movement.is("destroyed") then
             if world.bump:hasItem(entity) then
                 world.bump:remove(entity)
@@ -368,9 +367,9 @@ return function (x, y, controls)
         local draw_y = entity.getY()
 
         if entity.get("facing") == LEFT then
-            love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
+            -- love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
         else
-            love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
+            -- love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
         end
 
         if movement.is("running") then

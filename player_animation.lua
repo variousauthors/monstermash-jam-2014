@@ -205,13 +205,13 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addState({
         name = "hurt",
-        init = animation.getInit(0.1, 'pauseAtEnd'),
+        init = animation.getInit(0.2, 'pauseAtEnd'),
         update = update_transition_animation
     })
 
     animation.addState({
         name = "death",
-        init = animation.getInit(0.1),
+        init = animation.getInit(1, 'pauseAtEnd'),
     })
 
     --- TRANSITIONS ---
