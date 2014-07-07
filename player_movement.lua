@@ -21,7 +21,12 @@ return function (entity, controls, verbose)
     })
 
     movement.addState({
-        name = "destroyed"
+        name = "destroyed",
+        init = function()
+            local id = entity.get("id")
+            Sound:stop(id)
+            Sound:run("destroyed", id)
+        end
     })
 
     movement.addState({
@@ -39,6 +44,10 @@ return function (entity, controls, verbose)
 
     movement.addState({
         name = "dashing",
+        init = function()
+            local id = entity.get('id')
+            Sound:run('dash', id)
+        end,
         update = function ()
             if entity.holding(DASH) then
                 entity.resolveDash()
@@ -49,6 +58,8 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "dash_jump",
         init = function ()
+            local id = entity.get('id')
+            Sound:run('wall_jump', id)
             entity.set("dash_jump", true)
         end
     })
@@ -56,9 +67,14 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "jumping",
         init = function ()
+            local id = entity.get('id')
+
             -- if a jump starts near a wall, kick off
             if entity.get("near_a_wall") ~= nil then
                 entity.set("wall_jump", true)
+                Sound:run('wall_jump', id)
+            else
+                Sound:run('jump', id)
             end
 
             entity.startJump()
@@ -120,6 +136,8 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "wall_jump",
         init = function ()
+            local id = entity.get('id')
+            Sound:run('wall_jump', id)
             entity.set(FALLING, false)
             entity.set("wall_jump", true)
         end
@@ -128,6 +146,9 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "damaged",
         init = function ()
+            local id = entity.get('id')
+            Sound:stop(id)
+            Sound:run('damaged', id)
             entity.set("hp", math.max(entity.get("hp") - entity.get("damage_queue")))
             entity.set("damage_queue", 0)
             entity.set("invulnerable", 1)
@@ -367,7 +388,7 @@ return function (entity, controls, verbose)
         from = "any",
         to = "destroyed",
         condition = function ()
-            return entity.get("hp") < 1
+            return entity.get("hp") < 1 and not movement.is('destroyed')
         end
     })
 
