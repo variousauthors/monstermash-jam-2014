@@ -52,43 +52,37 @@ return function (entity, image, movement, x_buster, controls, verbose)
     end
 
     animation.isFinished = function ()
-        print("d:", duration)
         return timer > duration
     end
 
     animation.getInit = function (d, ...)
         local args = ...
         return function ()
-            print(d)
-            duration = d
-            timer = 0
-            print(animation.getState(), duration, args)
+            duration, timer = d, 0
             anim = anim8.newAnimation(g(frames.get(animation.getState())), duration, args)
         end
     end
 
-    animation.addState({
-        name = "into_standing",
-        init = animation.getInit(0.1, 'pauseAtEnd'),
-        update = function (dt)
-            local speed = 1
-
-            timer = timer + speed*dt
-            -- here we update the animation
-
-            update_facing()
-            anim:update(speed*dt)
-        end
-    })
+    --- ANIMATION STATES ---
 
     animation.addState({
         name = "standing",
         init = animation.getInit(0.1)
     })
 
+    animation.addState({
+        name = "to_recoil",
+        init = animation.getInit(0.1)
+    })
+
+    animation.addState({
+        name = "recoil",
+        init = animation.getInit(0.1)
+    })
+
     -- going into the jump animation
     animation.addState({
-        name = "into_jumping",
+        name = "to_jumping",
         init = animation.getInit(0.2, 'pauseAtEnd'),
         update = function (dt)
             local speed = 1
@@ -115,7 +109,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     -- going into falling
     animation.addState({
-        name = "into_falling",
+        name = "to_falling",
         init = animation.getInit(0.2, 'pauseAtEnd'),
         update = function (dt)
             local speed = 1
@@ -139,16 +133,140 @@ return function (entity, image, movement, x_buster, controls, verbose)
         init = animation.getInit(0.1),
     })
 
+    animation.addState({
+        name = "falling_to_standing",
+        init = animation.getInit(0.1, 'pauseAtEnd'),
+        update = function (dt)
+            local speed = 1
+
+            timer = timer + speed*dt
+            -- here we update the animation
+
+            update_facing()
+            anim:update(speed*dt)
+        end
+    })
+
+    animation.addState({
+        name = "to_running",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "running",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "from_running",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "to_dashing",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "dashing",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "from_dashing",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "to_climbing",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "climbing",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "climbing_to_jump",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "to_hurt",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "hurt",
+        init = animation.getInit(0.1),
+    })
+
+    animation.addState({
+        name = "death",
+        init = animation.getInit(0.1),
+    })
+
+    --- TRANSITIONS ---
+
     animation.addTransition({
         from = "standing",
-        to = "into_jumping",
+        to = "to_jumping",
         condition = function ()
             return movement.is("jumping")
         end
     })
 
     animation.addTransition({
-        from = "into_jumping",
+        from = "standing",
+        to = "to_dashing",
+        condition = function ()
+            return movement.is("dashing")
+        end
+    })
+
+    animation.addTransition({
+        from = "standing",
+        to = "to_running",
+        condition = function ()
+            return movement.is("running")
+        end
+    })
+
+    animation.addTransition({
+        from = "standing",
+        to = "to_falling",
+        condition = function ()
+            return movement.is("falling")
+        end
+    })
+
+    animation.addTransition({
+        from = "standing",
+        to = "to_recoil",
+        condition = function ()
+            return movement.is("standing") and x_buster.is("shoot")
+        end
+    })
+
+    animation.addTransition({
+        from = "recoil",
+        to = "to_recoil",
+        condition = function ()
+            return movement.is("standing") and x_buster.is("cool_down")
+        end
+    })
+
+    animation.addTransition({
+        from = "recoil",
+        to = "standing",
+        condition = function ()
+            return movement.is("standing") and x_buster.is("inactive")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_jumping",
         to = "jumping",
         condition = function ()
             return animation.isFinished()
@@ -157,14 +275,22 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "jumping",
-        to = "into_falling",
+        to = "to_falling",
         condition = function ()
             return movement.is("falling")
         end
     })
 
     animation.addTransition({
-        from = "into_falling",
+        from = "jumping",
+        to = "to_dashing",
+        condition = function ()
+            return movement.is("dashing")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_falling",
         to = "falling",
         condition = function ()
             return animation.isFinished()
@@ -173,17 +299,185 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "falling",
-        to = "into_standing",
+        to = "falling_to_standing",
         condition = function ()
             return movement.is("standing")
         end
     })
 
     animation.addTransition({
-        from = "into_standing",
+        from = "falling_to_standing",
         to = "standing",
         condition = function ()
             return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "falling",
+        to = "to_dashing",
+        condition = function ()
+            return movement.is("dashing")
+        end
+    })
+
+    animation.addTransition({
+        from = "falling",
+        to = "to_climbing",
+        condition = function ()
+            return movement.is("climbing")
+        end
+    })
+
+    animation.addTransition({
+        from = "falling",
+        to = "climbing_to_jump",
+        condition = function ()
+            return movement.is("jumping")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_running",
+        to = "running",
+        condition = function ()
+            return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "running",
+        to = "from_running",
+        condition = function ()
+            return movement.is("standing")
+        end
+    })
+
+    animation.addTransition({
+        from = "from_running",
+        to = "standing",
+        condition = function ()
+            return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "running",
+        to = "to_jumping",
+        condition = function ()
+            return movement.is("jumping")
+        end
+    })
+
+    animation.addTransition({
+        from = "running",
+        to = "to_dashing",
+        condition = function ()
+            return movement.is("dashing")
+        end
+    })
+
+    animation.addTransition({
+        from = "running",
+        to = "to_falling",
+        condition = function ()
+            return movement.is("falling")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_dashing",
+        to = "dashing",
+        condition = function ()
+            return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "dashing",
+        to = "from_dashing",
+        condition = function ()
+            return movement.is("standing")
+        end
+    })
+
+    animation.addTransition({
+        from = "from_dashing",
+        to = "standing",
+        condition = function ()
+            return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "dashing",
+        to = "to_jumping",
+        condition = function ()
+            return movement.is("jumping")
+        end
+    })
+
+    animation.addTransition({
+        from = "dashing",
+        to = "to_running",
+        condition = function ()
+            return movement.is("running")
+        end
+    })
+
+    animation.addTransition({
+        from = "dashing",
+        to = "to_falling",
+        condition = function ()
+            return movement.is("falling")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_climbing",
+        to = "climbing",
+        condition = function ()
+            return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "climbing",
+        to = "climbing_to_jump",
+        condition = function ()
+            return movement.is("jumping")
+        end
+    })
+
+    animation.addTransition({
+        from = "climbing_to_jump",
+        to = "to_jumping",
+        condition = function ()
+            return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "any",
+        to = "to_hurt",
+        condition = function ()
+            return movement.is("damaged")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_hurt",
+        to = "hurt",
+        condition = function ()
+            return animation.isFinished()
+        end
+    })
+
+    animation.addTransition({
+        from = "any",
+        to = "death",
+        condition = function ()
+            return movement.is("destroyed")
         end
     })
 
