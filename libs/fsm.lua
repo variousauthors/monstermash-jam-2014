@@ -31,7 +31,7 @@
     --  }
 --  })
 
-FSM = function (verbose)
+FSM = function (verbose, label)
     local states        = {}
     local current_state = { name = "nil" }
 
@@ -107,7 +107,11 @@ FSM = function (verbose)
         current_state.count = current_state.count + 1
 
         if verbose then
-            print("in " .. current_state.name)
+            if label then
+                print(label .. " " .. current_state.name)
+            else
+                print("in " .. current_state.name)
+            end
         end
     end
 

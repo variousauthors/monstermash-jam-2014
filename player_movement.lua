@@ -7,7 +7,7 @@
 
 return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement                       = FSM(verbose)
+    local movement                       = FSM()
     local dash_duration                  = 30
     local damaged_duration               = 20
 
@@ -17,6 +17,7 @@ return function (entity, controls, verbose)
             entity.set("dash_jump", false)
             entity.set("shocked", false)
             entity.set("near_a_wall", nil)
+            entity.set("can_dash", true)
         end
     })
 
@@ -45,6 +46,7 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "dashing",
         init = function()
+            entity.set("can_dash", false)
             local id = entity.get('id')
             Sound:run('dash', id)
         end,
@@ -72,6 +74,7 @@ return function (entity, controls, verbose)
             -- if a jump starts near a wall, kick off
             if entity.get("near_a_wall") ~= nil then
                 entity.set("wall_jump", true)
+                entity.setFacing(entity.get("near_a_wall"))
                 Sound:run('wall_jump', id)
             else
                 Sound:run('jump', id)
@@ -117,6 +120,7 @@ return function (entity, controls, verbose)
         name = "climbing",
         init = function ()
             entity.set("dash_jump", false)
+            entity.set("can_dash", true)
         end,
         update = function ()
             if entity.holding(LEFT) then
@@ -129,7 +133,7 @@ return function (entity, controls, verbose)
 
             -- megaman faces away from the wall
             local facing = entity.get("facing") == LEFT and RIGHT or LEFT
-            entity.set("facing", facing)
+            entity.setFacing(facing)
         end
     })
 
@@ -229,36 +233,13 @@ return function (entity, controls, verbose)
         to = "running",
         condition = function ()
             local turning     = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
-            local not_jumping = entity.holding(DASH) and not entity.pressed(JUMP)
-            local dash_done   = movement.getCount() > dash_duration
+            local not_jumping = not entity.holding(JUMP) and not entity.pressed(JUMP)
+            local dash_done   = movement.getCount() > dash_duration or not entity.holding(DASH)
             local running     = entity.pressed(RIGHT) or entity.pressed(LEFT)
 
-            return not entity.get(FALLING) and ((dash_done and running) or (turning and not_jumping))
+            return (turning and not_jumping) or dash_done
         end
     })
-
-    movement.addTransition({
-        from = "dashing",
-        to = "standing",
-        condition = function ()
-            local dash_done   = movement.getCount() > dash_duration
-            local standing    = not entity.pressed(RIGHT) and not entity.pressed(LEFT)
-
-            return not entity.pressed(JUMP) and (not entity.holding(DASH) or (dash_done and standing))
-        end
-    })
-
-    -- rather than dashing to falling, we will do dashing to dash_jump
-    -- but in a situation where you aren't jumping
---  movement.addTransition({
---      from = "dashing",
---      to = "falling",
---      condition = function ()
---          local dash_done   = movement.getCount() > dash_duration
-
---          return dash_done or not entity.holding(DASH)
---      end
---  })
 
     movement.addTransition({
         from = "dashing",
@@ -288,7 +269,7 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "dashing",
         condition = function ()
-            return entity.holding(DASH)
+            return entity.holding(DASH) and entity.get("can_dash")
         end
     })
 
@@ -312,7 +293,7 @@ return function (entity, controls, verbose)
         from = "falling",
         to = "dashing",
         condition = function ()
-            return entity.pressed(DASH)
+            return entity.pressed(DASH) and entity.get("can_dash")
         end
     })
 
@@ -320,10 +301,11 @@ return function (entity, controls, verbose)
         from = "falling",
         to = "climbing",
         condition = function ()
-            return movement.isSet("climbing") and entity.get(FALLING) and entity.get("vs") == 0 and not entity.pressed(DASH)
+            return not entity.pressed(JUMP) and movement.isSet("climbing") and entity.get(FALLING) and entity.get("vs") == 0 and not entity.pressed(DASH)
         end
     })
 
+    -- climbing jumping ambiguity
     movement.addTransition({
         from = "falling",
         to = "jumping",
@@ -346,7 +328,7 @@ return function (entity, controls, verbose)
         from = "climbing",
         to = "dashing",
         condition = function ()
-            return entity.pressed(DASH)
+            return entity.pressed(DASH) and entity.get("can_dash")
         end
     })
 

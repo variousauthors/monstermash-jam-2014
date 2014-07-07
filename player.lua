@@ -8,8 +8,9 @@ HOLDING      = "holding"
 FALLING      = "falling"
 FLOOR_HEIGHT = 170
 
-MovementModule = require("player_movement")
-XBuster        = require("arm_cannon")
+MovementModule  = require("player_movement")
+AnimationModule = require("player_animation")
+XBuster         = require("arm_cannon")
 
 Pellet    = BulletFactory(3, 4, 4, 1, COLOR.YELLOW, "pellet")
 Blast     = BulletFactory(4, 20, 5, 2, COLOR.GREEN, "blast")
@@ -25,9 +26,6 @@ return function (x, y, controls)
     local controls = require('controls')[controls]
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
 
-    MovementModule = require("player_movement")
-    XBuster        = require("arm_cannon")
-
     local ring_timer       = 0
     local ring_timer_limit = 100
     local ring_count       = 1
@@ -36,8 +34,8 @@ return function (x, y, controls)
 
     -- back of glove to beginning of red thing
     -- red thing is top
-    local height      = 30
-    local width       = 15
+    local height      = 29
+    local width       = 12
     local max_bullets = 3
 
     local fat_gun_dim             = 3
@@ -60,8 +58,25 @@ return function (x, y, controls)
         world.bump:add(senses, senses.getBoundingBox())
     end
 
-    entity.set("facing", RIGHT)
+    local sprite_box_offset_x = 20
+    local sprite_box_offset_y = 9
+
+    entity.setFacing = function (facing)
+        -- we have to flip his collision box
+        if facing == LEFT and entity.get("facing") ~= facing then
+            sprite_box_offset_x = 17
+        end
+
+        if facing == RIGHT and entity.get("facing") ~= facing then
+            sprite_box_offset_x = 22
+        end
+
+        entity.set("facing", facing)
+    end
+
+    entity.setFacing(RIGHT)
     entity.set("vs", 0)
+    entity.set("initial_vs", initial_vs)
     entity.set("hp", 16)
 
     -- TODO player's collide with enemies causing damage
@@ -81,8 +96,11 @@ return function (x, y, controls)
         return entity.get(key) == HOLDING
     end
 
-    local movement = MovementModule(entity, controls)
-    local x_buster = XBuster(entity, controls)
+    local image     = love.graphics.newImage('assets/spirtesheetv1.png')
+
+    local movement  = MovementModule(entity, controls)
+    local x_buster  = XBuster(entity, controls)
+    local animation = AnimationModule(entity, image, movement, x_buster, controls)
 
     local move = function (direction, speed)
         local sign = (direction == LEFT) and -1 or 1
@@ -95,22 +113,24 @@ return function (x, y, controls)
 
         entity.setX(entity.getX() + sign*speed)
         senses.setX(senses.getX() + sign*speed)
-        entity.set("facing", direction)
     end
 
     entity.resolveLeft = function ()
         move(LEFT, horizontal_speed)
+        entity.setFacing(LEFT)
     end
 
     entity.resolveRight = function ()
         move(RIGHT, horizontal_speed)
+        entity.setFacing(RIGHT)
     end
 
     entity.resolveJump = function (dt)
         if entity.get("wall_jump") then
-            local facing = entity.get("near_a_wall") == LEFT and RIGHT or LEFT
+            local away = entity.get("near_a_wall") == LEFT and RIGHT or LEFT
 
-            move(facing, 10)
+            move(away, 10)
+            entity.setFacing(entity.get("near_a_wall"))
             entity.set("wall_jump", false)
             entity.set("near_a_wall", nil)
         end
@@ -229,7 +249,7 @@ return function (x, y, controls)
             local facing        = (entity_center > bullet_center) and LEFT or RIGHT
 
             entity.set("damage_queue", bullet.get("damage"))
-            entity.set("facing", facing) -- megaman always turns to face the damage source
+            entity.setFacing(facing)
             movement.update()
             x_buster.start("inactive")
 
@@ -248,7 +268,7 @@ return function (x, y, controls)
         if len == 0 then
             -- if megaman falls away from a wall, then he loses the
             -- wall kick
-            if movement.is("falling") then
+            if entity.get("near_a_wall") ~= nil and movement.is("falling") then
                 entity.set("near_a_wall", nil)
             end
         else
@@ -259,10 +279,11 @@ return function (x, y, controls)
 
                 -- megaman is near a wall he picks up a "near a wall"
                 -- which he can use to kick off a wall from falling
-                if movement.is("jumping") then
+                if movement.is("jumping") or movement.is("falling") then
                     if (nx == 1) then
                         entity.set("near_a_wall", LEFT)
                     elseif (nx == -1) then
+
                         entity.set("near_a_wall", RIGHT)
                     end
                 end
@@ -316,6 +337,7 @@ return function (x, y, controls)
 
         movement.update(dt)
         x_buster.update(dt)
+        animation.update(dt)
 
         if not movement.is("dashing") then
             entity.resolveFall(dt)
@@ -341,30 +363,26 @@ return function (x, y, controls)
     end
 
     entity.draw       = function ()
-
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
-        love.graphics.setColor(COLOR.RED)
         if entity.get("facing") == LEFT then
-            love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
-            love.graphics.line(draw_x-1, draw_y, draw_x-1, draw_y + height)
+            -- love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
         else
-            love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
-            love.graphics.line(draw_x + width +1, draw_y, draw_x + width +1, draw_y + height)
+            -- love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
         end
 
-        if movement.is("running") then
-            love.graphics.setColor(COLOR.RED)
-        elseif movement.is("jumping") then
-            love.graphics.setColor(COLOR.GREEN)
-        elseif movement.is("falling") then
-            love.graphics.setColor(COLOR.PURPLE)
-        elseif movement.is("climbing") then
-            love.graphics.setColor(COLOR.GREY)
-        else
-            love.graphics.setColor(COLOR.BLUE)
-        end
+      --if movement.is("running") then
+      --    love.graphics.setColor(COLOR.RED)
+      --elseif movement.is("jumping") then
+      --    love.graphics.setColor(COLOR.GREEN)
+      --elseif movement.is("falling") then
+      --    love.graphics.setColor(COLOR.PURPLE)
+      --elseif movement.is("climbing") then
+      --    love.graphics.setColor(COLOR.GREY)
+      --else
+      --    love.graphics.setColor(COLOR.BLUE)
+      --end
 
         local flicker = 0
         if x_buster.is("charging") then
@@ -393,9 +411,9 @@ return function (x, y, controls)
 
         if movement.is("damaged") then
             local r, g, b = love.graphics.getColor()
-            love.graphics.setColor(COLOR.YELLOW)
-            love.graphics.rectangle("fill", draw_x - 5, draw_y - 5, width + 10, height + 10)
-            love.graphics.setColor({ r, g, b })
+          --love.graphics.setColor(COLOR.YELLOW)
+          --love.graphics.rectangle("fill", draw_x - 5, draw_y - 5, width + 10, height + 10)
+          --love.graphics.setColor({ r, g, b })
         end
 
         if movement.is("destroyed") then
@@ -409,45 +427,34 @@ return function (x, y, controls)
         end
 
         if flicker == 0 then
-            if movement.is("dashing") then
-                local verts
-                local lean = 5
+            if movement.is("destroyed") then
 
-                if entity.get("facing") == LEFT then
-                    verts = { draw_x - lean, draw_y, draw_x + width - lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
-                else
-                    verts = { draw_x + lean, draw_y, draw_x + width + lean, draw_y, draw_x + width, draw_y + height, draw_x, draw_y + height }
-                end
+                love.graphics.setColor(COLOR.CYAN)
+                for j = 1, ring_count do
+                    local r = ring_timer/j
 
-                love.graphics.polygon("fill", verts)
-            else
-                if movement.is("destroyed") then
+                    for i = 1, 8 do
+                        local rad = i*math.pi/4 + ring_timer
+                        local x = r*4*math.cos(rad)
+                        local y = r*4*math.sin(rad)
 
-                    love.graphics.setColor(COLOR.CYAN)
-                    for j = 1, ring_count do
-                        local r = ring_timer/j
+                        local rad2 = i*math.pi/4 + ring_timer + math.pi/3
+                        local x2 = r*4.2*math.cos(rad2)
+                        local y2 = r*4.2*math.sin(rad2)
 
-                        for i = 1, 8 do
-                            local rad = i*math.pi/4 + ring_timer
-                            local x = r*4*math.cos(rad)
-                            local y = r*4*math.sin(rad)
-
-                            local rad2 = i*math.pi/4 + ring_timer + math.pi/3
-                            local x2 = r*4.2*math.cos(rad2)
-                            local y2 = r*4.2*math.sin(rad2)
-
-                            love.graphics.rectangle("fill", draw_x + x, draw_y + y, 5, 5)
-                            love.graphics.rectangle("fill", draw_x + x2, draw_y + y2, 5, 5)
-                        end
+                        love.graphics.rectangle("fill", draw_x + x, draw_y + y, 5, 5)
+                        love.graphics.rectangle("fill", draw_x + x2, draw_y + y2, 5, 5)
                     end
-                else
-                    love.graphics.rectangle("fill", draw_x, draw_y, width, height)
                 end
+            else
+                animation.draw(draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y)
             end
         end
 
 
-        movement.draw()
+      --love.graphics.rectangle("line", draw_x, draw_y, width, height)
+      --love.graphics.rectangle("line", draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y, 51, 51)
+      --love.graphics.line(draw_x - sprite_box_offset_x + sprite_width/2, draw_y - sprite_diff, draw_x - sprite_box_offset_x + sprite_width/2, draw_y + sprite_box_offset_y + sprite_diff)
         love.graphics.setColor(COLOR.WHITE)
     end
 

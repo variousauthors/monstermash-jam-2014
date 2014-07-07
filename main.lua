@@ -50,7 +50,7 @@ function love.update(dt)
         local msg = Sound:getDebugMessage()
         if msg then
             if(type(msg) == 'string') then print(msg) else
-                print(stringspect(msg))
+                --print(stringspect(msg))
             end
         end
     end
@@ -67,7 +67,6 @@ function love.keypressed(key, isrepeat)
 
     local i = Input:pressed(key)
     if i then
-        print('keypressed', i)
         game_state.keypressed(i)
     end
 end
@@ -75,7 +74,6 @@ end
 function love.keyreleased(key)
     local i = Input:released(key)
     if i then
-        print('keyreleased', i)
         game_state.keyreleased(i)
     end
 end
@@ -83,7 +81,6 @@ end
 function love.gamepadpressed(joystick, button)
     local i = Input:pressed(joystick, button)
     if i then
-        print('gamepadpressed', i)
         game_state.keypressed(i)
     end
 
@@ -92,14 +89,9 @@ end
 function love.gamepadreleased(joystick, button)
     local i = Input:released(joystick, button)
     if i then
-        print('gamepadreleased', i)
         game_state.keyreleased(i)
     end
 end
-
--- function love.textinput(text)
---     game_state.textinput(text)
--- end
 
 function love.draw()
     view:pushScale()
