@@ -1,11 +1,10 @@
-local class = require('vendor/middleclass/middleclass')
-
-local SoundObject = class("SoundObject")
+local SoundObject = {}
+SoundObject.__index = SoundObject
 
 SoundObjects = SoundObjects or {}
 SoundResources = SoundResources or {}
 
-function SoundObject.static:getResource(source, srcType)
+function SoundObject.getResource(source, srcType)
     srcType = srcType or 'stream'
     local key = table.concat({source, '_', srcType})
     if SoundResources[key] then return SoundResources[key] end
@@ -28,8 +27,11 @@ function SoundObject.static:getResource(source, srcType)
     end
 end
 
-function SoundObject:initialize(source, tags, volume, srcType, callbacks)
-    local resource = SoundObject:getResource(source, srcType)
+function SoundObject.new(source, tags, volume, srcType, callbacks)
+    local self = {}
+    setmetatable(self, SoundObject)
+
+    local resource = SoundObject.getResource(source, srcType)
     self.source = love.audio.newSource(resource, srcType)
     self.source:setVolume(volume or 1)
 
@@ -43,6 +45,8 @@ function SoundObject:initialize(source, tags, volume, srcType, callbacks)
     self.callbacks = callbacks or {}
 
     table.insert(SoundObjects, self)
+
+    return self
 end
 
 function SoundObject:hasTag(tags)

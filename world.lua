@@ -1,10 +1,10 @@
 if not Entity then require("entity") end
 
-local class = require('vendor/middleclass/middleclass')
 local bump = require('vendor/bump/bump')
 require('vendor/lua4json/json4lua/json/json')
 
-local World = class('World')
+local World = {}
+World.__index = World
 
 --Private Methods
 
@@ -27,11 +27,14 @@ end
 
 --Public Methods
 
-function World:initialize()
+function World.new()
+    local self = {}
+    setmetatable(self, World)
+
     self.entities = {}
 
     self.obstacles = {}
-    self.bump = bump.newWorld(64)
+    self.bump = bump.newWorld(32)
 
     local contents, size = love.filesystem.read("assets/arena_highway.json")
     local data = json.decode(contents)
@@ -45,6 +48,8 @@ function World:initialize()
 
     self.timer = 0
     self.tic_duration = 1
+
+    return self
 end
 
 function World:register(entity)
@@ -82,6 +87,18 @@ function World:tic(dt)
     end
 end
 
+function World:keypressed(key)
+    for i, entity in pairs(self.entities) do
+        if entity.keypressed then entity.keypressed(key) end
+    end
+end
+
+function World:keyreleased(key)
+    for i, entity in pairs(self.entities) do
+        if entity.keyreleased then entity.keyreleased(key) end
+    end
+end
+
 function World:update(dt)
     self:tic(dt)
     -- iterate over the entities
@@ -95,7 +112,6 @@ function World:update(dt)
 end
 
 function World:draw(dt)
-    love.graphics.setColor(COLOR.WHITE)
     love.graphics.draw(self.background_image)
 
     for i, entity in pairs(self.entities) do
