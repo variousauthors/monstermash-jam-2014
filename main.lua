@@ -51,7 +51,8 @@ Input = require("libs/input"):new({
     p4_right  = {"j4_dpright"},
     p4_jump   = {"j4_a"},
     p4_shoot  = {"j4_x"},
-    p4_dash   = {"j4_rightshoulder"}
+    p4_dash   = {"j4_rightshoulder"},
+    pause     = {"k_p"}
 })
 
 Sound  = require("sound")
