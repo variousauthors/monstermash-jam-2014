@@ -9,7 +9,7 @@
 	url = git@github.com:kikito/bump.lua.git
 [submodule "vendor/anim8"]
 	path = vendor/anim8
-	url = git@github.com:kikito/anim8.git
+	url = git@github.com:variousauthors/anim8.git
 [submodule "vendor/middleclass"]
 	path = vendor/middleclass
 	url = git@github.com:kikito/middleclass.git
