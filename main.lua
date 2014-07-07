@@ -80,9 +80,9 @@ function love.load()
     gj            = GameJolt("1", nil)
 
     world:register(rock)
-    world:register(protoman)
-    world:register(vile)
-    world:register(opera)
+  --world:register(protoman)
+  --world:register(vile)
+  --world:register(opera)
     -- world:register(chill_penguin)
 
     -- SFX

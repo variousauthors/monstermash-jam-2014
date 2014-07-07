@@ -6,11 +6,11 @@ animation_index = {
     to_recoil = { 1,2 },
     recoil    = { 2,2 },
 
-    to_jumping          = { '2-4', 1 },
-    jumping             = { 4,1 },
-    to_falling          = { '4-6', 1 },
-    falling             = { 6,1 },
-    falling_to_standing = { '7-8', 1 },
+    to_jumping          = { '1-3', 3 },
+    jumping             = { 3,3 },
+    to_falling          = { '3-5', 3 },
+    falling             = { 5,3 },
+    falling_to_standing = { '6-7', 3 },
 
     to_running   = { 1,5 },
     running      = { '2-11', 5 },
