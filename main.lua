@@ -3,6 +3,9 @@ require "libs/fsm"
 require "libs/gamejolt"
 require "libs/vector"
 require "libs/utility"
+DEBUG = true
+require "libs/linked_list"
+DEBUG = false
 
 Viewport  = require("libs/viewport")
 VHS = require("libs/inputman_recorder")
