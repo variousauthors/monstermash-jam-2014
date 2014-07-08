@@ -30,10 +30,9 @@ end
 -- and x, y are data? Then it links to the next adjacency? I think that's
 -- right. So actually, we aren't representing a graph in memory. OK?
 LinkedList = function ()
-    local head   = nil
-    local tail   = nil
-    local length = 0
     local self = {}
+
+    local head, tail, length
 
     -- iterator should have "hasNext" and "next"
     local getIterator = function ()
@@ -57,40 +56,79 @@ LinkedList = function ()
         }
     end
 
-    -- append to the list
-    local _append = { }
-    _append.func = function (data)
-        head   = Node(data, nil)
-        tail   = head
-        length = 1
-
-        _append.func = function (data)
-            local n = Node(data, nil)
-            length = length + 1
-
-            tail.setNext(n)
-            tail = n
-        end
-    end
-
     local getLength = function ()
         return length
     end
 
+    -- returns a list of one element
+    local unit = function (data)
+        head   = Node(data, nil)
+        tail   = head
+        length = 1
+
+        return self
+    end
+
+    -- returns the empty list
+    local init = function ()
+        head, tail = nil
+        length = 0
+
+        return self
+    end
+
     local append = function (data)
-        _append.func(data)
+        if length == 0 then return unit(data) end
+
+        local n = Node(data, nil)
+        length = length + 1
+
+        tail.setNext(n)
+        tail = n
 
         return self
     end
 
     local prepend = function (data)
-        _prepend.func(data)
+        print(length)
+        if length == 0 then return unit(data) end
+
+        local n = Node(data, head)
+        length = length + 1
+
+        head = n
 
         return self
     end
 
+    -- returns the last element in the list
     local pop = function ()
-        return _pop.func()
+        -- throw if we pop from an empty list
+        if length == 0 then return head.getData() end
+
+        if length == 1 then
+            local n = head.getData()
+            init()
+
+            return n
+        end
+
+        local it = getIterator()
+        local p, q = it.getNext(), nil
+
+        while (it.hasNext()) do
+            q = it.getNext()
+
+            if q ~= tail then
+                p = q
+            end
+        end
+
+        p.setNext(nil)
+        tail = p
+        length = length - 1
+
+        return q.getData()
     end
 
     local each = function (callback)
@@ -111,8 +149,10 @@ LinkedList = function ()
     self.prepend     = prepend
     self.pop         = pop
     self.each        = each
+    self.init        = init
+    self.unit        = unit
 
-    return self
+    return self.init()
 end
 
 -- returns an empty queue
@@ -215,6 +255,7 @@ if DEBUG == true then
     assert(did_run)
 
     -- can prepend elements to the front of the list
+    l = LinkedList()
     l.prepend(0).prepend(1).prepend(2)
     assert(l.getLength() == 3)
 
@@ -228,9 +269,14 @@ if DEBUG == true then
         count = count - 1
     end
 
-    -- can pop elements from the back of the list
-    iassert(l.pop() == 0)
+    -- can pop from a list
+    assert(l.pop() == 0)
     assert(l.getLength() == 2)
+
+    -- can pop the last element from a list
+    l = LinkedList()
+    l.prepend(0)
+    assert(l.pop() == 0)
 
     print("LINKED LISTS ALL PASS")
 
