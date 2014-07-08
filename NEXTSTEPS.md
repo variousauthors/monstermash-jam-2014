@@ -1,6 +1,12 @@
 NEXT STEPS
 ----------
 
+### POST COMPO ###
+
+[ ] Rework the falling/climbing/jumping code so that the intermediary animations
+    aren't tempted to fire
+[ ] overlay animations for death, slide, dash, shots, etc
+
 ### GOAL ###
 
 The Dead (working title) is a game in which the player takes on the role of

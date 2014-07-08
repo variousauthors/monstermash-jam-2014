@@ -182,7 +182,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addState({
         name = "to_climbing",
-        init = animation.getInit(0.2, 'pauseAtEnd'),
+        init = animation.getInit(0.3, 'pauseAtEnd'),
         update = update_transition_animation
     })
 
@@ -412,7 +412,15 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_dashing",
         to = "dashing",
         condition = function ()
-            return animation.isFinished()
+            return animation.isFinished() and movement.is("dashing")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_dashing",
+        to = "standing",
+        condition = function ()
+            return animation.isFinished() and movement.is("standing")
         end
     })
 
