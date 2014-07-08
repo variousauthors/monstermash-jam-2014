@@ -5,8 +5,11 @@ require "libs/vector"
 require "libs/utility"
 
 Viewport  = require("libs/viewport")
+VHS = require("libs/vhs")
 
 Input  = require("input")
+Input  = VHS.new(Input)
+Input:playback()
 Sound  = require("sound")
 World  = require("world")
 Player = require("player")
