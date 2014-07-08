@@ -5,7 +5,7 @@ require "libs/vector"
 require "libs/utility"
 
 Viewport  = require("libs/viewport")
-VHS = require("libs/vhs")
+VHS = require("libs/inputman_recorder")
 
 Input  = require("input")
 Input  = VHS.new(Input)
@@ -14,7 +14,6 @@ Sound  = require("sound")
 World  = require("world")
 Player = require("player")
 Boss   = require("boss")
-
 
 function love.focus(f) gameIsPaused = not f end
 
