@@ -13,6 +13,7 @@ function VHS.new(inputMan, world)
     self.inputMan = inputMan
     self.recording = PaddedQueue({})
 
+    self.track_list = require("track_list")
     self._playback = false
     self._record   = false
 
@@ -52,10 +53,6 @@ function VHS:processEventQueue(cb)
                 local event = table.remove(msg, 1)
                 cb(event, msg)
             end
-
-            print("---")
-            inspect(world:serialize())
-            inspect(expect)
         end
     else
         -- play the game normally, but remember the events
@@ -83,18 +80,30 @@ function VHS:isState(state)
     return self.inputMan:isState(state)
 end
 
-function VHS:playback()
+function VHS:loadTrack(track)
+    return self.recording.init(self.track_list[track])
+end
+
+function VHS:playback(track)
+    self.recording = self:loadTrack(track)
+
     self._record   = false
     self._playback = true
 end
 
-function VHS:toggleRecording()
-    if self._record == true then
-        self._record = false
-    else
-        self._record = true
-    end
+function VHS:save(track)
+    self._record = false
+    self.track_list[track] = self.recording.serialize()
 
+    local data = json.encode(self.track_list)
+    inspect(data)
+    print("writing to file")
+
+    self._playback = false
+end
+
+function VHS:startRecording()
+    self._record = true
     self._playback = false
 end
 

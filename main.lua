@@ -71,10 +71,12 @@ function love.keypressed(key, isrepeat)
     elseif (key == 'f10') then
         love.event.quit()
     elseif (key == 'q') then
-        Input:toggleRecording()
-    elseif (key == '1') then
+        Input:startRecording()
+    elseif (key:match("[1-9]")) then
         if not Input:isRecording() then
-            Input:playback()
+            Input:playback(key)
+        else
+            Input:save(key)
         end
     elseif (key == 'r') then
         if not Input:isRecording() and not Input:isPlayback() then

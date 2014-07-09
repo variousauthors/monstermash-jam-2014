@@ -4,7 +4,7 @@ NEXT STEPS
 ### VHS ###
 
 [x] Should store position data, and bark if it gets out of sync
-[ ] include a command to restart the game
+[x] include a command to restart the game
 [ ] write macros to a file, and then recall them
 [ ] toggle assert mode, in which position data is tested against
 [ ] pressing q should start the recording, and then any other key should choose
@@ -23,6 +23,8 @@ NEXT STEPS
     make assertsions about it.
     - padding is still good enough: we only need to make assertions after
       significant updates
+
+[ ] Megaman should die immediately upon falling off the screen
 
 ### GOAL ###
 
