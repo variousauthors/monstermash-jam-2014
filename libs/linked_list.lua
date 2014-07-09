@@ -37,7 +37,7 @@ LinkedList = function ()
     -- iterator should have "hasNext" and "next"
     local getIterator = function ()
         -- an imaginary node pointing at the head
-        local p = Node(nil, head)
+        local p = Node(nil, self.head)
 
         local getNext = function ()
             local n = p.getNext()
@@ -57,46 +57,45 @@ LinkedList = function ()
     end
 
     local getLength = function ()
-        return length
+        return self.length
     end
 
     -- returns a list of one element
     local unit = function (data)
-        head   = Node(data, nil)
-        tail   = head
-        length = 1
+        self.head   = Node(data, nil)
+        self.tail   = self.head
+        self.length = 1
 
         return self
     end
 
     -- returns the empty list
     local init = function ()
-        head, tail = nil
-        length = 0
+        self.head, self.tail = nil
+        self.length = 0
 
         return self
     end
 
     local append = function (data)
-        if length == 0 then return unit(data) end
+        if self.length == 0 then return unit(data) end
 
         local n = Node(data, nil)
-        length = length + 1
+        self.length = self.length + 1
 
-        tail.setNext(n)
-        tail = n
+        self.tail.setNext(n)
+        self.tail = n
 
         return self
     end
 
     local push = function (data)
-        print(length)
-        if length == 0 then return unit(data) end
+        if self.length == 0 then return unit(data) end
 
-        local n = Node(data, head)
-        length = length + 1
+        local n = Node(data, self.head)
+        self.length = self.length + 1
 
-        head = n
+        self.head = n
 
         return self
     end
@@ -104,10 +103,10 @@ LinkedList = function ()
     -- returns the last element in the list
     local unshift = function ()
         -- throw if we pop from an empty list
-        if length == 0 then return head.getData() end
+        if self.length == 0 then return self.head.getData() end
 
-        if length == 1 then
-            local n = head.getData()
+        if self.length == 1 then
+            local n = self.head.getData()
             init()
 
             return n
@@ -119,38 +118,38 @@ LinkedList = function ()
         while (it.hasNext()) do
             q = it.getNext()
 
-            if q ~= tail then
+            if q ~= self.tail then
                 p = q
             end
         end
 
         p.setNext(nil)
-        tail = p
-        length = length - 1
+        self.tail = p
+        self.length = self.length - 1
 
         return q.getData()
     end
 
     local pop = function ()
         -- throw if we pop from an empty list
-        if length == 0 then return head.getData() end
+        if self.length == 0 then return self.head.getData() end
 
-        if length == 1 then
-            local n = head.getData()
+        if self.length == 1 then
+            local n = self.head.getData()
             init()
 
             return n
         end
 
-        local n = head
-        head    = head.getNext()
-        length  = length - 1
+        local n = self.head
+        self.head    = self.head.getNext()
+        self.length  = self.length - 1
 
         return n.getData()
     end
 
     local peek = function ()
-        return head.getData()
+        return self.head.getData()
     end
 
     local each = function (callback)
@@ -168,7 +167,7 @@ LinkedList = function ()
     self.getLength   = getLength
     self.getIterator = getIterator
     self.append      = append
-    self.push     = push
+    self.push        = push
     self.pop         = pop
     self.peek        = peek
     self.each        = each
@@ -178,19 +177,64 @@ LinkedList = function ()
     return self.init()
 end
 
--- returns an empty queue
-Queue = function ()
+-- returns an empty padded queue
+-- pushing nil to a padded queue increases the padding,
+-- popping from a padded queue returns a value if there
+-- is no padding in the way. If there is padding then
+-- the queue returns the null value (or nil)
+PaddedQueue = function (null)
     local list = LinkedList()
     local self = {}
 
+    local tailPadding = function ()
+        return list.tail and type(list.tail.getData()) == TYPE.NUMBER
+    end
+
+    local headPadding = function ()
+        return list.head and type(list.head.getData()) == TYPE.NUMBER
+    end
+
+    -- investigate the tail, if it is a number value
+    -- then increment it. If the value is nil, enqueue 1
     local enqueue = function (value)
-        list.append(value)
+
+        if value == nil then
+            if tailPadding() then
+                local padding = list.tail.getData()
+                list.tail.setData(padding + 1)
+                list.length = list.length + 1
+            else
+                -- start padding
+                list.append(1)
+            end
+        else
+            list.append(value)
+        end
 
         return self
     end
 
+    -- investigate the tail, if it is a number value,
+    -- then decrement it. Dequeue it when it is 0
     local dequeue = function ()
-        return list.pop()
+        local data
+
+        if headPadding() then
+            local n = list.head.getData() - 1
+            list.head.setData(n)
+
+            if n == 0 then
+                list.pop()
+            else
+                list.length = list.length - 1
+            end
+
+            data = null
+        else
+            data = list.pop()
+        end
+
+        return data
     end
 
     self.enqueue   = enqueue
@@ -204,7 +248,7 @@ end
 
 if DEBUG == true then
     print("NODE DIAGNOSTICS")
-    local a, b, p, l, i, data, count, did_run, q
+    local a, b, c, d, e, p, l, i, data, count, did_run, q
 
     -- can create a node
     a = Node({ stuff = "hey", nil })
@@ -304,15 +348,63 @@ if DEBUG == true then
 
     print("LINKED LISTS ALL PASS")
 
-    print("TESTS FOR QUEUE")
+    print("TESTS FOR QUEUE for tables")
 
-    q = Queue()
-    q.enqueue(1).enqueue(2).enqueue(3)
+    q = PaddedQueue({})
+    q.enqueue({ 1 }).enqueue({ 2 }).enqueue({ 3 })
     assert(q.getLength() == 3)
-    assert(q.peek() == 1)
-    assert(q.dequeue() == 1)
-    assert(q.dequeue() == 2)
-    assert(q.dequeue() == 3)
+    assert(q.peek()[1] == 1)
+    assert(q.dequeue()[1] == 1)
+    assert(q.dequeue()[1] == 2)
+    assert(q.dequeue()[1] == 3)
+    assert(q.getLength() == 0)
+
+    -- can have padding
+    q = PaddedQueue({})
+    q.enqueue({ 1 }).enqueue().enqueue({ 3 })
+
+    a = q.dequeue()
+    b = q.dequeue()
+    c = q.dequeue()
+
+    assert(type(a) == TYPE.TABLE)
+    assert(a[1] == 1)
+
+    assert(type(b) == TYPE.TABLE)
+    assert(#b == 0)
+
+    assert(type(c) == TYPE.TABLE)
+    assert(c[1] == 3)
+
+    assert(q.getLength() == 0)
+
+    -- can have more padding
+    q = PaddedQueue({})
+    q.enqueue({ 1 }).enqueue().enqueue().enqueue({ 2 }).enqueue()
+    assert(q.getLength() == 5)
+    assert(q.peek()[1] == 1)
+
+    a = q.dequeue()
+    b = q.dequeue()
+    c = q.dequeue()
+    d = q.dequeue()
+    e = q.dequeue()
+
+    assert(type(a) == TYPE.TABLE)
+    assert(a[1] == 1)
+
+    assert(type(b) == TYPE.TABLE)
+    assert(#b == 0)
+
+    assert(type(c) == TYPE.TABLE)
+    assert(#c == 0)
+
+    assert(type(d) == TYPE.TABLE)
+    assert(d[1] == 2)
+
+    assert(type(e) == TYPE.TABLE)
+    assert(#e == 0)
+
     assert(q.getLength() == 0)
 
     print("QUEUE ALL PASS")

@@ -46,3 +46,10 @@ COLOR = {
     WHITE  = { 255, 255, 255 },
     BLACK  = { 55, 55, 55 }
 }
+
+-- constants for checking types
+TYPE = {
+    NUMBER   = "number",
+    TABLE    = "table",
+    FUNCTION = "function"
+}

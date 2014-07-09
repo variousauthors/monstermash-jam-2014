@@ -1,6 +1,19 @@
 NEXT STEPS
 ----------
 
+### VHS ###
+
+[ ] pressing q should start the recording, and then any other key should choose
+    what macro name to use.
+[ ] The recordings all live in a recording_macros.lua file, and are a table
+    of recordings indexed by that letter. This gets written to disk in the
+    stop state
+[ ] +/- should change the rate at which game.update gets called, slowing or
+    speeding up the game
+[ ] @ should send the game into stop state, and then any macro button should
+    load the corresponding macro
+[ ] The game should "re-init" in the start init
+
 ### GOAL ###
 
 The Dead (working title) is a game in which the player takes on the role of
