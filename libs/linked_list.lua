@@ -164,6 +164,10 @@ LinkedList = function ()
         end
     end
 
+    local isEmpty = function ()
+        return getLength() == 0
+    end
+
     self.getLength   = getLength
     self.getIterator = getIterator
     self.append      = append
@@ -173,6 +177,7 @@ LinkedList = function ()
     self.each        = each
     self.init        = init
     self.unit        = unit
+    self.isEmpty     = isEmpty
 
     return self.init()
 end
@@ -237,10 +242,37 @@ PaddedQueue = function (null)
         return data
     end
 
+    local serialize = function ()
+        local data = {}
+
+        list.each(function (n, i)
+            table.insert(data, n.getData())
+        end)
+
+        return data
+    end
+
+    local init = function (data)
+        for i, v in ipairs(data) do
+            list.append(v)
+
+            if type(v) == TYPE.NUMBER then
+                list.length = list.length + (v - 1)
+            end
+        end
+
+        return self
+    end
+
     self.enqueue   = enqueue
     self.dequeue   = dequeue
     self.peek      = list.peek
+
     self.getLength = list.getLength
+    self.isEmpty   = list.isEmpty
+
+    self.serialize = serialize
+    self.init      = init
 
     return self
 end
@@ -381,6 +413,8 @@ if DEBUG == true then
     -- can have more padding
     q = PaddedQueue({})
     q.enqueue({ 1 }).enqueue().enqueue().enqueue({ 2 }).enqueue()
+    data = q.serialize()
+
     assert(q.getLength() == 5)
     assert(q.peek()[1] == 1)
 
@@ -407,5 +441,34 @@ if DEBUG == true then
 
     assert(q.getLength() == 0)
 
+    -- can initialize from serial data
+    q = PaddedQueue({}).init(data)
+    inspect(q.serialize())
+
+    assert(q.getLength() == 5)
+    assert(q.peek()[1] == 1)
+
+    a = q.dequeue()
+    b = q.dequeue()
+    c = q.dequeue()
+    d = q.dequeue()
+    e = q.dequeue()
+
+    assert(type(a) == TYPE.TABLE)
+    assert(a[1] == 1)
+
+    assert(type(b) == TYPE.TABLE)
+    assert(#b == 0)
+
+    assert(type(c) == TYPE.TABLE)
+    assert(#c == 0)
+
+    assert(type(d) == TYPE.TABLE)
+    assert(d[1] == 2)
+
+    assert(type(e) == TYPE.TABLE)
+    assert(#e == 0)
+
+    assert(q.getLength() == 0)
     print("QUEUE ALL PASS")
 end

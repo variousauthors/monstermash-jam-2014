@@ -11,7 +11,7 @@ function VHS.new(inputMan)
     setmetatable(self, VHS)
 
     self.inputMan = inputMan
-    self.recording = { 24, { { "keypressed", "p1_right" } }, 14, { { "keypressed", "p1_dash" } }, 4, { { "keypressed", "p1_jump" } }, 21, { { "keyreleased", "p1_jump", "p1_dash" } }, 11, { { "keypressed", "p1_shoot" } }, 3, { { "keyreleased", "p1_shoot" } }, 4, { { "keypressed", "p1_shoot" } }, 1, { { "keyreleased", "p1_shoot" } }, 15, { { "keypressed", "p1_shoot" } }, 4, { { "keyreleased", "p1_shoot" } }, 24, { { "keyreleased", "p1_right" } }, 3, { { "keypressed", "p1_left" } }, 5, { { "keypressed", "p1_jump" } }, 1, { { "keyreleased", "p1_left" } }, 1, { { "keyreleased", "p1_jump" } }, 10, { { "keypressed", "p1_shoot" } }, 9, { { "keyreleased", "p1_shoot" } }, 4, { { "keypressed", "p1_shoot" } }, 98, { { "keyreleased", "p1_shoot" } }, 22, { { "keypressed", "p1_shoot" } }, 3, { { "keyreleased", "p1_shoot" } }, 2, { { "keypressed", "p1_shoot" } }, 5, { { "keyreleased", "p1_shoot" } }, 86 }
+    self.recording = PaddedQueue({}).init( { 64, { { "keypressed", "p1_right" } }, 17, { { "keyreleased", "p1_right" } }, 9, { { "keypressed", "p1_right" } }, 6, { { "keypressed", "p1_dash" } }, 4, { { "keypressed", "p1_jump" } }, 21, { { "keyreleased", "p1_jump" } }, 1, { { "keyreleased", "p1_dash" } }, 23, { { "keypressed", "p1_dash" } }, 4, { { "keypressed", "p1_jump" } }, 13, { { "keyreleased", "p1_jump" } }, 1, { { "keyreleased", "p1_dash" } }, 2, { { "keyreleased", "p1_right" } }, 18, { { "keypressed", "p1_left" } }, 17, { { "keyreleased", "p1_left" } }, 27, { { "keypressed", "p1_shoot" } }, 6, { { "keyreleased", "p1_shoot" } }, 6, { { "keypressed", "p1_left" } }, 11, { { "keypressed", "p1_right" }, { "keyreleased", "p1_left" } }, 9, { { "keypressed", "p1_shoot" }, { "keyreleased", "p1_right" } }, 7, { { "keyreleased", "p1_shoot" } }, 71, { { "keypressed", "p1_shoot" } }, 7, { { "keyreleased", "p1_shoot" } }, 39 } )
 
     self._playback = false
 
@@ -35,48 +35,30 @@ function VHS:reInitialize()
 end
 
 function VHS:processEventQueue(cb)
+    if self._playback and self.recording.isEmpty() then return end
+
     local update
 
     if self._playback then
         -- Process Input events in order
-        update = self.recording[1]
-        
-        if type(update) == "number" then
-            self.recording[1] = update - 1
+        update = self.recording.dequeue()
 
-            if self.recording[1] == 0 then
-                table.remove(self.recording, 1)
-            end
-        else
-            update = table.remove(self.recording, 1)
-
-            while update and #update > 0 do
-                local msg = table.remove(update, 1)
-                local event = table.remove(msg, 1)
-                cb(event, msg)
-            end
+        while update and #update > 0 do
+            local msg = table.remove(update, 1)
+            local event = table.remove(msg, 1)
+            cb(event, msg)
         end
     else
-        update = {}
-
         -- play the game normally, but remember the events
         self.inputMan:processEventQueue(function (event, states)
+            if update == nil then update = {} end
+
             table.insert(update, { event, unpack(states) })
 
             cb(event, states)
         end)
 
-        if #update > 0 then
-            table.insert(self.recording, update)
-        else
-            local last = self.recording[#(self.recording)]
-
-            if type(last) == "number" then
-                self.recording[#(self.recording)] = last + 1
-            else
-                table.insert(self.recording, 1)
-            end
-        end
+        self.recording.enqueue(update)
     end
 end
 
