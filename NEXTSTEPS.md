@@ -3,6 +3,7 @@ NEXT STEPS
 
 ### VHS ###
 
+[ ] Should store position data, and bark if it gets out of sync
 [ ] pressing q should start the recording, and then any other key should choose
     what macro name to use.
     - however, VHS should not record these keypresses: it should only record controller input

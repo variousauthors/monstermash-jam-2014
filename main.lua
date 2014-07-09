@@ -11,7 +11,6 @@ Viewport  = require("libs/viewport")
 VHS = require("libs/inputman_recorder")
 
 Input  = require("input")
-Input  = VHS.new(Input)
 Sound  = require("sound")
 World  = require("world")
 Player = require("player")
@@ -26,7 +25,9 @@ function love.load()
                              height = global.screen_height,
                              scale = global.scale})
 
-    world    = World.new()
+    world = World.new()
+    Input = VHS.new(Input, world)
+
     rock     = Player(32, 140, "p1")
     opera    = Player(110, 300, "p2")
     protoman = Player(370, 300, "p3")
@@ -81,9 +82,11 @@ function love.keypressed(key, isrepeat)
     elseif (key == 'f10') then
         love.event.quit()
     elseif (key == 'q') then
-        Input:record()
+        Input:toggleRecording()
     elseif (key == '1') then
-        Input:playback()
+        if not Input:isRecording() then
+            Input:playback()
+        end
     end
 end
 

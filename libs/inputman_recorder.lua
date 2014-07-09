@@ -6,7 +6,7 @@ if not json then require('vendor/lua4json/json4lua/json/json') end
 
 local path = string.match(debug.getinfo(1).short_src,"(.-)[^\\/]-%.?[^%.\\/]*$")
 
-function VHS.new(inputMan)
+function VHS.new(inputMan, world)
     local self = {}
     setmetatable(self, VHS)
 
@@ -44,10 +44,18 @@ function VHS:processEventQueue(cb)
         -- Process Input events in order
         update = self.recording.dequeue()
 
-        while update and #update > 0 do
-            local msg = table.remove(update, 1)
-            local event = table.remove(msg, 1)
-            cb(event, msg)
+        if #update > 0 then
+            local expect = table.remove(update, #update)
+
+            while update and #update > 0 do
+                local msg = table.remove(update, 1)
+                local event = table.remove(msg, 1)
+                cb(event, msg)
+            end
+
+            print("---")
+            inspect(world:serialize())
+            inspect(expect)
         end
     else
         -- play the game normally, but remember the events
@@ -58,6 +66,10 @@ function VHS:processEventQueue(cb)
 
             cb(event, states)
         end)
+
+        if update then
+            table.insert(update, world:serialize())
+        end
 
         if self._record then self.recording.enqueue(update) end
     end
@@ -76,9 +88,18 @@ function VHS:playback()
     self._playback = true
 end
 
-function VHS:record()
+function VHS:toggleRecording()
+    if self._record == true then
+        self._record = false
+    else
+        self._record = true
+    end
+
     self._playback = false
-    self._record   = true
+end
+
+function VHS:isRecording()
+    return self._record
 end
 
 return VHS

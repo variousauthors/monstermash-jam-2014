@@ -121,4 +121,14 @@ function World:draw(dt)
     love.graphics.draw(self.foreground_image)
 end
 
+function World:serialize()
+    local data = {}
+
+    for i, entity in pairs(self.entities) do
+        table.insert(data, { entity.getX(), entity.getY() })
+    end
+
+    return data
+end
+
 return World
