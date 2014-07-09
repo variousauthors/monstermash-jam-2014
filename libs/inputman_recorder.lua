@@ -11,9 +11,10 @@ function VHS.new(inputMan)
     setmetatable(self, VHS)
 
     self.inputMan = inputMan
-    self.recording = PaddedQueue({}).init( { 64, { { "keypressed", "p1_right" } }, 17, { { "keyreleased", "p1_right" } }, 9, { { "keypressed", "p1_right" } }, 6, { { "keypressed", "p1_dash" } }, 4, { { "keypressed", "p1_jump" } }, 21, { { "keyreleased", "p1_jump" } }, 1, { { "keyreleased", "p1_dash" } }, 23, { { "keypressed", "p1_dash" } }, 4, { { "keypressed", "p1_jump" } }, 13, { { "keyreleased", "p1_jump" } }, 1, { { "keyreleased", "p1_dash" } }, 2, { { "keyreleased", "p1_right" } }, 18, { { "keypressed", "p1_left" } }, 17, { { "keyreleased", "p1_left" } }, 27, { { "keypressed", "p1_shoot" } }, 6, { { "keyreleased", "p1_shoot" } }, 6, { { "keypressed", "p1_left" } }, 11, { { "keypressed", "p1_right" }, { "keyreleased", "p1_left" } }, 9, { { "keypressed", "p1_shoot" }, { "keyreleased", "p1_right" } }, 7, { { "keyreleased", "p1_shoot" } }, 71, { { "keypressed", "p1_shoot" } }, 7, { { "keyreleased", "p1_shoot" } }, 39 } )
+    self.recording = PaddedQueue({})
 
     self._playback = false
+    self._record   = false
 
     return self
 end
@@ -35,7 +36,7 @@ function VHS:reInitialize()
 end
 
 function VHS:processEventQueue(cb)
-    if self._playback and self.recording.isEmpty() then return end
+    if self._playback and self.recording.isEmpty() then self._playback = false end
 
     local update
 
@@ -58,7 +59,7 @@ function VHS:processEventQueue(cb)
             cb(event, states)
         end)
 
-        self.recording.enqueue(update)
+        if self._record then self.recording.enqueue(update) end
     end
 end
 
@@ -71,7 +72,13 @@ function VHS:isState(state)
 end
 
 function VHS:playback()
+    self._record   = false
     self._playback = true
+end
+
+function VHS:record()
+    self._playback = false
+    self._record   = true
 end
 
 return VHS

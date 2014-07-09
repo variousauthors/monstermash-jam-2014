@@ -12,7 +12,6 @@ VHS = require("libs/inputman_recorder")
 
 Input  = require("input")
 Input  = VHS.new(Input)
-Input:playback()
 Sound  = require("sound")
 World  = require("world")
 Player = require("player")
@@ -33,14 +32,12 @@ function love.load()
     protoman = Player(370, 300, "p3")
     vile     = Player(560, 140, "p4")
 
-    chill_penguin = Boss()
     gj            = GameJolt("1", nil)
 
     world:register(rock)
     world:register(protoman)
     world:register(vile)
     world:register(opera)
-    -- world:register(chill_penguin)
 
     game_state = require("game")(world)
     menu_state = require("menu")
@@ -74,8 +71,6 @@ function love.update(dt)
     Input:printDebugQueue()
 end
 
-
-
 function love.keypressed(key, isrepeat)
     if (not love.window.hasFocus()) then return end
     cbCount['pressed'] = cbCount['pressed'] + 1
@@ -85,6 +80,10 @@ function love.keypressed(key, isrepeat)
         view:setupScreen()
     elseif (key == 'f10') then
         love.event.quit()
+    elseif (key == 'q') then
+        Input:record()
+    elseif (key == '1') then
+        Input:playback()
     end
 end
 

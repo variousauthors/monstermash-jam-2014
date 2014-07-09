@@ -5,6 +5,7 @@ NEXT STEPS
 
 [ ] pressing q should start the recording, and then any other key should choose
     what macro name to use.
+    - however, VHS should not record these keypresses: it should only record controller input
 [ ] The recordings all live in a recording_macros.lua file, and are a table
     of recordings indexed by that letter. This gets written to disk in the
     stop state
@@ -13,6 +14,11 @@ NEXT STEPS
 [ ] @ should send the game into stop state, and then any macro button should
     load the corresponding macro
 [ ] The game should "re-init" in the start init
+[ ] Playback should report all the same debug information
+[ ] VHS should store all the relevant position information, so that we can
+    make assertsions about it.
+    - padding is still good enough: we only need to make assertions after
+      significant updates
 
 ### GOAL ###
 
