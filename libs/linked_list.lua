@@ -89,7 +89,7 @@ LinkedList = function ()
         return self
     end
 
-    local prepend = function (data)
+    local push = function (data)
         print(length)
         if length == 0 then return unit(data) end
 
@@ -102,7 +102,7 @@ LinkedList = function ()
     end
 
     -- returns the last element in the list
-    local pop = function ()
+    local unshift = function ()
         -- throw if we pop from an empty list
         if length == 0 then return head.getData() end
 
@@ -131,6 +131,28 @@ LinkedList = function ()
         return q.getData()
     end
 
+    local pop = function ()
+        -- throw if we pop from an empty list
+        if length == 0 then return head.getData() end
+
+        if length == 1 then
+            local n = head.getData()
+            init()
+
+            return n
+        end
+
+        local n = head
+        head    = head.getNext()
+        length  = length - 1
+
+        return n.getData()
+    end
+
+    local peek = function ()
+        return head.getData()
+    end
+
     local each = function (callback)
         local iterator = getIterator()
         local index = 0
@@ -146,8 +168,9 @@ LinkedList = function ()
     self.getLength   = getLength
     self.getIterator = getIterator
     self.append      = append
-    self.prepend     = prepend
+    self.push     = push
     self.pop         = pop
+    self.peek        = peek
     self.each        = each
     self.init        = init
     self.unit        = unit
@@ -161,7 +184,7 @@ Queue = function ()
     local self = {}
 
     local enqueue = function (value)
-        list.prepend(value)
+        list.append(value)
 
         return self
     end
@@ -170,8 +193,9 @@ Queue = function ()
         return list.pop()
     end
 
-    self.enqueue = enqueue
-    self.dequeue = dequeue
+    self.enqueue   = enqueue
+    self.dequeue   = dequeue
+    self.peek      = list.peek
     self.getLength = list.getLength
 
     return self
@@ -254,9 +278,9 @@ if DEBUG == true then
 
     assert(did_run)
 
-    -- can prepend elements to the front of the list
+    -- can push elements to the front of the list
     l = LinkedList()
-    l.prepend(0).prepend(1).prepend(2)
+    l.push(0).push(1).push(2)
     assert(l.getLength() == 3)
 
     -- elements appear in the list in reverse order
@@ -270,12 +294,12 @@ if DEBUG == true then
     end
 
     -- can pop from a list
-    assert(l.pop() == 0)
+    assert(l.pop() == 2)
     assert(l.getLength() == 2)
 
     -- can pop the last element from a list
     l = LinkedList()
-    l.prepend(0)
+    l.push(0)
     assert(l.pop() == 0)
 
     print("LINKED LISTS ALL PASS")
@@ -285,6 +309,7 @@ if DEBUG == true then
     q = Queue()
     q.enqueue(1).enqueue(2).enqueue(3)
     assert(q.getLength() == 3)
+    assert(q.peek() == 1)
     assert(q.dequeue() == 1)
     assert(q.dequeue() == 2)
     assert(q.dequeue() == 3)
