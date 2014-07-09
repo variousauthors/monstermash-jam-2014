@@ -102,4 +102,8 @@ function VHS:isRecording()
     return self._record
 end
 
+function VHS:isPlayback()
+    return self._playback
+end
+
 return VHS

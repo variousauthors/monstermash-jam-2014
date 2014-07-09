@@ -3,7 +3,10 @@ NEXT STEPS
 
 ### VHS ###
 
-[ ] Should store position data, and bark if it gets out of sync
+[x] Should store position data, and bark if it gets out of sync
+[ ] include a command to restart the game
+[ ] write macros to a file, and then recall them
+[ ] toggle assert mode, in which position data is tested against
 [ ] pressing q should start the recording, and then any other key should choose
     what macro name to use.
     - however, VHS should not record these keypresses: it should only record controller input

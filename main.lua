@@ -19,26 +19,15 @@ Boss   = require("boss")
 function love.focus(f) gameIsPaused = not f end
 
 function love.load()
-
     love.graphics.setBackgroundColor(0, 0, 0)
-    view = Viewport.new({width = global.screen_width,
-                             height = global.screen_height,
-                             scale = global.scale})
+    view = Viewport.new({
+        width  = global.screen_width,
+        height = global.screen_height,
+        scale  = global.scale
+    })
 
     world = World.new()
     Input = VHS.new(Input, world)
-
-    rock     = Player(32, 140, "p1")
-    opera    = Player(110, 300, "p2")
-    protoman = Player(370, 300, "p3")
-    vile     = Player(560, 140, "p4")
-
-    gj            = GameJolt("1", nil)
-
-    world:register(rock)
-    world:register(protoman)
-    world:register(vile)
-    world:register(opera)
 
     game_state = require("game")(world)
     menu_state = require("menu")
@@ -86,6 +75,10 @@ function love.keypressed(key, isrepeat)
     elseif (key == '1') then
         if not Input:isRecording() then
             Input:playback()
+        end
+    elseif (key == 'r') then
+        if not Input:isRecording() and not Input:isPlayback() then
+            game_state.set("reset")
         end
     end
 end
