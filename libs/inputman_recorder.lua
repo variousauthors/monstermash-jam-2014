@@ -60,6 +60,17 @@ function VHS:processEventQueue(cb)
                 local event = table.remove(msg, 1)
                 cb(event, msg)
             end
+
+            local actual = world:serialize()
+
+            for i = 1, #expect do
+                local e = expect[i]
+                local a = actual[i]
+
+                for j = 1, #e do
+                    assert(e[j] == a[j])
+                end
+            end
         end
     else
         -- play the game normally, but remember the events
@@ -88,7 +99,6 @@ function VHS:isState(state)
 end
 
 function VHS:loadTrack(track)
-
     return self.recording.init(self.track_list[track])
 end
 

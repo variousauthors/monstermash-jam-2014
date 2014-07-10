@@ -17,9 +17,9 @@ NEXT STEPS
     speeding up the game
 [ ] @ should send the game into stop state, and then any macro button should
     load the corresponding macro
-[ ] The game should "re-init" in the start init
+[x] The game should "re-init" in the start init
 [ ] Playback should report all the same debug information
-[ ] VHS should store all the relevant position information, so that we can
+[x] VHS should store all the relevant position information, so that we can
     make assertsions about it.
     - padding is still good enough: we only need to make assertions after
       significant updates

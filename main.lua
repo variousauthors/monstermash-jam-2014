@@ -3,9 +3,7 @@ require "libs/fsm"
 require "libs/gamejolt"
 require "libs/vector"
 require "libs/utility"
-DEBUG = true
 require "libs/linked_list"
-DEBUG = false
 
 Viewport  = require("libs/viewport")
 VHS = require("libs/inputman_recorder")
@@ -18,7 +16,7 @@ Boss   = require("boss")
 
 function love.focus(f) gameIsPaused = not f end
 
-function love.load()
+function love.load(args)
     love.graphics.setBackgroundColor(0, 0, 0)
     view = Viewport.new({
         width  = global.screen_width,
@@ -35,6 +33,8 @@ function love.load()
     game_state.start()
 end
 
+local tic = 0
+local play_rate = 1
 local cbCount = {
     pressed = 0,
     released = 0,
@@ -42,6 +42,11 @@ local cbCount = {
 local cbCountCounter = 0
 
 function love.update(dt)
+    tic = tic + 1
+
+    if tic < play_rate then return end
+    tic = 0
+
     cbCountCounter = cbCountCounter + dt
     if(cbCountCounter > 10) then
         print("Love2d input events:", stringspect(cbCount))
@@ -57,8 +62,8 @@ function love.update(dt)
 
     game_state.update(dt)
 
-    Sound:printDebugQueue()
-    Input:printDebugQueue()
+    --Sound:printDebugQueue()
+    --Input:printDebugQueue()
 end
 
 function love.keypressed(key, isrepeat)
@@ -82,6 +87,10 @@ function love.keypressed(key, isrepeat)
         if not Input:isRecording() and not Input:isPlayback() then
             game_state.set("reset")
         end
+    elseif (key == '-') then
+        play_rate = math.max(play_rate * 2, 16)
+    elseif (key == '+') then
+        play_rate = math.max(play_rate / 2, 1)
     end
 end
 

@@ -131,7 +131,7 @@ function World:serialize()
     local data = {}
 
     for i, entity in pairs(self.entities) do
-        table.insert(data, { entity.getX(), entity.getY() })
+        table.insert(data, { entity.get("id"), entity.getX(), entity.getY() })
     end
 
     return data
