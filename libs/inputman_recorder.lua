@@ -10,6 +10,10 @@ function VHS.new(inputMan, world)
     local self = {}
     setmetatable(self, VHS)
 
+    local hfile = io.open("track_list.lua", "r")
+    self.track_list = json.decode(hfile:read())
+    io.close(hfile)
+
     self.inputMan = inputMan
     self.recording = PaddedQueue({})
 
@@ -80,8 +84,6 @@ function VHS:isState(state)
 end
 
 function VHS:loadTrack(track)
-    local hfile = io.open("track_list.lua", "r")
-    self.track_list = json.decode(hfile:read())
 
     return self.recording.init(self.track_list[track])
 end
@@ -105,8 +107,6 @@ function VHS:save(track)
     hfile:write(data)
 
     io.close(hfile)
-
-    self._playback = false
 end
 
 function VHS:startRecording()

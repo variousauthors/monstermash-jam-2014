@@ -5,11 +5,11 @@ NEXT STEPS
 
 [x] Should store position data, and bark if it gets out of sync
 [x] include a command to restart the game
-[ ] write macros to a file, and then recall them
-[ ] toggle assert mode, in which position data is tested against
-[ ] pressing q should start the recording, and then any other key should choose
+[x] write macros to a file, and then recall them
+[x] pressing q should start the recording, and then any other key should choose
     what macro name to use.
     - however, VHS should not record these keypresses: it should only record controller input
+[ ] toggle assert mode, in which position data is tested against
 [ ] The recordings all live in a recording_macros.lua file, and are a table
     of recordings indexed by that letter. This gets written to disk in the
     stop state
