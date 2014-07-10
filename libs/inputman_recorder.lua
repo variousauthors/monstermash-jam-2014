@@ -13,7 +13,6 @@ function VHS.new(inputMan, world)
     self.inputMan = inputMan
     self.recording = PaddedQueue({})
 
-    self.track_list = require("track_list")
     self._playback = false
     self._record   = false
 
@@ -81,6 +80,9 @@ function VHS:isState(state)
 end
 
 function VHS:loadTrack(track)
+    local hfile = io.open("track_list.lua", "r")
+    self.track_list = json.decode(hfile:read())
+
     return self.recording.init(self.track_list[track])
 end
 
@@ -95,9 +97,14 @@ function VHS:save(track)
     self._record = false
     self.track_list[track] = self.recording.serialize()
 
+    local hfile = io.open("track_list.lua", "w")
     local data = json.encode(self.track_list)
-    inspect(data)
-    print("writing to file")
+
+    if hfile == nil then bob.go() end
+
+    hfile:write(data)
+
+    io.close(hfile)
 
     self._playback = false
 end
