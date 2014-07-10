@@ -6,13 +6,13 @@ NEXT STEPS
 [x] Should store position data, and bark if it gets out of sync
 [x] include a command to restart the game
 [x] write macros to a file, and then recall them
-[x] pressing q should start the recording, and then any other key should choose
+[x] pressing q should start the recording, and then any other number key should choose
     what macro name to use.
-    - however, VHS should not record these keypresses: it should only record controller input
+    [x] however, VHS should not record these keypresses: it should only record controller input
+
 [ ] toggle assert mode, in which position data is tested against
-[ ] The recordings all live in a recording_macros.lua file, and are a table
-    of recordings indexed by that letter. This gets written to disk in the
-    stop state
+[x] The recordings all live in a track_list.lua file, and are a table
+    of recordings indexed by that number
 [ ] +/- should change the rate at which game.update gets called, slowing or
     speeding up the game
 [ ] @ should send the game into stop state, and then any macro button should
@@ -24,6 +24,7 @@ NEXT STEPS
     - padding is still good enough: we only need to make assertions after
       significant updates
 
+[ ] the keypress functions needs to be moved into the game_state, as is right
 [ ] Megaman should die immediately upon falling off the screen
 
 ### GOAL ###
