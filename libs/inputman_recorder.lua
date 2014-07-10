@@ -11,8 +11,12 @@ function VHS.new(inputMan, world)
     setmetatable(self, VHS)
 
     local hfile = io.open("track_list.lua", "r")
-    self.track_list = json.decode(hfile:read())
-    io.close(hfile)
+    if hfile then
+        self.track_list = json.decode(hfile:read())
+        io.close(hfile)
+    else
+        self.track_list = {}
+    end
 
     self.inputMan = inputMan
     self.recording = PaddedQueue({})

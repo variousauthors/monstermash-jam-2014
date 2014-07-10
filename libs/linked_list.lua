@@ -253,6 +253,8 @@ PaddedQueue = function (null)
     end
 
     local init = function (data)
+        if data == nil then data = {} end
+
         for i, v in ipairs(data) do
             list.append(v)
 
