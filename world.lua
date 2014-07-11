@@ -31,23 +31,29 @@ function World.new()
     local self = {}
     setmetatable(self, World)
 
-    self.entities = {}
-
-    self.obstacles = {}
-    self.bump = bump.newWorld(32)
-
     local contents, size = love.filesystem.read("assets/arena_highway.json")
-    local data = json.decode(contents)
-
-    for i, v in pairs(data["layers"][2]["objects"]) do
-        addObstacle(self, v.x, v.y, v.width, v.height)
-    end
+    self.data = json.decode(contents)
 
     self.background_image = love.graphics.newImage("assets/arena_highway_bg.png")
     self.foreground_image = love.graphics.newImage("assets/arena_highway_fg.png")
 
     self.timer = 0
     self.tic_duration = 1
+
+    return self
+end
+
+-- broke init out of new so that we can pass references to world in lua.load
+-- but initialize it when the game starts
+function World:init()
+    self.entities = {}
+
+    self.obstacles = {}
+    self.bump = bump.newWorld(32)
+
+    for i, v in pairs(self.data["layers"][2]["objects"]) do
+        addObstacle(self, v.x, v.y, v.width, v.height)
+    end
 
     return self
 end
@@ -119,6 +125,16 @@ function World:draw(dt)
     end
 
     love.graphics.draw(self.foreground_image)
+end
+
+function World:serialize()
+    local data = {}
+
+    for i, entity in pairs(self.entities) do
+        table.insert(data, { entity.get("id"), entity.getX(), entity.getY() })
+    end
+
+    return data
 end
 
 return World
