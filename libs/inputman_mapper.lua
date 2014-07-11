@@ -12,7 +12,7 @@ function InputMapper.new(map, deadzone)
     local self = {}
     setmetatable(self, InputMapper)
 
-    self.deadzone = deadzone or default_deadzone
+    self.deadzone = math.max(deadzone or default_deadzone, 0.05)
     self:setStateMap(map)
 
     return self
@@ -139,14 +139,16 @@ function InputMapper:isState(state)
         elseif (device == 'j' and joy) then
             if (dir) then
                 local axis = joy:getGamepadAxis(key)
-                local deadzone = abs(tonumber(dir) and dir or self.deadzone)
-                local range = 1 - deadzone
-                if (dir == "+" or dir > 0) then
-                    axis = axis - deadzone
-                    if (axis > 0) then result = axis / range end
-                elseif (dir == "-" or dir < 0) then
-                    axis = axis + deadzone
-                    if (axis < 0) then result = axis / range end
+                if (dir == '+') then
+                    dir = self.deadzone
+                elseif (dir == '-') then
+                    dir = -self.deadzone
+                end
+                local deadzone = tonumber(dir) and dir or self.deadzone
+                local range = 1 - abs(deadzone)
+                axis = axis - deadzone
+                if ((dir > 0 and axis >= 0) or (dir < 0 and axis <= 0)) then
+                    result = axis / range
                 end
             else
                 if (joy:isGamepadDown(key)) then result = true end
