@@ -325,8 +325,8 @@ return function (x, y, controls)
         for i, key in pairs(controls) do
             if entity.pressed(key) then
                 entity.set(key, HOLDING)
-            elseif(not Input:isState(key)) then
-                entity.set(key, false)
+            -- elseif(not Input:isState(key)) then
+            --    entity.set(key, false)
             end
         end
 
