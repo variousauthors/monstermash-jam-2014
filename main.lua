@@ -88,8 +88,8 @@ function love.keypressed(key, isrepeat)
             game_state.set("reset")
         end
     elseif (key == '-') then
-        play_rate = math.max(play_rate * 2, 16)
-    elseif (key == '+') then
+        play_rate = math.min(play_rate * 2, 16)
+    elseif (key == '=') then
         play_rate = math.max(play_rate / 2, 1)
     end
 end
