@@ -285,7 +285,15 @@ return function (entity, controls, verbose)
         from = "falling",
         to = "standing",
         condition = function ()
-            return not entity.get(FALLING) and not entity.pressed(DASH)
+            return not entity.get(FALLING) and not entity.pressed(DASH) and not (entity.holding(LEFT) or entity.holding(RIGHT))
+        end
+    })
+
+    movement.addTransition({
+        from = "falling",
+        to = "running",
+        condition = function ()
+            return not entity.get(FALLING) and not entity.pressed(DASH) and (entity.holding(LEFT) or entity.holding(RIGHT))
         end
     })
 

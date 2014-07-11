@@ -316,7 +316,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_falling",
         to = "falling",
         condition = function ()
-            return animation.isFinished()
+            return animation.isFinished() or movement.is("standing")
         end
     })
 
@@ -324,7 +324,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "falling",
         to = "falling_to_standing",
         condition = function ()
-            return movement.is("standing") or movement.is("running")
+            return movement.is("standing")
         end
     })
 
@@ -332,7 +332,15 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "falling_to_standing",
         to = "standing",
         condition = function ()
-            return animation.isFinished()
+            return animation.isFinished() and not movement.is("jumping")
+        end
+    })
+
+    animation.addTransition({
+        from = "falling_to_standing",
+        to = "to_jumping",
+        condition = function ()
+            return movement.is("jumping")
         end
     })
 
@@ -341,6 +349,14 @@ return function (entity, image, movement, x_buster, controls, verbose)
         to = "to_dashing",
         condition = function ()
             return movement.is("dashing")
+        end
+    })
+
+    animation.addTransition({
+        from = "falling",
+        to = "running",
+        condition = function ()
+            return movement.is("running")
         end
     })
 

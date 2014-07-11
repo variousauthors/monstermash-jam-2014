@@ -15,12 +15,9 @@ NEXT STEPS
 [x] add asserts for testing against position data
 [x] The recordings all live in a track_list.lua file, and are a table
     of recordings indexed by that number
-[ ] +/- should change the rate at which game.update gets called, slowing or
+[x] +/- should change the rate at which game.update gets called, slowing or
     speeding up the game
-[ ] @ should send the game into stop state, and then any macro button should
-    load the corresponding macro
 [x] The game should "re-init" in the start init
-[ ] Playback should report all the same debug information
 [x] VHS should store all the relevant position information, so that we can
     make assertsions about it.
     - padding is still good enough: we only need to make assertions after
