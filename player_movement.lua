@@ -34,8 +34,6 @@ return function (entity, controls, verbose)
         name = "running",
         init = function ()
             entity.set("dash_jump", false)
-            entity.set("shocked", false)
-            entity.set("near_a_wall", nil)
             entity.set("can_dash", true)
         end,
         update = function ()
@@ -66,9 +64,20 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "dash_jump",
         init = function ()
+            entity.set("can_dash", false)
             local id = entity.get('id')
             Sound:run('wall_jump', id)
             entity.set("dash_jump", true)
+        end
+    })
+
+    movement.addState({
+        name = "air_dash",
+        init = function ()
+            entity.set("can_dash", false)
+            local id = entity.get('id')
+            Sound:run('dash', id)
+            entity.set("air_dash", true)
         end
     })
 
@@ -196,7 +205,7 @@ return function (entity, controls, verbose)
         from = "standing",
         to = "dashing",
         condition = function ()
-            return entity.pressed(DASH)
+            return entity.pressed(DASH) and entity.get("can_dash")
         end
     })
 
@@ -222,7 +231,7 @@ return function (entity, controls, verbose)
         to = "dashing",
         condition = function ()
 
-            return entity.pressed(DASH)
+            return entity.pressed(DASH) and entity.get("can_dash")
         end
     })
 
@@ -235,6 +244,14 @@ return function (entity, controls, verbose)
     })
 
     movement.addTransition({
+        from = "air_dash",
+        to = "dashing",
+        condition = function ()
+            return true
+        end
+    })
+
+    movement.addTransition({
         from = "dashing",
         to = "running",
         condition = function ()
@@ -243,15 +260,18 @@ return function (entity, controls, verbose)
             local dash_done   = movement.getCount() > dash_duration or not entity.holding(DASH)
             local running     = entity.pressed(RIGHT) or entity.pressed(LEFT)
 
-            return (turning and not_jumping) or dash_done
+            return not entity.get("air_dash") and (dash_done or turning)
         end
     })
 
     movement.addTransition({
         from = "dashing",
-        to = "jumping",
+        to = "falling",
         condition = function ()
-            return entity.pressed(JUMP) and not entity.holding(LEFT) and not entity.holding(RIGHT)
+            local turning   = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
+            local dash_done = movement.getCount() > dash_duration or not entity.holding(DASH)
+
+            return entity.get("air_dash") and (dash_done or turning)
         end
     })
 
@@ -259,7 +279,7 @@ return function (entity, controls, verbose)
         from = "dashing",
         to = "dash_jump",
         condition = function ()
-            return entity.pressed(JUMP) and (entity.holding(LEFT) or entity.holding(RIGHT))
+            return entity.pressed(JUMP)
         end
     })
 
@@ -273,7 +293,7 @@ return function (entity, controls, verbose)
 
     movement.addTransition({
         from = "jumping",
-        to = "dashing",
+        to = "air_dash",
         condition = function ()
             return entity.holding(DASH) and entity.get("can_dash")
         end
@@ -305,7 +325,7 @@ return function (entity, controls, verbose)
 
     movement.addTransition({
         from = "falling",
-        to = "dashing",
+        to = "air_dash",
         condition = function ()
             return entity.pressed(DASH) and entity.get("can_dash")
         end
@@ -340,7 +360,7 @@ return function (entity, controls, verbose)
 
     movement.addTransition({
         from = "climbing",
-        to = "dashing",
+        to = "air_dash",
         condition = function ()
             return entity.pressed(DASH) and entity.get("can_dash")
         end
