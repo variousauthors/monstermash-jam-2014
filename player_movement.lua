@@ -18,6 +18,7 @@ return function (entity, controls, verbose)
             entity.set("shocked", false)
             entity.set("near_a_wall", nil)
             entity.set("can_dash", true)
+            entity.set("air_dash", false)
         end
     })
 
@@ -35,6 +36,7 @@ return function (entity, controls, verbose)
         init = function ()
             entity.set("dash_jump", false)
             entity.set("can_dash", true)
+            entity.set("air_dash", false)
         end,
         update = function ()
             if entity.holding(LEFT) then
@@ -295,7 +297,7 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "air_dash",
         condition = function ()
-            return entity.holding(DASH) and entity.get("can_dash")
+            return entity.pressed(DASH) and entity.get("can_dash")
         end
     })
 
