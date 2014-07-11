@@ -32,6 +32,12 @@ return function (entity, controls, verbose)
 
     movement.addState({
         name = "running",
+        init = function ()
+            entity.set("dash_jump", false)
+            entity.set("shocked", false)
+            entity.set("near_a_wall", nil)
+            entity.set("can_dash", true)
+        end,
         update = function ()
             if entity.holding(LEFT) then
                 entity.resolveLeft()

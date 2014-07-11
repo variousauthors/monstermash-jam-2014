@@ -372,7 +372,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "falling",
         to = "climbing_to_jump",
         condition = function ()
-            return movement.is("jumping")
+            return movement.is("jumping") and entity.get("wall_jump")
         end
     })
 
@@ -434,9 +434,25 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "to_dashing",
+        to = "jumping",
+        condition = function ()
+            return animation.isFinished() and movement.is("jumping") or movement.is("jumping")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_dashing",
         to = "standing",
         condition = function ()
-            return animation.isFinished() and movement.is("standing")
+            return animation.isFinished() and movement.is("standing") or movement.is("standing")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_dashing",
+        to = "running",
+        condition = function ()
+            return animation.isFinished() and movement.is("running") or movement.is("running")
         end
     })
 

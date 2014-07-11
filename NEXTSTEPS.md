@@ -3,6 +3,8 @@ NEXT STEPS
 
 ### Animations ###
 
+[ ] resolve the air-dash issues. (Draw a diagram for transitions from dashing)
+
 ### VHS ###
 
 [x] Should store position data, and bark if it gets out of sync
