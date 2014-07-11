@@ -10,7 +10,7 @@ NEXT STEPS
     what macro name to use.
     [x] however, VHS should not record these keypresses: it should only record controller input
 
-[ ] toggle assert mode, in which position data is tested against
+[x] add asserts for testing against position data
 [x] The recordings all live in a track_list.lua file, and are a table
     of recordings indexed by that number
 [ ] +/- should change the rate at which game.update gets called, slowing or
@@ -24,6 +24,7 @@ NEXT STEPS
     - padding is still good enough: we only need to make assertions after
       significant updates
 
+[ ] Accept command-line args for playback rate, track file, and track
 [ ] the keypress functions needs to be moved into the game_state, as is right
 [ ] Megaman should die immediately upon falling off the screen
 
