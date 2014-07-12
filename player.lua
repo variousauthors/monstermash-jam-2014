@@ -339,13 +339,23 @@ return function (x, y, controls)
         x_buster.update(dt)
         animation.update(dt)
 
-        if not movement.is("dashing") then
-            entity.resolveFall(dt)
-        end
-
+        local by = entity.getY()
+        -- after we resolve falling we need to reset
+        -- if megaman was dashing, but track that a
+        -- change occurred
+        entity.resolveFall(dt)
         entity.resolveObstacleCollide(world)
         entity.resolveBulletCollide(world)
         entity.resolveWallProximity(world)
+
+        local ay = entity.getY()
+        if by ~= ay then
+            movement.set("would_fall")
+        end
+
+        if movement.is("dashing") then
+            entity.setY(by)
+        end
     end
 
     entity.keypressed = function (key)

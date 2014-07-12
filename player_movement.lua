@@ -260,9 +260,22 @@ return function (entity, controls, verbose)
             local turning     = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
             local not_jumping = not entity.holding(JUMP) and not entity.pressed(JUMP)
             local dash_done   = movement.getCount() > dash_duration or not entity.holding(DASH)
-            local running     = entity.pressed(RIGHT) or entity.pressed(LEFT)
+            local running     = entity.holding(RIGHT) or entity.holding(LEFT)
 
-            return not entity.get("air_dash") and (dash_done or turning)
+            return not movement.isSet("would_fall") and ((dash_done and running) or turning)
+        end
+    })
+
+    movement.addTransition({
+        from = "dashing",
+        to = "standing",
+        condition = function ()
+            local turning     = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
+            local not_jumping = not entity.holding(JUMP) and not entity.pressed(JUMP)
+            local dash_done   = movement.getCount() > dash_duration or not entity.holding(DASH)
+            local running     = entity.holding(RIGHT) or entity.holding(LEFT)
+
+            return not movement.isSet("would_fall") and dash_done and not (running or turning)
         end
     })
 
@@ -273,7 +286,7 @@ return function (entity, controls, verbose)
             local turning   = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
             local dash_done = movement.getCount() > dash_duration or not entity.holding(DASH)
 
-            return entity.get("air_dash") and (dash_done or turning)
+            return movement.isSet("would_fall") and (dash_done or turning)
         end
     })
 
