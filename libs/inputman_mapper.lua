@@ -12,7 +12,7 @@ function InputMapper.new(map, deadzone)
     local self = {}
     setmetatable(self, InputMapper)
 
-    self.deadzone = deadzone or default_deadzone
+    self.deadzone = math.max(deadzone or default_deadzone, 0.05)
     self:setStateMap(map)
 
     return self
@@ -90,12 +90,14 @@ function InputMapper:keyToMapping(...)
 end
 
 function InputMapper:mappingToState(mapping)
+    local find = string.find
+    local match = string.match
     for keys, state in pairs(self.flatMap) do
         if (mapping == keys) then
             return state
-        elseif(string.find(mapping, "^j.*[%+%-]")) then
-            local mm, ms, ma = string.match(mapping, "^j(.*)([%+%-])([%.0-9]*)$")
-            local km, ks, ka = string.match(keys, "^j(.*)([%+%-])([%.0-9]*)$")
+        elseif(find(mapping, "^j.*[%+%-]")) then
+            local mm, ms, ma = match(mapping, "^j(.*)([%+%-])([%.0-9]*)$")
+            local km, ks, ka = match(keys, "^j(.*)([%+%-])([%.0-9]*)$")
             if(mm == km and ms == ks and ma >= ka) then
                 return state
             end
@@ -127,6 +129,7 @@ function InputMapper:isState(state)
     if not self.stateMap[state] then return false end
 
     local result = false
+    local abs = math.abs
 
     for k, v in pairs(self.stateMap[state]) do
         local device, joy, key, dir = self:mappingToKey(v)
@@ -136,14 +139,16 @@ function InputMapper:isState(state)
         elseif (device == 'j' and joy) then
             if (dir) then
                 local axis = joy:getGamepadAxis(key)
-                if (dir == "+") then
-                    if (axis >= self.deadzone) then result = true end
-                elseif (dir == "-") then
-                    if (axis <= -self.deadzone) then result = true end
-                elseif (dir > 0) then
-                    if (axis >= dir) then result = true end
-                elseif (dir < 0) then
-                    if (axis <= dir) then result = true end
+                if (dir == '+') then
+                    dir = self.deadzone
+                elseif (dir == '-') then
+                    dir = -self.deadzone
+                end
+                local deadzone = tonumber(dir) and dir or self.deadzone
+                local range = 1 - abs(deadzone)
+                axis = axis - deadzone
+                if ((dir > 0 and axis >= 0) or (dir < 0 and axis <= 0)) then
+                    result = axis / range
                 end
             else
                 if (joy:isGamepadDown(key)) then result = true end
