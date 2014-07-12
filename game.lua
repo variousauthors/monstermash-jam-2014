@@ -15,9 +15,9 @@ return function(world)
             gj = GameJolt("1", nil)
 
             world:register(rock)
-            world:register(protoman)
-            world:register(vile)
-            world:register(opera)
+          --world:register(protoman)
+          --world:register(vile)
+          --world:register(opera)
 
             Sound:stop("music")
             Sound:run("mainMusic")

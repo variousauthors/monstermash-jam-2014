@@ -339,8 +339,21 @@ return function (x, y, controls)
         x_buster.update(dt)
         animation.update(dt)
 
+        local by = entity.getY()
+        -- after we resolve falling we need to reset
+        -- if megaman was dashing, but track that a
+        -- change occurred
         if not movement.is("dashing") then
             entity.resolveFall(dt)
+        else
+            -- if megaman has nothing under him, then he would fall
+            local cols, len = world.bump:check(entity, entity.getX(), entity.getY() + 1, obstacleFilter)
+
+            if len == 0 then
+                movement.set("would_fall")
+            else
+                movement.unset("would_fall")
+            end
         end
 
         entity.resolveObstacleCollide(world)
