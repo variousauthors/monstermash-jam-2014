@@ -90,7 +90,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     -- going into the jump animation
     animation.addState({
         name = "to_jumping",
-        init = animation.getInit(0.2, 'pauseAtEnd'),
+        init = animation.getInit(0.1, 'pauseAtEnd'),
         update = function (dt)
             local speed = 1
 
@@ -117,7 +117,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     -- going into falling
     animation.addState({
         name = "to_falling",
-        init = animation.getInit(0.2, 'pauseAtEnd'),
+        init = animation.getInit(0.25, 'pauseAtEnd'),
         update = function (dt)
             local speed = 1
 
@@ -154,7 +154,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addState({
         name = "running",
-        init = animation.getInit(0.1),
+        init = animation.getInit(0.06),
     })
 
     animation.addState({

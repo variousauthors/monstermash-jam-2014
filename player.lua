@@ -40,6 +40,7 @@ return function (x, y, controls)
 
     local fat_gun_dim             = 3
     local horizontal_speed        = 1.5
+    local dash_speed              = 3.5
     local damaged_speed           = 1
     local initial_vs  = 5
     local terminal_vs = 5.75
@@ -106,7 +107,7 @@ return function (x, y, controls)
         local sign = (direction == LEFT) and -1 or 1
 
         if entity.get("dash_jump") then
-            speed = horizontal_speed*2
+            speed = dash_speed
         end
 
         entity.set(DASH, false)
@@ -135,10 +136,13 @@ return function (x, y, controls)
             entity.set("near_a_wall", nil)
         end
 
-        entity.set("vs", math.max(entity.get("vs") - gravity, 0))
+        sum = sum + entity.get("vs")
 
         entity.setY(entity.getY() - entity.get("vs"))
         senses.setY(senses.getY() - entity.get("vs"))
+        print(entity.get("vs"))
+        entity.set("vs", math.max(entity.get("vs") - gravity, 0))
+
     end
 
     entity.resolveDash = function (dt)
