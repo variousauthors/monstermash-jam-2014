@@ -345,16 +345,20 @@ return function (x, y, controls)
         -- change occurred
         if not movement.is("dashing") then
             entity.resolveFall(dt)
+        else
+            -- if megaman has nothing under him, then he would fall
+            local cols, len = world.bump:check(entity, entity.getX(), entity.getY() + 1, obstacleFilter)
+
+            if len == 0 then
+                movement.set("would_fall")
+            else
+                movement.unset("would_fall")
+            end
         end
 
         entity.resolveObstacleCollide(world)
         entity.resolveBulletCollide(world)
         entity.resolveWallProximity(world)
-
-        -- if megaman has nothing under him, then he would fall
-        local cols, len = world.bump:check(entity, entity.getX(), entity.getY() + 1, obstacleFilter)
-
-        if len == 0 then movement.set("would_fall") end
     end
 
     entity.keypressed = function (key)
