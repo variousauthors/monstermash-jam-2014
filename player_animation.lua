@@ -11,7 +11,7 @@ local frames = require("animation_index")
 return function (entity, image, movement, x_buster, controls, verbose)
     -- I think we won't need this
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local animation        = FSM()
+    local animation        = FSM(true, "animation")
     local timer            = 0
     local anim, duration
     local facing = entity.get("facing")
@@ -281,6 +281,22 @@ return function (entity, image, movement, x_buster, controls, verbose)
     })
 
     animation.addTransition({
+        from = "to_jumping",
+        to = "to_falling",
+        condition = function ()
+            return movement.is("falling")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_jumping",
+        to = "to_dashing",
+        condition = function ()
+            return not animation.isFinished() and movement.is("dashing")
+        end
+    })
+
+    animation.addTransition({
         from = "jumping",
         to = "to_falling",
         condition = function ()
@@ -316,7 +332,15 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_falling",
         to = "falling",
         condition = function ()
-            return animation.isFinished() or movement.is("standing")
+            return animation.isFinished() or movement.is("standing") or movement.is("running")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_falling",
+        to = "to_dashing",
+        condition = function ()
+            return movement.is("dashing")
         end
     })
 
@@ -338,6 +362,14 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "falling_to_standing",
+        to = "to_jumping",
+        condition = function ()
+            return movement.is("jumping")
+        end
+    })
+
+    animation.addTransition({
+        from = "falling",
         to = "to_jumping",
         condition = function ()
             return movement.is("jumping")
@@ -428,7 +460,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_dashing",
         to = "dashing",
         condition = function ()
-            return animation.isFinished() and movement.is("dashing")
+            return animation.isFinished() or movement.is("dashing")
         end
     })
 
@@ -436,7 +468,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_dashing",
         to = "jumping",
         condition = function ()
-            return animation.isFinished() and movement.is("jumping") or movement.is("jumping")
+            return animation.isFinished() or movement.is("jumping")
         end
     })
 
@@ -444,7 +476,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_dashing",
         to = "standing",
         condition = function ()
-            return animation.isFinished() and movement.is("standing") or movement.is("standing")
+            return animation.isFinished() or movement.is("standing")
         end
     })
 
@@ -452,7 +484,15 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_dashing",
         to = "running",
         condition = function ()
-            return animation.isFinished() and movement.is("running") or movement.is("running")
+            return animation.isFinished() or movement.is("running")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_dashing",
+        to = "falling",
+        condition = function ()
+            return animation.isFinished() or movement.is("falling")
         end
     })
 

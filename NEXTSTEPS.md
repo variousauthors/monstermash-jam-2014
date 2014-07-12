@@ -1,9 +1,15 @@
 NEXT STEPS
 ----------
 
+[ ] make a shortcut to declare transitions for many from states at once
+    addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
+
 ### Animations ###
 
-[ ] resolve the air-dash issues. (Draw a diagram for transitions from dashing)
+[x] resolve the air-dash issues. (Draw a diagram for transitions from dashing)
+[ ] In megaman X, whilc in the falling to standing transition, megaman can't jump.
+    Any jump presses made during this transition are... DELAYED UNTIL IT IS FINISHED
+    - he can jump normally if we skips that animation by landing into a run
 
 ### VHS ###
 

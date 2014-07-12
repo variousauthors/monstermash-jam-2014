@@ -366,6 +366,7 @@ return function (x, y, controls)
 
         movement.keypressed(key)
         x_buster.keypressed(key)
+        animation.update(0)
     end
 
     entity.keyreleased = function (key)
@@ -373,6 +374,7 @@ return function (x, y, controls)
 
         movement.keyreleased(key)
         x_buster.keyreleased(key)
+        animation.update(0)
     end
 
     entity.draw       = function ()
