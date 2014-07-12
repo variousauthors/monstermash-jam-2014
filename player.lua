@@ -343,19 +343,18 @@ return function (x, y, controls)
         -- after we resolve falling we need to reset
         -- if megaman was dashing, but track that a
         -- change occurred
-        entity.resolveFall(dt)
+        if not movement.is("dashing") then
+            entity.resolveFall(dt)
+        end
+
         entity.resolveObstacleCollide(world)
         entity.resolveBulletCollide(world)
         entity.resolveWallProximity(world)
 
-        local ay = entity.getY()
-        if by ~= ay then
-            movement.set("would_fall")
-        end
+        -- if megaman has nothing under him, then he would fall
+        local cols, len = world.bump:check(entity, entity.getX(), entity.getY() + 1, obstacleFilter)
 
-        if movement.is("dashing") then
-            entity.setY(by)
-        end
+        if len == 0 then movement.set("would_fall") end
     end
 
     entity.keypressed = function (key)
