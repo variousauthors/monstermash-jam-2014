@@ -433,6 +433,14 @@ return function (entity, image, movement, x_buster, controls, verbose)
     })
 
     animation.addTransition({
+        from = "from_running",
+        to = "running",
+        condition = function ()
+            return movement.is("running")
+        end
+    })
+
+    animation.addTransition({
         from = "running",
         to = "to_jumping",
         condition = function ()

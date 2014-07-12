@@ -215,7 +215,10 @@ return function (entity, controls, verbose)
         from = "running",
         to = "standing",
         condition = function ()
-            return not entity.pressed(DASH) and not entity.holding(LEFT) and not entity.holding(RIGHT) and entity.get("vs") == 0
+            local running = (entity.holding(LEFT) or entity.holding(RIGHT))
+            local turning = (entity.pressed(RIGHT) or entity.pressed(LEFT))
+
+            return not entity.pressed(DASH) and not running and not turning and entity.get("vs") == 0
         end
     })
 
