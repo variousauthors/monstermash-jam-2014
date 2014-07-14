@@ -136,8 +136,6 @@ return function (x, y, controls)
             entity.set("near_a_wall", nil)
         end
 
-        sum = sum + entity.get("vs")
-
         entity.setY(entity.getY() - entity.get("vs"))
         senses.setY(senses.getY() - entity.get("vs"))
         print(entity.get("vs"))
