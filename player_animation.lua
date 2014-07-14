@@ -338,6 +338,14 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "to_falling",
+        to = "climbing_to_jump",
+        condition = function ()
+            return movement.is("jumping") and entity.get("wall_jump")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_falling",
         to = "to_dashing",
         condition = function ()
             return movement.is("dashing")

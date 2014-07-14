@@ -89,14 +89,11 @@ return function (entity, controls, verbose)
             local id = entity.get('id')
 
             -- if a jump starts near a wall, kick off
-            if entity.get("near_a_wall") ~= nil then
-                entity.set("wall_jump", true)
-                entity.setFacing(entity.get("near_a_wall"))
-                Sound:run('wall_jump', id)
-            else
-                Sound:run('jump', id)
-            end
+            entity.set("wall_jump", false)
+            Sound:run('jump', id)
 
+            -- if we are continuing from a wall jump there
+            -- is no need to reset this
             if entity.get("vs") == 0 then
                 entity.startJump()
             end
@@ -117,6 +114,37 @@ return function (entity, controls, verbose)
             end
         end
     })
+
+    movement.addState({
+        name = "wall_jump",
+        init = function ()
+            local id = entity.get('id')
+            entity.set("wall_jump", true)
+            entity.setFacing(entity.get("near_a_wall"))
+            Sound:run('wall_jump', id)
+
+            entity.set(FALLING, false)
+
+            entity.startJump()
+        end,
+        update = function ()
+            -- as long as you are holding jump, keep jumping
+            if entity.holding(JUMP) then
+                entity.resolveJump()
+            end
+
+            -- air control
+            if entity.holding(LEFT) then
+                entity.resolveLeft()
+            end
+
+            if entity.holding(RIGHT) then
+                entity.resolveRight()
+            end
+        end
+
+    })
+
 
     movement.addState({
         name = "falling",
@@ -154,32 +182,6 @@ return function (entity, controls, verbose)
             local facing = entity.get("facing") == LEFT and RIGHT or LEFT
             entity.setFacing(facing)
         end
-    })
-
-    movement.addState({
-        name = "wall_jump",
-        init = function ()
-            local id = entity.get('id')
-            Sound:run('wall_jump', id)
-            entity.set(FALLING, false)
-            entity.set("wall_jump", true)
-        end,
-        update = function ()
-            -- as long as you are holding jump, keep jumping
-            if entity.holding(JUMP) then
-                entity.resolveJump()
-            end
-
-            -- air control
-            if entity.holding(LEFT) then
-                entity.resolveLeft()
-            end
-
-            if entity.holding(RIGHT) then
-                entity.resolveRight()
-            end
-        end
-
     })
 
     movement.addState({

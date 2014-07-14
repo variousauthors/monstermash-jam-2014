@@ -174,7 +174,7 @@ return function (x, y, controls)
     end
 
     entity.resolveFall = function (dt)
-        if movement.is('jumping') then return end
+        if movement.is("wall_jump") or movement.is('jumping') then return end
 
         -- face forward but slide back
         if movement.is('damaged') then
@@ -283,7 +283,7 @@ return function (x, y, controls)
 
                 -- megaman is near a wall he picks up a "near a wall"
                 -- which he can use to kick off a wall from falling
-                if movement.is("jumping") or movement.is("falling") then
+                if movement.is("wall_jump") or movement.is("jumping") or movement.is("falling") then
                     if (nx == 1) then
                         entity.set("near_a_wall", LEFT)
                     elseif (nx == -1) then
