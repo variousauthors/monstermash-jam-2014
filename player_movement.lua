@@ -97,7 +97,9 @@ return function (entity, controls, verbose)
                 Sound:run('jump', id)
             end
 
-            entity.startJump()
+            if entity.get("vs") == 0 then
+                entity.startJump()
+            end
         end,
         update = function ()
             -- as long as you are holding jump, keep jumping
@@ -161,7 +163,23 @@ return function (entity, controls, verbose)
             Sound:run('wall_jump', id)
             entity.set(FALLING, false)
             entity.set("wall_jump", true)
+        end,
+        update = function ()
+            -- as long as you are holding jump, keep jumping
+            if entity.holding(JUMP) then
+                entity.resolveJump()
+            end
+
+            -- air control
+            if entity.holding(LEFT) then
+                entity.resolveLeft()
+            end
+
+            if entity.holding(RIGHT) then
+                entity.resolveRight()
+            end
         end
+
     })
 
     movement.addState({
@@ -357,16 +375,14 @@ return function (entity, controls, verbose)
         end
     })
 
-    -- climbing jumping ambiguity
     movement.addTransition({
         from = "falling",
-        to = "jumping",
+        to = "wall_jump",
         condition = function ()
 
             return entity.get("near_a_wall") ~= nil and entity.pressed(JUMP) and not entity.pressed(DASH)
         end
     })
-
 
     movement.addTransition({
         from = "climbing",
@@ -406,7 +422,7 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "jumping",
         condition = function ()
-            return true
+            return entity.get("near_a_wall") == nil
         end
     })
 
