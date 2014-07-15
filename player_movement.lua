@@ -326,6 +326,16 @@ return function (entity, controls, verbose)
         end
     })
 
+    -- TODO this might not be necessary because megaman always goes to
+    -- falling before walljump
+    movement.addTransition({
+        from = "jumping",
+        to = "wall_jump",
+        condition = function ()
+            return movement.is("wall_jump")
+        end
+    })
+
     movement.addTransition({
         from = "dash_jump",
         to = "jumping",

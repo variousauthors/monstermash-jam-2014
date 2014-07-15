@@ -283,7 +283,7 @@ return function (x, y, controls)
 
                 -- megaman is near a wall he picks up a "near a wall"
                 -- which he can use to kick off a wall from falling
-                if movement.is("wall_jump") or movement.is("jumping") or movement.is("falling") then
+                if movement.is("climbing") or movement.is("wall_jump") or movement.is("jumping") or movement.is("falling") then
                     if (nx == 1) then
                         entity.set("near_a_wall", LEFT)
                     elseif (nx == -1) then
@@ -292,6 +292,7 @@ return function (x, y, controls)
                 end
             end
         end
+
     end
 
     entity.tic = function (dt)
