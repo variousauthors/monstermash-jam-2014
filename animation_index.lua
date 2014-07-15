@@ -8,7 +8,7 @@ animation_index = {
 
     to_jumping          = { '1-3', 3 },
     jumping             = { 3,3 },
-    to_falling          = { '3-5', 3 },
+    to_falling          = { '4-5', 3 },
     falling             = { 5,3 },
     falling_to_standing = { '6-7', 3 },
 
@@ -20,7 +20,13 @@ animation_index = {
     dashing      = { 2,7 },
     from_dashing = { 1,7 },
 
-    to_climbing      = { '1-2', 9 },
+    -- I took out one frame of climbing because it greatly complicates things
+    -- when megeman goes from jumping into a wall to climbing, he goes briefly
+    -- to a frame that is facing the wall and can shoot toward the wall, before
+    -- hitting the facing away from the wall climbing stuff. I'm not down with
+    -- that, sorry rock
+    -- to_climbing      = { '1-2', 9 },
+    to_climbing      = { 2, 9 },
     climbing         = { 3,9 },
     climbing_to_jump = { '4-5',9 },
 

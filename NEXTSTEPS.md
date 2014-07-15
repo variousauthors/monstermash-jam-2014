@@ -7,9 +7,12 @@ NEXT STEPS
 ### Animations ###
 
 [x] resolve the air-dash issues. (Draw a diagram for transitions from dashing)
-[ ] In megaman X, whilc in the falling to standing transition, megaman can't jump.
+[ ] In megaman X, while in the falling to standing transition, megaman can't jump.
     Any jump presses made during this transition are... DELAYED UNTIL IT IS FINISHED
     - he can jump normally if we skips that animation by landing into a run
+[ ] There is a frame between jumping and wall climbing during which megaman is still
+    facing towards the wall
+[ ] when megaman touches a wall his falling animation should run fast, then he clings
 
 ### VHS ###
 
