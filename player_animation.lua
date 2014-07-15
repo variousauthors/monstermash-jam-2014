@@ -193,7 +193,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addState({
         name = "climbing_to_jump",
-        init = animation.getInit(0.3, 'pauseAtEnd'),
+        init = animation.getInit(0.1, 'pauseAtEnd'),
         update = update_transition_animation
     })
 
@@ -588,7 +588,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "climbing",
         to = "climbing_to_jump",
         condition = function ()
-            return movement.is("jumping")
+            return movement.is("wall_jump")
         end
     })
 

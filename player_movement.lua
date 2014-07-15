@@ -314,6 +314,7 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "falling",
         condition = function ()
+            inspect({entity.get("vs") == 0 , not entity.holding(JUMP) , not entity.holding(DASH) })
             return entity.get("vs") == 0 or not entity.holding(JUMP) and not entity.holding(DASH)
         end
     })

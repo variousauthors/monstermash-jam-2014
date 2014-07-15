@@ -46,10 +46,13 @@ return function (x, y, controls)
     local terminal_vs = 5.75
     local gravity                 = 0.25
 
-    local senses_width   = (5/2)*width
-    local senses_offset  = senses_width/2 - width/2
+    local senses_width    = (5/2)*width
+    local senses_height   = height
+    local senses_offset_x = senses_width/2 - width/2
+    local senses_offset_y = height - senses_height
+
     local entity         = Entity(x, y, width, height)
-    local senses         = Entity(x - senses_offset, y, senses_width, height)
+    local senses         = Entity(x - senses_offset_x, y + senses_offset_y, senses_width, senses_height)
 
     local obstacleFilter = entity.getFilterFor('isObstacle')
     local bulletFilter = function (other)
@@ -190,7 +193,7 @@ return function (x, y, controls)
 
         if len == 0 then
             world.bump:move(entity, new_x, new_y)
-            world.bump:move(senses, new_x - senses_offset, new_y)
+            world.bump:move(senses, new_x - senses_offset_x, new_y + senses_offset_y)
         else
             local col, tx, ty, sx, sy
             while len > 0 do
@@ -217,20 +220,20 @@ return function (x, y, controls)
                 end
 
                 entity.setX(tx)
-                senses.setX(tx - senses_offset)
+                senses.setX(tx - senses_offset_x)
                 entity.setY(ty)
-                senses.setY(ty)
-                world.bump:move(entity, tx, ty)
-                world.bump:move(senses, tx - senses_offset, ty)
+                senses.setY(ty + senses_offset_y)
+                world.bump:move(entity, entity.getX(), entity.getY())
+                world.bump:move(senses, senses.getX(), senses.getY())
 
                 cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
                 if len == 0 then
                     entity.setX(sx)
-                    senses.setX(sx - senses_offset)
+                    senses.setX(sx - senses_offset_x)
                     entity.setY(sy)
-                    senses.setY(sy)
-                    world.bump:move(entity, sx, sy)
-                    world.bump:move(senses, sx - senses_offset, sy)
+                    senses.setY(sy + senses_offset_y)
+                    world.bump:move(entity, entity.getX(), entity.getY())
+                    world.bump:move(senses, senses.getX(), senses.getY())
                 end
             end
         end
@@ -469,7 +472,7 @@ return function (x, y, controls)
 
 
       love.graphics.rectangle("line", draw_x, draw_y, width, height)
-      love.graphics.rectangle("line", senses.getX(), senses.getY(), senses_width, height)
+      love.graphics.rectangle("line", senses.getX(), senses.getY(), senses_width, senses_height)
       --love.graphics.rectangle("line", draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y, 51, 51)
       --love.graphics.line(draw_x - sprite_box_offset_x + sprite_width/2, draw_y - sprite_diff, draw_x - sprite_box_offset_x + sprite_width/2, draw_y + sprite_box_offset_y + sprite_diff)
         love.graphics.setColor(COLOR.WHITE)
