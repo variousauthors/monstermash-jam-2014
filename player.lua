@@ -46,7 +46,7 @@ return function (x, y, controls)
     local terminal_vs = 5.75
     local gravity                 = 0.25
 
-    local senses_width   = 5*width/2 + 5
+    local senses_width   = (5/2)*width
     local senses_offset  = senses_width/2 - width/2
     local entity         = Entity(x, y, width, height)
     local senses         = Entity(x - senses_offset, y, senses_width, height)
@@ -132,7 +132,6 @@ return function (x, y, controls)
         if entity.get("wall_jump") then
             local away = entity.get("near_a_wall") == LEFT and RIGHT or LEFT
 
-            print("wall_jump")
             move(away, 1)
             entity.setFacing(entity.get("near_a_wall"))
             entity.set("near_a_wall", nil)
@@ -140,9 +139,7 @@ return function (x, y, controls)
 
         entity.setY(entity.getY() - entity.get("vs"))
         senses.setY(senses.getY() - entity.get("vs"))
-        print(entity.get("vs"))
         entity.set("vs", math.max(entity.get("vs") - gravity, 0))
-
     end
 
     entity.resolveDash = function (dt)

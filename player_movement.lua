@@ -128,19 +128,8 @@ return function (entity, controls, verbose)
             entity.startJump()
         end,
         update = function ()
-            -- as long as you are holding jump, keep jumping
-            if entity.holding(JUMP) then
-                entity.resolveJump()
-            end
-
-            -- air control
-            if entity.holding(LEFT) then
-                entity.resolveLeft()
-            end
-
-            if entity.holding(RIGHT) then
-                entity.resolveRight()
-            end
+            -- wall jump can't be interrupted or air controlled
+            entity.resolveJump()
         end
 
     })
@@ -404,7 +393,7 @@ return function (entity, controls, verbose)
 
     movement.addTransition({
         from = "climbing",
-        to = "jumping",
+        to = "wall_jump",
         condition = function ()
             return entity.get(FALLING) and entity.pressed(JUMP)
         end
@@ -424,7 +413,16 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "jumping",
         condition = function ()
-            return entity.get("near_a_wall") == nil
+            return entity.get("near_a_wall") == nil and entity.holding(JUMP)
+        end
+    })
+
+    movement.addTransition({
+        from = "wall_jump",
+        to = "falling",
+        condition = function ()
+            print(entity.get("near_a_wall"))
+            return entity.get("near_a_wall") == nil and not entity.holding(JUMP)
         end
     })
 

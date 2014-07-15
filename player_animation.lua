@@ -340,7 +340,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_falling",
         to = "climbing_to_jump",
         condition = function ()
-            return movement.is("jumping") and entity.get("wall_jump")
+            return movement.is("wall_jump")
         end
     })
 
@@ -412,7 +412,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "falling",
         to = "climbing_to_jump",
         condition = function ()
-            return movement.is("jumping") and entity.get("wall_jump")
+            return movement.is("wall_jump")
         end
     })
 
