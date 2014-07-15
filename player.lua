@@ -215,7 +215,7 @@ return function (x, y, controls)
 
                 -- megaman hits a wall
                 if (nx == 1 or nx == -1) then
-                    if movement.is("jumping") or movement.is("falling") or movement.is("climbing") then
+                    if movement.is("falling") or movement.is("climbing") then
                         movement.set("climbing")
                         entity.set("vs", 0)
                         sy = sy + 1

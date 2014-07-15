@@ -574,6 +574,14 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "to_climbing",
+        to = "standing",
+        condition = function ()
+            return movement.is("standing")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_climbing",
         to = "climbing_to_jump",
         condition = function ()
             return movement.is("wall_jump")
