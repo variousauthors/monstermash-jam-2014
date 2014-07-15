@@ -314,7 +314,6 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "falling",
         condition = function ()
-            inspect({entity.get("vs") == 0 , not entity.holding(JUMP) , not entity.holding(DASH) })
             return entity.get("vs") == 0 or not entity.holding(JUMP) and not entity.holding(DASH)
         end
     })
@@ -396,7 +395,7 @@ return function (entity, controls, verbose)
         from = "climbing",
         to = "wall_jump",
         condition = function ()
-            return entity.get(FALLING) and entity.pressed(JUMP)
+            return entity.pressed(JUMP)
         end
     })
 
@@ -406,7 +405,7 @@ return function (entity, controls, verbose)
         condition = function ()
             local clinging = entity.get("facing") == LEFT and RIGHT or LEFT
 
-            return entity.get(FALLING) and not entity.holding(clinging)
+            return not entity.holding(clinging) and not entity.pressed(JUMP)
         end
     })
 
@@ -422,7 +421,6 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "falling",
         condition = function ()
-            print(entity.get("near_a_wall"))
             return entity.get("near_a_wall") == nil and not entity.holding(JUMP)
         end
     })

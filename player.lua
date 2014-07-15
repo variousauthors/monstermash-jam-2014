@@ -137,7 +137,10 @@ return function (x, y, controls)
 
             move(away, 1)
             entity.setFacing(entity.get("near_a_wall"))
-            entity.set("near_a_wall", nil)
+
+            -- removed this while fixing wall jump: we'll set near a wall to nil when the
+            -- player's senses are not colliding with a wall
+            -- entity.set("near_a_wall", nil)
         end
 
         entity.setY(entity.getY() - entity.get("vs"))
@@ -270,11 +273,8 @@ return function (x, y, controls)
         local cols, len = world.bump:check(senses, new_x, new_y, obstacleFilter)
 
         if len == 0 then
-            -- if megaman falls away from a wall, then he loses the
-            -- wall kick
-            if entity.get("near_a_wall") ~= nil and movement.is("falling") then
-                entity.set("near_a_wall", nil)
-            end
+            -- any time megaman can't find a wall or floor or ceiling
+            entity.set("near_a_wall", nil)
         else
             local col, tx, ty, sx, sy
 
@@ -287,7 +287,6 @@ return function (x, y, controls)
                     if (nx == 1) then
                         entity.set("near_a_wall", LEFT)
                     elseif (nx == -1) then
-
                         entity.set("near_a_wall", RIGHT)
                     end
                 end
