@@ -471,8 +471,8 @@ return function (x, y, controls)
         end
 
 
-      love.graphics.rectangle("line", draw_x, draw_y, width, height)
-      love.graphics.rectangle("line", senses.getX(), senses.getY(), senses_width, senses_height)
+--    love.graphics.rectangle("line", draw_x, draw_y, width, height)
+--    love.graphics.rectangle("line", senses.getX(), senses.getY(), senses_width, senses_height)
       --love.graphics.rectangle("line", draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y, 51, 51)
       --love.graphics.line(draw_x - sprite_box_offset_x + sprite_width/2, draw_y - sprite_diff, draw_x - sprite_box_offset_x + sprite_width/2, draw_y + sprite_box_offset_y + sprite_diff)
         love.graphics.setColor(COLOR.WHITE)
