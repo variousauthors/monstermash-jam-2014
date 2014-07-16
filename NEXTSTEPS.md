@@ -17,6 +17,8 @@ NEXT STEPS
     he should get a little push away (about half his senses distance) (see the game)
 [ ] when running and then push the opposite direction but without letting go of the original
     run direction, megaman goes to standing and faces in the original run direction.
+[ ] A second shooting animation plays parallel to some of megaman's animations
+[ ] switch to and from shooting animation based on the inactive state
 
 ### VHS ###
 

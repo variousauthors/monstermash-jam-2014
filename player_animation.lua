@@ -13,7 +13,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local animation        = FSM(true, "animation")
     local timer            = 0
-    local anim, duration
+    local anim, shooting_anim, duration
     local facing = entity.get("facing")
 
     local g = anim8.newGrid(51, 51, image:getWidth(), image:getHeight())
@@ -22,6 +22,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         facing = entity.get("facing")
 
         anim:setFlipped(facing == LEFT)
+        shooting_anim:setFlipped(facing == LEFT)
     end
 
     local _old = anim8.newAnimation
@@ -42,10 +43,16 @@ return function (entity, image, movement, x_buster, controls, verbose)
         _update(dt)
         update_facing()
         anim:update(dt)
+        shooting_anim:update(dt)
     end
 
     animation.draw = function (x, y)
-        anim:draw(image, x, y)
+        if x_buster.isSet("shoot") or x_buster.is("cool_down") then
+            shooting_anim:draw(image, x, y)
+        else
+            anim:draw(image, x, y)
+        end
+
     end
 
     animation.isFinished = function ()
@@ -56,7 +63,8 @@ return function (entity, image, movement, x_buster, controls, verbose)
         local args = ...
         return function ()
             duration, timer = d, 0
-            anim = anim8.newAnimation(g(frames.get(animation.getState())), duration, args)
+            anim          = anim8.newAnimation(g(frames.get(animation.getState())), duration, args)
+            shooting_anim = anim8.newAnimation(g(frames.get(animation.getState(), true)), duration, args)
         end
     end
 
@@ -68,6 +76,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
         update_facing()
         anim:update(speed*dt)
+        shooting_anim:update(speed*dt)
     end
 
     --- ANIMATION STATES ---
@@ -104,6 +113,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
             update_facing()
             anim:update(speed*dt)
+            shooting_anim:update(speed*dt)
         end
     })
 
@@ -135,6 +145,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
             update_facing()
             anim:update(speed*dt)
+            shooting_anim:update(speed*dt)
         end
     })
 
