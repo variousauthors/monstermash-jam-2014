@@ -4,6 +4,15 @@ NEXT STEPS
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
 
+### Shooting ###
+
+[x] A second shooting animation plays parallel to some of megaman's animations
+[x] switch to and from shooting animation based on the inactive state
+[ ] The X-Buster should only enter shoot states when it can actually produce bullets.
+[ ] bullets need animations too
+[ ] track bullets in a pool and ensure limits are respected
+[ ] bullets should collide with obstacles too
+
 ### Animations ###
 
 [x] resolve the air-dash issues. (Draw a diagram for transitions from dashing)
@@ -17,8 +26,6 @@ NEXT STEPS
     he should get a little push away (about half his senses distance) (see the game)
 [ ] when running and then push the opposite direction but without letting go of the original
     run direction, megaman goes to standing and faces in the original run direction.
-[ ] A second shooting animation plays parallel to some of megaman's animations
-[ ] switch to and from shooting animation based on the inactive state
 
 ### VHS ###
 
