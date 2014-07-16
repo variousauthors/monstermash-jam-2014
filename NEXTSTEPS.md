@@ -12,7 +12,11 @@ NEXT STEPS
     - he can jump normally if we skips that animation by landing into a run
     - will not fix
 [x] when megaman touches a wall his falling animation should run fast, then he clings
-[ ] megaman bounces like a gimp when standing at the base of a wall
+[x] megaman bounces like a gimp when standing at the base of a wall
+[ ] when megaman is climbing and presses away from the wall (but still also pressing towards)
+    he should get a little push away (about half his senses distance) (see the game)
+[ ] when running and then push the opposite direction but without letting go of the original
+    run direction, megaman goes to standing and faces in the original run direction.
 
 ### VHS ###
 

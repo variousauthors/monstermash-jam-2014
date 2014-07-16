@@ -413,9 +413,12 @@ return function (entity, controls, verbose)
         from = "climbing",
         to = "falling",
         condition = function ()
-            local clinging = entity.get("facing") == LEFT and RIGHT or LEFT
+            local clinging    = entity.holding(entity.get("facing") == LEFT and RIGHT or LEFT)
+            local pushing_off = entity.holding(entity.get("facing"))
 
-            return not entity.holding(clinging) and not entity.pressed(JUMP)
+            -- TODO I would like to push megaman about half his senses distance away from the wall he was clinging
+            -- when he "pushes off"
+            return (not clinging and not entity.pressed(JUMP)) or (clinging and pushing_off) or entity.get("near_a_wall") == nil
         end
     })
 
