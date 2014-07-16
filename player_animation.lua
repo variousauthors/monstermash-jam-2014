@@ -240,7 +240,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "standing",
         to = "to_running",
         condition = function ()
-            return movement.is("running")
+            return movement.is("running") and not entity.get("did_not_move")
         end
     })
 
@@ -438,6 +438,14 @@ return function (entity, image, movement, x_buster, controls, verbose)
 
     animation.addTransition({
         from = "to_running",
+        to = "from_running",
+        condition = function ()
+            return movement.is("standing")
+        end
+    })
+
+    animation.addTransition({
+        from = "to_running",
         to = "to_falling",
         condition = function ()
             return movement.is("falling")
@@ -449,6 +457,14 @@ return function (entity, image, movement, x_buster, controls, verbose)
         to = "from_running",
         condition = function ()
             return movement.is("standing")
+        end
+    })
+
+    animation.addTransition({
+        from = "running",
+        to = "standing",
+        condition = function ()
+            return entity.get("did_not_move") and not movement.is("standing")
         end
     })
 

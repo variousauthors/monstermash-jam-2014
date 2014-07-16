@@ -312,6 +312,8 @@ return function (x, y, controls)
     end
 
     entity.update = function (dt, world)
+        local old_x, old_y = entity.getX(), entity.getY()
+
         if movement.is("destroyed") then
             if world.bump:hasItem(entity) then
                 world.bump:remove(entity)
@@ -363,6 +365,14 @@ return function (x, y, controls)
         entity.resolveObstacleCollide(world)
         entity.resolveBulletCollide(world)
         entity.resolveWallProximity(world)
+
+        -- if after all this, megaman's position had not changed, then set
+        -- a flag to animate him as standing
+        if entity.getX() == old_x and entity.getY() == old_y then
+            entity.set("did_not_move", true)
+        else
+            entity.set("did_not_move", false)
+        end
     end
 
     entity.keypressed = function (key)
