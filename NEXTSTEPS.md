@@ -12,6 +12,8 @@ DO THESE FIRST
 [ ] When megaman is damaged, he should not be able to wall jump and shoot and charge
 [ ] megaman should lose charge when damaged
 [ ] when megamans hit each other they should both take damage (this failed once)
+[x] Megaman loses shots when mashing keys
+[ ] Megaman loses jumps when mashing keys
 
 ### Animations ###
 
@@ -22,12 +24,12 @@ DO THESE FIRST
     - will not fix
 [x] when megaman touches a wall his falling animation should run fast, then he clings
 [x] megaman bounces like a gimp when standing at the base of a wall
+[x] A second shooting animation plays parallel to some of megaman's animations
+[x] switch to and from shooting animation based on the inactive state
 [ ] when megaman is climbing and presses away from the wall (but still also pressing towards)
     he should get a little push away (about half his senses distance) (see the game)
 [ ] when running and then push the opposite direction but without letting go of the original
     run direction, megaman goes to standing and faces in the original run direction.
-[ ] A second shooting animation plays parallel to some of megaman's animations
-[ ] switch to and from shooting animation based on the inactive state
 
 ### VHS ###
 

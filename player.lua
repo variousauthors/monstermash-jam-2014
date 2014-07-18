@@ -337,7 +337,7 @@ return function (x, y, controls, name)
             if entity.pressed(key) then
                 entity.set(key, HOLDING)
 
-            elseif(entity.released(key)) then
+            elseif entity.released(key) then
                 entity.set(key, false)
             end
         end
@@ -387,6 +387,8 @@ return function (x, y, controls, name)
         movement.keypressed(key)
         x_buster.keypressed(key)
         animation.update(0)
+
+        entity.set(key, HOLDING)
     end
 
     entity.keyreleased = function (key)
@@ -399,6 +401,8 @@ return function (x, y, controls, name)
         end
 
         animation.update(0)
+
+        entity.set(key, false)
     end
 
     entity.draw       = function ()
