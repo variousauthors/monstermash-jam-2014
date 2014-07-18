@@ -261,8 +261,8 @@ return function (x, y, controls)
             x_buster.start("inactive")
 
             -- if there is something the bullet needs to do
-            if bullet.resolveCollide then
-                bullet.resolveCollide()
+            if bullet.resolveEntityCollide then
+                bullet.resolveEntityCollide()
             end
 
             cols, len = world.bump:check(entity, x, y, bulletFilter)
