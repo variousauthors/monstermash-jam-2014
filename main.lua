@@ -3,8 +3,10 @@ require "libs/fsm"
 require "libs/gamejolt"
 require "libs/vector"
 require "libs/utility"
+require "libs/linked_list"
 
 Viewport  = require("libs/viewport")
+VHS = require("libs/inputman_recorder")
 
 Input  = require("input")
 Sound  = require("sound")
@@ -12,30 +14,18 @@ World  = require("world")
 Player = require("player")
 Boss   = require("boss")
 
-
 function love.focus(f) gameIsPaused = not f end
 
-function love.load()
-
+function love.load(args)
     love.graphics.setBackgroundColor(0, 0, 0)
-    view = Viewport.new({width = global.screen_width,
-                             height = global.screen_height,
-                             scale = global.scale})
+    view = Viewport.new({
+        width  = global.screen_width,
+        height = global.screen_height,
+        scale  = global.scale
+    })
 
-    world    = World.new()
-    rock     = Player(32, 140, "p1")
-    opera    = Player(110, 300, "p2")
-    protoman = Player(370, 300, "p3")
-    vile     = Player(560, 140, "p4")
-
-    chill_penguin = Boss()
-    gj            = GameJolt("1", nil)
-
-    world:register(rock)
-    world:register(protoman)
-    world:register(vile)
-    world:register(opera)
-    -- world:register(chill_penguin)
+    world = World.new()
+    Input = VHS.new(Input, world)
 
     game_state = require("game")(world)
     menu_state = require("menu")
@@ -43,6 +33,8 @@ function love.load()
     game_state.start()
 end
 
+local tic = 0
+local play_rate = 1
 local cbCount = {
     pressed = 0,
     released = 0,
@@ -50,6 +42,11 @@ local cbCount = {
 local cbCountCounter = 0
 
 function love.update(dt)
+    tic = tic + 1
+
+    if tic < play_rate then return end
+    tic = 0
+
     cbCountCounter = cbCountCounter + dt
     if(cbCountCounter > 10) then
         print("Love2d input events:", stringspect(cbCount))
@@ -65,11 +62,9 @@ function love.update(dt)
 
     game_state.update(dt)
 
-    Sound:printDebugQueue()
-    Input:printDebugQueue()
+    --Sound:printDebugQueue()
+    --Input:printDebugQueue()
 end
-
-
 
 function love.keypressed(key, isrepeat)
     if (not love.window.hasFocus()) then return end
@@ -80,6 +75,22 @@ function love.keypressed(key, isrepeat)
         view:setupScreen()
     elseif (key == 'f10') then
         love.event.quit()
+    elseif (key == 'q') then
+        Input:startRecording()
+    elseif (key:match("[1-9]")) then
+        if Input:isRecording() then
+            Input:save(key)
+        else
+            Input:playback(key)
+        end
+    elseif (key == 'r') then
+        if not Input:isRecording() and not Input:isPlayback() then
+            game_state.set("reset")
+        end
+    elseif (key == '-') then
+        play_rate = math.min(play_rate * 2, 16)
+    elseif (key == '=') then
+        play_rate = math.max(play_rate / 2, 1)
     end
 end
 

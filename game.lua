@@ -1,9 +1,24 @@
+
 return function(world)
     local fsm = FSM()
 
     fsm.addState({
         name       = "start",
         init       = function ()
+            world:init()
+
+            rock     = Player(32, 140, "p1")
+            opera    = Player(110, 300, "p2")
+            protoman = Player(370, 300, "p3")
+            vile     = Player(560, 140, "p4")
+
+            gj = GameJolt("1", nil)
+
+            world:register(rock)
+            world:register(protoman)
+            world:register(vile)
+            world:register(opera)
+
             Sound:stop("music")
             Sound:run("mainMusic")
         end,
@@ -11,7 +26,7 @@ return function(world)
             world:draw()
         end,
         update     = function (dt)
-              world:update(dt)
+            world:update(dt)
         end,
         keypressed = function (key)
             world:keypressed(key)
@@ -34,7 +49,15 @@ return function(world)
         from      = "start",
         to        = "stop",
         condition = function ()
-            return false
+            return fsm.isSet("reset")
+        end
+    })
+
+    fsm.addTransition({
+        from      = "stop",
+        to        = "start",
+        condition = function ()
+            return true
         end
     })
 
