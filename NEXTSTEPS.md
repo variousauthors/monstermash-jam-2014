@@ -6,6 +6,8 @@ NEXT STEPS
 
 ### BUGS ###
 
+DO THESE FIRST
+
 [ ] When megaman wall jumps in the crook, he gets trapped forever
 [ ] When megaman is damaged, he should not be able to wall jump and shoot and charge
 [ ] megaman should lose charge when damaged
