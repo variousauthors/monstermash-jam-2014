@@ -4,6 +4,13 @@ NEXT STEPS
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
 
+### BUGS ###
+
+[ ] When megaman wall jumps in the crook, he gets trapped forever
+[ ] When megaman is damaged, he should not be able to wall jump and shoot and charge
+[ ] megaman should lose charge when damaged
+[ ] when megamans hit each other they should both take damage (this failed once)
+
 ### Animations ###
 
 [x] resolve the air-dash issues. (Draw a diagram for transitions from dashing)
