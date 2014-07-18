@@ -1,6 +1,25 @@
 NEXT STEPS
 ----------
 
+[ ] make a shortcut to declare transitions for many from states at once
+    addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
+
+### Animations ###
+
+[x] resolve the air-dash issues. (Draw a diagram for transitions from dashing)
+[x] In megaman X, while in the falling to standing transition, megaman can't jump.
+    Any jump presses made during this transition are... DELAYED UNTIL IT IS FINISHED
+    - he can jump normally if we skips that animation by landing into a run
+    - will not fix
+[x] when megaman touches a wall his falling animation should run fast, then he clings
+[x] megaman bounces like a gimp when standing at the base of a wall
+[ ] when megaman is climbing and presses away from the wall (but still also pressing towards)
+    he should get a little push away (about half his senses distance) (see the game)
+[ ] when running and then push the opposite direction but without letting go of the original
+    run direction, megaman goes to standing and faces in the original run direction.
+[ ] A second shooting animation plays parallel to some of megaman's animations
+[ ] switch to and from shooting animation based on the inactive state
+
 ### VHS ###
 
 [x] Should store position data, and bark if it gets out of sync
@@ -13,12 +32,9 @@ NEXT STEPS
 [x] add asserts for testing against position data
 [x] The recordings all live in a track_list.lua file, and are a table
     of recordings indexed by that number
-[ ] +/- should change the rate at which game.update gets called, slowing or
+[x] +/- should change the rate at which game.update gets called, slowing or
     speeding up the game
-[ ] @ should send the game into stop state, and then any macro button should
-    load the corresponding macro
 [x] The game should "re-init" in the start init
-[ ] Playback should report all the same debug information
 [x] VHS should store all the relevant position information, so that we can
     make assertsions about it.
     - padding is still good enough: we only need to make assertions after
