@@ -22,7 +22,7 @@ Bullets = {
     mega_blast = MegaBlast
 }
 
-return function (x, y, controls)
+return function (x, y, controls, name)
     local controls = require('controls')[controls]
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
 
@@ -102,7 +102,7 @@ return function (x, y, controls)
         return entity.get(key) == HOLDING
     end
 
-    local image     = love.graphics.newImage('assets/spirtesheetv1.png')
+    local image     = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
 
     local movement  = MovementModule(entity, controls)
     local x_buster  = XBuster(entity, controls)
