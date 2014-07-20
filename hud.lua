@@ -16,11 +16,13 @@ function HUD.new(...) -- takes a list of up to 4 player objects
     local self = {}
     setmetatable(self, HUD)
 
+    local xo, yo = 8, 8
+
     self._coords = {
-        [1] = {view:lefttop(8, 8, healthbar_w, healthbar_h)},
-        [2] = {view:righttop(8, 8, healthbar_w, healthbar_h)},
-        [3] = {view:leftbottom(8, 8, healthbar_w, healthbar_h)},
-        [4] = {view:rightbottom(8, 8, healthbar_w, healthbar_h)}
+        [1] = {view:lefttop(xo, yo, healthbar_w, healthbar_h)},
+        [2] = {view:righttop(xo, yo, healthbar_w, healthbar_h)},
+        [3] = {view:leftbottom(xo, yo, healthbar_w, healthbar_h)},
+        [4] = {view:rightbottom(xo, yo, healthbar_w, healthbar_h)}
     }
 
     self._players = {...}
