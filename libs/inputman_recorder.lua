@@ -2,7 +2,7 @@ local VHS = {}
 VHS.__index = VHS
 
 if not stringspect then stringspect = require('vendor/inspect/inspect') end
-if not json then require('vendor/lua4json/json4lua/json/json') end
+if not json then json = require('vendor/dkjson') end
 
 local path = string.match(debug.getinfo(1).short_src,"(.-)[^\\/]-%.?[^%.\\/]*$")
 
@@ -10,10 +10,9 @@ function VHS.new(inputMan, world)
     local self = {}
     setmetatable(self, VHS)
 
-    local hfile = io.open("track_list.lua", "r")
-    if hfile then
-        self.track_list = json.decode(hfile:read())
-        io.close(hfile)
+    local data = love.filesystem.read("track_list.lua")
+    if data then
+        self.track_list = json.decode(data, 1, null, nil, nil)
     else
         self.track_list = {}
     end
@@ -117,7 +116,7 @@ function VHS:save(track)
     self.track_list[track] = self.recording.serialize()
 
     local hfile = io.open("track_list.lua", "w")
-    local data = json.encode(self.track_list)
+    local data = json.encode(self.track_list, {indent = true})
 
     if hfile == nil then bob.go() end
 

@@ -2,7 +2,7 @@ local InputMan = {}
 InputMan.__index = InputMan
 
 if not stringspect then stringspect = require('vendor/inspect/inspect') end
-if not json then require('vendor/lua4json/json4lua/json/json') end
+if not json then json = require('vendor/dkjson') end
 
 local path = string.match(debug.getinfo(1).short_src,"(.-)[^\\/]-%.?[^%.\\/]*$")
 local InputMapper = require(path..'/inputman_mapper')
