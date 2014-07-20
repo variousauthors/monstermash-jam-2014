@@ -12,7 +12,7 @@ function VHS.new(inputMan, world)
 
     local data = love.filesystem.read("track_list.lua")
     if data then
-        self.track_list = json.decode(data)
+        self.track_list = json.decode(data, 1, null, nil, nil)
     else
         self.track_list = {}
     end
