@@ -12,6 +12,8 @@ return function(world)
             protoman = Player(370, 300, "p3", "rock")
             vile     = Player(560, 140, "p4", "opera")
 
+            hud = HUD.new(rock, opera, protoman, vile)
+
             gj = GameJolt("1", nil)
 
             world:register(rock)
@@ -24,6 +26,7 @@ return function(world)
         end,
         draw       = function ()
             world:draw()
+            hud:draw()
         end,
         update     = function (dt)
             world:update(dt)
