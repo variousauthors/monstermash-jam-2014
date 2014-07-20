@@ -1,7 +1,7 @@
 
 return function (entity, controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local cannon     = FSM()
+    local cannon     = FSM(false, "x_buster", entity.get("name"))
     local cool_down  = 10
     local relax      = 20
     local mega_blast = 40
@@ -110,7 +110,7 @@ return function (entity, controls)
         from = "charging",
         to = "blast",
         condition = function ()
-            return not entity.get(SHOOT) and not cannon.isSet("mega_blast")
+            return entity.released(SHOOT) and not cannon.isSet("mega_blast")
         end
     })
 
@@ -125,7 +125,7 @@ return function (entity, controls)
         to = "mega_blast",
         condition = function ()
 
-            return not entity.get(SHOOT) and cannon.isSet("mega_blast")
+            return entity.released(SHOOT) and cannon.isSet("mega_blast")
         end
     })
 

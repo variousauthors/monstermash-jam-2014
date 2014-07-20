@@ -4,17 +4,17 @@ if not BulletFactory then require("bullet_factory") end
 -- TODO convert these to unique constants
 -- rather than strings
 PRESSED      = "pressed"
+RELEASED     = "released"
 HOLDING      = "holding"
 FALLING      = "falling"
-FLOOR_HEIGHT = 170
 
 MovementModule  = require("player_movement")
 AnimationModule = require("player_animation")
 XBuster         = require("arm_cannon")
 
-Pellet    = BulletFactory(3, 4, 4, 1, COLOR.YELLOW, "pellet")
-Blast     = BulletFactory(4, 20, 5, 2, COLOR.GREEN, "blast")
-MegaBlast = BulletFactory(3, 15, 20, 3, COLOR.RED, "mega_blast")
+Pellet    = BulletFactory(5, 4, 4, 1, COLOR.YELLOW, "pellet")
+Blast     = BulletFactory(6, 20, 5, 2, COLOR.GREEN, "blast")
+MegaBlast = BulletFactory(5, 15, 20, 3, COLOR.RED, "mega_blast")
 
 Bullets = {
     pellet     = Pellet,
@@ -98,11 +98,16 @@ return function (x, y, controls, name)
         return entity.get(key) == PRESSED
     end
 
+    entity.released = function (key)
+        return entity.get(key) == RELEASED
+    end
+
     entity.holding = function (key)
         return entity.get(key) == HOLDING
     end
 
     local image     = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
+    entity.set("name", name)
 
     local movement  = MovementModule(entity, controls)
     local x_buster  = XBuster(entity, controls)
@@ -331,8 +336,9 @@ return function (x, y, controls, name)
         for i, key in pairs(controls) do
             if entity.pressed(key) then
                 entity.set(key, HOLDING)
-            -- elseif(not Input:isState(key)) then
-            --    entity.set(key, false)
+
+            elseif entity.released(key) then
+                entity.set(key, false)
             end
         end
 
@@ -381,14 +387,22 @@ return function (x, y, controls, name)
         movement.keypressed(key)
         x_buster.keypressed(key)
         animation.update(0)
+
+        entity.set(key, HOLDING)
     end
 
     entity.keyreleased = function (key)
-        entity.set(key, false)
+        entity.set(key, RELEASED)
 
         movement.keyreleased(key)
-        x_buster.keyreleased(key)
+
+        if key == SHOOT then
+            x_buster.keyreleased(key)
+        end
+
         animation.update(0)
+
+        entity.set(key, false)
     end
 
     entity.draw       = function ()
