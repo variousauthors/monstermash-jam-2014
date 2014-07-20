@@ -299,7 +299,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_jumping",
         to = "to_falling",
         condition = function ()
-            return movement.is("falling")
+            return not animation.isFinished() and movement.is("falling")
         end
     })
 
@@ -355,7 +355,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_falling",
         to = "climbing_to_jump",
         condition = function ()
-            return movement.is("wall_jump")
+            return not animation.isFinished() and movement.is("wall_jump")
         end
     })
 
@@ -459,7 +459,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_running",
         to = "to_falling",
         condition = function ()
-            return movement.is("falling")
+            return not animation.isFinished() and movement.is("falling")
         end
     })
 

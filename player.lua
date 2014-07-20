@@ -12,9 +12,9 @@ MovementModule  = require("player_movement")
 AnimationModule = require("player_animation")
 XBuster         = require("arm_cannon")
 
-Pellet    = BulletFactory(3, 4, 4, 1, COLOR.YELLOW, "pellet")
-Blast     = BulletFactory(4, 20, 5, 2, COLOR.GREEN, "blast")
-MegaBlast = BulletFactory(3, 15, 20, 3, COLOR.RED, "mega_blast")
+Pellet    = BulletFactory(5, 4, 4, 1, COLOR.YELLOW, "pellet")
+Blast     = BulletFactory(6, 20, 5, 2, COLOR.GREEN, "blast")
+MegaBlast = BulletFactory(5, 15, 20, 3, COLOR.RED, "mega_blast")
 
 Bullets = {
     pellet     = Pellet,
