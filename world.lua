@@ -1,7 +1,7 @@
 if not Entity then require("entity") end
 
 local bump = require('vendor/bump/bump')
-require('vendor/lua4json/json4lua/json/json')
+json = json or require('vendor/dkjson')
 
 local World = {}
 World.__index = World

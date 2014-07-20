@@ -3,7 +3,7 @@ require('love.joystick')
 require('love.keyboard')
 
 require('libs/utility')
-if not json then require('vendor/lua4json/json4lua/json/json') end
+if not json then json = require('vendor/dkjson') end
 
 local path = string.match(debug.getinfo(1).short_src,"(.-)[^\\/]-%.?[^%.\\/]*$")
 

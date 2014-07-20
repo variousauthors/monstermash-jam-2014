@@ -13,6 +13,53 @@ NEXT STEPS
 [ ] track bullets in a pool and ensure limits are respected
 [ ] bullets should collide with obstacles too
 
+### BUGS ###
+
+The keydrop saga
+
+Two problems:
+
+- running "always" transitions in response to irrelevant keyreleased events
+- keys go from "pressed" to "held" in the update, so if we depend on keys being
+  not held we run the risk of transitioning out of a state that we should have
+  stayed in because another key was pressed before the update set holding to true.
+
+Solutions:
+
+- wrap the x_buster keyreleased call and ensure it is only called when the key
+  is "SHOOT".
+  - another solution would be to do some additional check in the condition
+- set the key to pressed at the beginning of a keypressed event, and to held
+  at the end. Set the key to released at the beginning of a keyreleased event
+  and to false at the end. This work used to be done in the player update function.
+
+Discussion:
+
+- the first problem is probably still a problem. I solved it with a band-aid around
+  the x_buster keyreleased call in player's keyreleased callback. So there might
+  be other "always" transitions that will suffer a similar fate.
+- the second problem is kind of a special case of the first: there is no way to
+  avoid checking for state transitions during irrelevant key events because
+  there is no way to know ahead of time what key event will be "irrelevant"
+  to a particular state.
+- my solution to the second problem is a good one. It is code that I think we
+  needed. It does not, however, address the problem in its entirety (in the
+  sense mentioned immediately above).
+
+DO THESE FIRST
+
+[ ] When megaman wall jumps in the crook, he gets trapped forever
+[ ] When megaman is damaged, he should not be able to wall jump and shoot and charge
+[ ] megaman should lose charge when damaged
+[ ] when megamans hit each other they should both take damage (this failed once)
+[x] Megaman loses shots when mashing keys
+[x] Megaman loses jumps when mashing keys
+[x] Megaman does a little dance when jump and dash are mashed
+    - not a bug: when you mash dash and jump you get a little air (like, a pixel)
+      and this cause you to fall for one frame when you come out of the dash.
+    - we could ensure that the animation for falling doesn't run, but that is
+      quite the hefty special case
+
 ### Animations ###
 
 [x] resolve the air-dash issues. (Draw a diagram for transitions from dashing)
@@ -22,6 +69,8 @@ NEXT STEPS
     - will not fix
 [x] when megaman touches a wall his falling animation should run fast, then he clings
 [x] megaman bounces like a gimp when standing at the base of a wall
+[x] A second shooting animation plays parallel to some of megaman's animations
+[x] switch to and from shooting animation based on the inactive state
 [ ] when megaman is climbing and presses away from the wall (but still also pressing towards)
     he should get a little push away (about half his senses distance) (see the game)
 [ ] when running and then push the opposite direction but without letting go of the original
