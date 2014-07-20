@@ -5,6 +5,8 @@ require "libs/vector"
 require "libs/utility"
 require "libs/linked_list"
 
+love.graphics.setDefaultFilter('nearest', 'nearest', 0)
+
 Viewport  = require("libs/viewport")
 VHS = require("libs/inputman_recorder")
 
@@ -13,6 +15,7 @@ Sound  = require("sound")
 World  = require("world")
 Player = require("player")
 Boss   = require("boss")
+HUD    = require("hud")
 
 function love.focus(f) gameIsPaused = not f end
 
