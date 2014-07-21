@@ -7,19 +7,18 @@ return function(world)
         init       = function ()
             world:init()
 
-            rock     = Player(32, 140, "p1", "rock")
-            opera    = Player(110, 300, "p2", "opera")
-            --protoman = Player(370, 300, "p3", "rock")
-            --vile     = Player(560, 140, "p4", "opera")
+            players = {
+                Player(32, 140, "p1", "rock"),
+                Player(110, 300, "p2", "opera"),
+                Player(370, 300, "p3", "proto"),
+                --Player(560, 140, "p4", "vile")
+            }
 
-            hud = HUD.new(rock, opera, protoman, vile)
+            for _, v in ipairs(players) do world:register(v) end
+
+            hud = HUD.new(unpack(players))
 
             gj = GameJolt("1", nil)
-
-            world:register(rock)
-            world:register(opera)
-            --world:register(protoman)
-            --world:register(vile)
 
             Sound:stop("music")
             Sound:run("mainMusic")
