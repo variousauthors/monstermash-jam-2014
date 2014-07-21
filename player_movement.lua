@@ -7,9 +7,9 @@
 
 return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement                       = FSM(false, "move", entity.get("name"))
+    local movement                       = FSM(true, "move", entity.get("name"))
     local dash_duration                  = 30
-    local damaged_duration               = 20
+    local damaged_duration               = 50
 
     movement.addState({
         name = "standing",
@@ -426,7 +426,7 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "jumping",
         condition = function ()
-            return entity.get("near_a_wall") == nil and entity.holding(JUMP)
+            return entity.get("near_a_wall") ~= entity.get("facing") and entity.holding(JUMP)
         end
     })
 
@@ -434,7 +434,7 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "falling",
         condition = function ()
-            return entity.get("near_a_wall") == nil and not entity.holding(JUMP)
+            return entity.get("near_a_wall") ~= entity.get("facing") and not entity.holding(JUMP)
         end
     })
 

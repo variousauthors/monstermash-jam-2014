@@ -11,7 +11,7 @@ local frames = require("animation_index")
 return function (entity, image, movement, x_buster, controls, verbose)
     -- I think we won't need this
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local animation        = FSM(false, "animation")
+    local animation        = FSM(false, "animation", entity.get("name"))
     local timer            = 0
     local anim, shooting_anim, duration
     local facing = entity.get("facing")
@@ -667,7 +667,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "any",
         to = "to_hurt",
         condition = function ()
-            return movement.is("damaged")
+            return not animation.is("to_hurt") and movement.is("damaged")
         end
     })
 
