@@ -90,7 +90,7 @@ DO THESE FIRST
 
 [ ] Accept command-line args for playback rate, track file, and track
 [ ] the keypress functions needs to be moved into the game_state, as is right
-[ ] Megaman should die immediately upon falling off the screen
+[x] Megaman should die immediately upon falling off the screen
 
 ### GOAL ###
 
