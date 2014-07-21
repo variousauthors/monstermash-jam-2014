@@ -9,13 +9,6 @@ BulletFactory = function (speed, w, h, damage, color, name)
         entity.set("owner_id", owner.get("id"))
         entity.set("damage", damage)
 
-        if owner.get(name) then
-            local count = owner.get(name)
-            owner.set(name, count + 1)
-        else
-            owner.set(name, 1)
-        end
-
         entity.draw = function ()
             love.graphics.setColor(color)
             love.graphics.rectangle("fill", entity.getX(), entity.getY(), w, h)
@@ -66,8 +59,7 @@ BulletFactory = function (speed, w, h, damage, color, name)
         end
 
         entity.resolveEntityCollide = function ()
-            local count = owner.get(name)
-            owner.set(name, count - 1)
+            owner.incrementAmmo(name)
             entity._unregister()
         end
 

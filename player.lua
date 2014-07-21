@@ -126,6 +126,8 @@ return function (x, y, controls, name)
         senses.setX(senses.getX() + sign*speed)
     end
 
+    entity.incrementAmmo = x_buster.incrementAmmo
+
     entity.resolveLeft = function ()
         move(LEFT, horizontal_speed)
         entity.setFacing(LEFT)
@@ -165,8 +167,6 @@ return function (x, y, controls, name)
 
     entity.resolveShoot = function (dt)
         local offset       = width
-        local bullet_type  = x_buster.getState()
-        local bullet_count = entity.get(bullet_type)
         local bullet
         local direction = (entity.get("facing") == LEFT and -1 or 1)
 
@@ -174,9 +174,7 @@ return function (x, y, controls, name)
             offset = 0 - fat_gun_dim*2
         end
 
-        if not bullet_count or bullet_count < max_bullets then
-            bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity, direction)
-        end
+        bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity, direction)
 
         return bullet
     end

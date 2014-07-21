@@ -11,6 +11,18 @@ return function (entity, controls)
         charge = 1
     }
 
+    cannon.incrementAmmo = function (ammo_type)
+        if ammo_type == "blast" or ammo_type == "mega_blast" then
+            ammo_type = "charge"
+        end
+
+        ammo[ammo_type] = ammo[ammo_type] + 1
+    end
+
+    local decrementAmmo = function (ammo_type)
+        ammo[ammo_type] = ammo[ammo_type] - 1
+    end
+
     cannon.addState({
         name = "inactive",
         init = function()
@@ -26,7 +38,7 @@ return function (entity, controls)
             Sound:stop("charge", id)
             Sound:run("pellet", id)
             cannon.set("shoot")
-            ammo["pellet"] = ammo["pellet"] - 1
+            decrementAmmo("pellet")
         end
     })
 
@@ -37,7 +49,7 @@ return function (entity, controls)
             Sound:stop("charge", id)
             Sound:run("blast", id)
             cannon.set("shoot")
-            ammo["charge"] = ammo["charge"] - 1
+            decrementAmmo("charge")
         end
     })
 
@@ -48,7 +60,7 @@ return function (entity, controls)
             Sound:stop("charge", id)
             Sound:run("mega_blast", id)
             cannon.set("shoot")
-            ammo["charge"] = ammo["charge"] - 1
+            decrementAmmo("charge")
         end
     })
 
@@ -82,6 +94,14 @@ return function (entity, controls)
         to = "charging",
         condition = function ()
             return ammo["charge"] > 0 and not entity.get("shocked") and entity.holding(SHOOT)
+        end
+    })
+
+    cannon.addTransition({
+        from = "inactive",
+        to = "cool_down",
+        condition = function ()
+            return ammo["charge"] > 0 and ammo["pellet"] == 0 and not entity.get("shocked") and entity.pressed(SHOOT)
         end
     })
 
