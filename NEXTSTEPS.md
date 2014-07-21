@@ -8,9 +8,10 @@ NEXT STEPS
 
 [x] A second shooting animation plays parallel to some of megaman's animations
 [x] switch to and from shooting animation based on the inactive state
-[ ] The X-Buster should only enter shoot states when it can actually produce bullets.
+[x] The X-Buster should only enter shoot states when it can actually produce bullets.
 [ ] bullets need animations too
 [ ] track bullets in a pool and ensure limits are respected
+[x] limit the number of charge shots
 [x] bullets should collide with obstacles too
 
 ### BUGS ###
@@ -98,7 +99,7 @@ DO THESE FIRST
 
 [ ] Accept command-line args for playback rate, track file, and track
 [ ] the keypress functions needs to be moved into the game_state, as is right
-[ ] Megaman should die immediately upon falling off the screen
+[x] Megaman should die immediately upon falling off the screen
 
 ### GOAL ###
 

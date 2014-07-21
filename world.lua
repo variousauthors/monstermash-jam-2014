@@ -32,7 +32,8 @@ function World.new()
     setmetatable(self, World)
 
     local contents, size = love.filesystem.read("assets/arena_highway.json")
-    self.data = json.decode(contents)
+    self.data            = json.decode(contents)
+    self.death_line      = global.screen_height
 
     self.background_image = love.graphics.newImage("assets/arena_highway_bg.png")
     self.foreground_image = love.graphics.newImage("assets/arena_highway_fg.png")
@@ -63,6 +64,7 @@ function World:register(entity)
 
     if entity.register then
         entity.register(self)
+        entity.set("death_line", self.death_line)
     else
         self.bump:add(entity, entity.getBoundingBox())
     end
