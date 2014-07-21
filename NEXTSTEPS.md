@@ -11,7 +11,7 @@ NEXT STEPS
 [ ] The X-Buster should only enter shoot states when it can actually produce bullets.
 [ ] bullets need animations too
 [ ] track bullets in a pool and ensure limits are respected
-[ ] bullets should collide with obstacles too
+[x] bullets should collide with obstacles too
 
 ### BUGS ###
 
@@ -48,10 +48,10 @@ Discussion:
 
 DO THESE FIRST
 
-[ ] When megaman wall jumps in the crook, he gets trapped forever
 [ ] When megaman is damaged, he should not be able to wall jump and shoot and charge
-[x] megaman should lose charge when damaged
 [ ] when megamans hit each other they should both take damage (this failed once)
+[x] When megaman wall jumps in the crook, he gets trapped forever
+[x] megaman should lose charge when damaged
 [x] Megaman loses shots when mashing keys
 [x] Megaman loses jumps when mashing keys
 [x] Megaman does a little dance when jump and dash are mashed

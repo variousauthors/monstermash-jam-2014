@@ -107,7 +107,6 @@ end
 
 function World:update(dt)
     self:tic(dt)
-    inspect(self.entities)
     -- iterate over the entities
     -- each of them that has queued a movement for this dt
     -- should try to move

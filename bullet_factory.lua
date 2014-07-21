@@ -4,6 +4,7 @@ BulletFactory = function (speed, w, h, damage, color, name)
 
     return function (x, y, owner, direction)
         local entity = Entity(x, y - h/2, w, h)
+        local obstacleFilter = entity.getFilterFor('isObstacle')
         entity.set('isBullet', true)
         entity.set("owner_id", owner.get("id"))
         entity.set("damage", damage)
@@ -60,7 +61,7 @@ BulletFactory = function (speed, w, h, damage, color, name)
                     end
                 end
 
---                entity.resolveEntityCollide()
+                entity.resolveEntityCollide()
             end
         end
 

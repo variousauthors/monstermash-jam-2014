@@ -1,10 +1,15 @@
 
 return function (entity, controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local cannon     = FSM(false, "x_buster", entity.get("name"))
+    local cannon     = FSM(true, "x_buster", entity.get("name"))
     local cool_down  = 10
     local relax      = 20
     local mega_blast = 40
+
+    local ammo = {
+        pellet = 3,
+        charge = 1
+    }
 
     cannon.addState({
         name = "inactive",
@@ -21,6 +26,7 @@ return function (entity, controls)
             Sound:stop("charge", id)
             Sound:run("pellet", id)
             cannon.set("shoot")
+            ammo["pellet"] = ammo["pellet"] - 1
         end
     })
 
@@ -31,6 +37,7 @@ return function (entity, controls)
             Sound:stop("charge", id)
             Sound:run("blast", id)
             cannon.set("shoot")
+            ammo["charge"] = ammo["charge"] - 1
         end
     })
 
@@ -41,6 +48,7 @@ return function (entity, controls)
             Sound:stop("charge", id)
             Sound:run("mega_blast", id)
             cannon.set("shoot")
+            ammo["charge"] = ammo["charge"] - 1
         end
     })
 
@@ -65,7 +73,7 @@ return function (entity, controls)
         from = "inactive",
         to = "pellet",
         condition = function ()
-            return not entity.get("shocked") and entity.pressed(SHOOT)
+            return ammo["pellet"] > 0 and not entity.get("shocked") and entity.pressed(SHOOT)
         end
     })
 
@@ -73,7 +81,7 @@ return function (entity, controls)
         from = "inactive",
         to = "charging",
         condition = function ()
-            return not entity.get("shocked") and entity.holding(SHOOT)
+            return ammo["charge"] > 0 and not entity.get("shocked") and entity.holding(SHOOT)
         end
     })
 
@@ -97,20 +105,15 @@ return function (entity, controls)
         from = "cool_down",
         to = "pellet",
         condition = function ()
-            return cool_down <= cannon.getCount() and cannon.getCount() <= relax and entity.pressed(SHOOT)
+            return ammo["pellet"] > 0 and cool_down <= cannon.getCount() and cannon.getCount() <= relax and entity.pressed(SHOOT)
         end
-    })
-
-    cannon.addTransition({
-        from = "cool_down",
-        to = "pellet"
     })
 
     cannon.addTransition({
         from = "charging",
         to = "blast",
         condition = function ()
-            return not movement.is("damaged") and entity.released(SHOOT) and not cannon.isSet("mega_blast")
+            return not entity.get("shocked") and entity.released(SHOOT) and not cannon.isSet("mega_blast")
         end
     })
 
@@ -125,7 +128,7 @@ return function (entity, controls)
         to = "mega_blast",
         condition = function ()
 
-            return not movement.is("damaged") and entity.released(SHOOT) and cannon.isSet("mega_blast")
+            return not entity.get("shocked") and entity.released(SHOOT) and cannon.isSet("mega_blast")
         end
     })
 
@@ -134,7 +137,7 @@ return function (entity, controls)
         to = "inactive",
         condition = function ()
 
-            return movement.is("damaged")
+            return entity.get("shocked")
         end
     })
 

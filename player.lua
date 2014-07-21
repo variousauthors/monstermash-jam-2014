@@ -442,16 +442,6 @@ return function (x, y, controls, name)
             end
         end
 
-        if x_buster.isSet("shoot") or x_buster.is("cool_down") then
-            local offset = width
-
-            if entity.get("facing") == LEFT then
-                offset = 0 - fat_gun_dim*2
-            end
-
-            love.graphics.rectangle("fill", draw_x + offset, draw_y + 1*height/3, fat_gun_dim * 2, fat_gun_dim)
-        end
-
         if movement.is("damaged") then
             local r, g, b = love.graphics.getColor()
           --love.graphics.setColor(COLOR.YELLOW)

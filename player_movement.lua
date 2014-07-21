@@ -7,7 +7,7 @@
 
 return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement                       = FSM(true, "move", entity.get("name"))
+    local movement                       = FSM(false, "move", entity.get("name"))
     local dash_duration                  = 30
     local damaged_duration               = 50
 
