@@ -6,17 +6,21 @@ NEXT STEPS
 
 ### Shooting ###
 
-[ ] We are losing collisions: sometimes I will shoot twice, and only one collision will
+[x] We are losing collisions: sometimes I will shoot twice, and only one collision will
     be detected
     - hmm... but actually the bullets would still get removed when the left the screen
       so that can't be it... maybe the bullet object is never added?
+    - moving the bullet creation code into the arm cannon resolved this: it was keydrops
+      causing trouble again
 [x] A second shooting animation plays parallel to some of megaman's animations
 [x] switch to and from shooting animation based on the inactive state
 [x] The X-Buster should only enter shoot states when it can actually produce bullets.
-[ ] bullets need animations too
-[ ] track bullets in a pool and ensure limits are respected
 [x] limit the number of charge shots
 [x] bullets should collide with obstacles too
+
+[ ] Replay 1 still demonstrates a dropped charge shot
+[ ] bullets need animations too
+[ ] track bullets in a pool and ensure limits are respected
 
 ### BUGS ###
 
