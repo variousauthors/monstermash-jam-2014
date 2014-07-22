@@ -35,19 +35,29 @@ Entity = (function ()
             return p.getX(), p.getY(), w, h
         end
 
+        local getWidth = function ()
+            return w
+        end
+
+        local getHeight = function ()
+            return h
+        end
+
         local tic     = function () end
         local cleanup = function () end
 
         return {
-            get     = get,
-            set     = set,
-            tic     = tic,
-            cleanup = cleanup,
-            getX    = p.getX,
-            getY    = p.getY,
-            setX    = p.setX,
-            setY    = p.setY,
-            getFilterFor = getFilterFor,
+            get            = get,
+            set            = set,
+            tic            = tic,
+            cleanup        = cleanup,
+            getWidth       = getWidth,
+            getHeight      = getHeight,
+            getX           = p.getX,
+            getY           = p.getY,
+            setX           = p.setX,
+            setY           = p.setY,
+            getFilterFor   = getFilterFor,
             getBoundingBox = getBoundingBox
         }
     end

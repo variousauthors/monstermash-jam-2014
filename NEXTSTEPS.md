@@ -6,6 +6,10 @@ NEXT STEPS
 
 ### Shooting ###
 
+[ ] We are losing collisions: sometimes I will shoot twice, and only one collision will
+    be detected
+    - hmm... but actually the bullets would still get removed when the left the screen
+      so that can't be it... maybe the bullet object is never added?
 [x] A second shooting animation plays parallel to some of megaman's animations
 [x] switch to and from shooting animation based on the inactive state
 [x] The X-Buster should only enter shoot states when it can actually produce bullets.
