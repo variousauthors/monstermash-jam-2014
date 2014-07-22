@@ -16,6 +16,8 @@ NEXT STEPS
 
 ### BUGS ###
 
+[ ] Can somehow jump from air-dash again?
+
 The keydrop saga
 
 Two problems:
@@ -50,6 +52,7 @@ Discussion:
 DO THESE FIRST
 
 [ ] When megaman is damaged, he should not be able to wall jump and shoot and charge
+[x] megaman should lose charge when damaged
 [ ] when megamans hit each other they should both take damage (this failed once)
 [x] When megaman wall jumps in the crook, he gets trapped forever
 [x] megaman should lose charge when damaged

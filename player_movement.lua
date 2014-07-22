@@ -7,9 +7,9 @@
 
 return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement                       = FSM(false, "move", entity.get("name"))
+    local movement                       = FSM(true, "move", entity.get("name"))
     local dash_duration                  = 30
-    local damaged_duration               = 50
+    local damaged_duration               = 30
 
     movement.addState({
         name = "standing",
@@ -450,7 +450,7 @@ return function (entity, controls, verbose)
         from = "any",
         to = "destroyed",
         condition = function ()
-            return entity.get("hp") < 1 and not movement.is('destroyed') or entity.getY() > entity.get("death_line")
+            return not movement.is('destroyed') and (entity.get("hp") < 1 or entity.getY() > entity.get("death_line"))
         end
     })
 
