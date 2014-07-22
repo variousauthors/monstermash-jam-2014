@@ -110,7 +110,7 @@ return function (entity, controls)
         from = "charging",
         to = "blast",
         condition = function ()
-            return not movement.is("damaged") and entity.released(SHOOT) and not cannon.isSet("mega_blast")
+            return not entity.get("shocked") and entity.released(SHOOT) and not cannon.isSet("mega_blast")
         end
     })
 
@@ -125,7 +125,7 @@ return function (entity, controls)
         to = "mega_blast",
         condition = function ()
 
-            return not movement.is("damaged") and entity.released(SHOOT) and cannon.isSet("mega_blast")
+            return not entity.get("shocked") and entity.released(SHOOT) and cannon.isSet("mega_blast")
         end
     })
 
@@ -134,7 +134,7 @@ return function (entity, controls)
         to = "inactive",
         condition = function ()
 
-            return movement.is("damaged")
+            return entity.get("shocked")
         end
     })
 
