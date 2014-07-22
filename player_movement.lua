@@ -450,7 +450,7 @@ return function (entity, controls, verbose)
         from = "any",
         to = "destroyed",
         condition = function ()
-            return entity.get("hp") < 1 and not movement.is('destroyed') or entity.getY() > entity.get("death_line")
+            return entity.get("hp") < 1 and not movement.is('destroyed') or entity.getY() > entity.get("death_line") and not movement.is('destroyed') 
         end
     })
 

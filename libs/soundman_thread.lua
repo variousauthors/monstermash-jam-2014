@@ -95,7 +95,7 @@ end
 callbacks['stop'] = function(tags)
     tags = parseTagString(tags) or 'all'
     for i, sound in ipairs(SoundObjects) do
-        if (tag == "all" or sound:hasTag(tags)) then sound:stop() end
+        if (tags == "all" or sound:hasTag(tags)) then sound:stop() end
     end
 end
 

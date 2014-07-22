@@ -6,6 +6,8 @@ NEXT STEPS
 
 ### BUGS ###
 
+[ ] Can somehow jump from air-dash again?
+
 The keydrop saga
 
 Two problems:

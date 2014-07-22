@@ -20,7 +20,7 @@ return function(world)
 
             gj = GameJolt("1", nil)
 
-            Sound:stop("music")
+            Sound:stop()
             Sound:run("mainMusic")
         end,
         draw       = function ()
