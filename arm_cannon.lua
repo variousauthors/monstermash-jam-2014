@@ -1,7 +1,7 @@
 
 return function (entity, controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local cannon     = FSM(true, "x_buster", entity.get("name"))
+    local cannon     = FSM(false, "x_buster", entity.get("name"))
     local cool_down  = 10
     local relax      = 20
     local mega_blast = 40
@@ -17,10 +17,14 @@ return function (entity, controls)
         end
 
         ammo[ammo_type] = ammo[ammo_type] + 1
+
+        inspect(ammo)
     end
 
     local decrementAmmo = function (ammo_type)
         ammo[ammo_type] = ammo[ammo_type] - 1
+
+        inspect(ammo)
     end
 
     cannon.addState({

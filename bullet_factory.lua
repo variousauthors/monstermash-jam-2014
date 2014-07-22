@@ -37,9 +37,6 @@ BulletFactory = function (speed, w, h, damage, color, name)
                 local col, tx, ty, sx, sy
                 while len > 0 do
                     local col = cols[1]
-                    print("other", col.other.get("id"))
-                    print("this", entity.get("id"))
-                    print("owner", owner.get("id"))
                     local tx, ty, nx, ny, sx, sy = col:getSlide()
 
                     entity.setX(tx)
