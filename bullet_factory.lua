@@ -25,6 +25,7 @@ BulletFactory = function (speed, w, h, damage, color, name)
             if entity.getX() > global.screen_width or entity.getX() < 0 then
                 entity.resolveEntityCollide()
             end
+
         end
 
         entity.resolveObstacleCollide = function(world)
@@ -34,22 +35,6 @@ BulletFactory = function (speed, w, h, damage, color, name)
             if len == 0 then
                 world.bump:move(entity, new_x, new_y)
             else
-                local col, tx, ty, sx, sy
-                while len > 0 do
-                    local col = cols[1]
-                    local tx, ty, nx, ny, sx, sy = col:getSlide()
-
-                    entity.setX(tx)
-                    entity.setY(ty)
-                    world.bump:move(entity, entity.getX(), entity.getY())
-
-                    cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
-                    if len == 0 then
-                        entity.setX(sx)
-                        entity.setY(sy)
-                        world.bump:move(entity, entity.getX(), entity.getY())
-                    end
-                end
 
                 entity.resolveEntityCollide()
             end

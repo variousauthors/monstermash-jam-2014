@@ -36,21 +36,15 @@ return function (entity, controls, world)
     end
 
     cannon.incrementAmmo = function (ammo_type)
-        print("in incrementAmmo", ammo_type)
         if ammo_type == "blast" or ammo_type == "mega_blast" then
             ammo_type = "charge"
         end
 
         ammo[ammo_type] = ammo[ammo_type] + 1
-
-        inspect(ammo)
     end
 
     local decrementAmmo = function (ammo_type)
-        print("in decrementAmmo", ammo_type)
         ammo[ammo_type] = ammo[ammo_type] - 1
-
-        inspect(ammo)
     end
 
     cannon.addState({

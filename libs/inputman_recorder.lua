@@ -68,7 +68,7 @@ function VHS:processEventQueue(cb)
 
                 for j = 1, #e do
                     if (math.abs(e[j] - a[j]) > math.pow(10, -10)) then
-                        inspect({ "diff", e, a })
+                        --inspect({ "diff", e, a })
                         --assert(false)
                     end
                 end

@@ -154,20 +154,6 @@ return function (x, y, controls, name)
         senses.setX(senses.getX() + sign*speed)
     end
 
-    entity.resolveShoot = function (dt)
-        local offset       = width
-        local bullet
-        local direction = (entity.get("facing") == LEFT and -1 or 1)
-
-        if entity.get("facing") == LEFT then
-            offset = 0 - fat_gun_dim*2
-        end
-
-        bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity, direction)
-
-        return bullet
-    end
-
     entity.resolveFall = function (dt)
         if movement.is("wall_jump") or movement.is('jumping') then return end
 
@@ -329,12 +315,6 @@ return function (x, y, controls, name)
             end
         end
 
-      --if x_buster.isSet("shoot") then
-      --    local bullet = entity.resolveShoot()
-      --    print("has shoot", x_buster.getState())
-      --    if bullet then world:register(bullet) end
-      --end
-
         movement.update(dt)
         x_buster.update(dt)
         animation.update(dt)
@@ -367,6 +347,7 @@ return function (x, y, controls, name)
         else
             entity.set("did_not_move", false)
         end
+
     end
 
     entity.keypressed = function (key)
