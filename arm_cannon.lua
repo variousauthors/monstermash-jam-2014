@@ -86,6 +86,7 @@ return function (entity, controls, world)
             Sound:stop("charge", id)
             Sound:run("mega_blast", id)
             cannon.set("shoot")
+            entity.set("mega_blast", false)
             world:register(resolveShoot())
             decrementAmmo("charge")
         end
@@ -99,9 +100,13 @@ return function (entity, controls, world)
         end,
         update = function (dt)
             if cannon.getCount() > mega_blast then
-                cannon.set("mega_blast")
+                entity.set("mega_blast", true)
             end
         end
+    })
+
+    cannon.addState({
+        name = "primed"
     })
 
     cannon.addState({
@@ -156,28 +161,22 @@ return function (entity, controls, world)
         end
     })
 
-    cannon.addTransition({
-        from = "charging",
-        to = "blast",
-        condition = function ()
-            return not entity.get("shocked") and entity.released(SHOOT) and not cannon.isSet("mega_blast")
-        end
-    })
+--  cannon.addTransition({
+--      from = "charging",
+--      to = "blast",
+--      condition = function ()
+--          return not entity.get("shocked") and entity.released(SHOOT) and not entity.get("mega_blast")
+--      end
+--  })
 
-    cannon.addTransition({
-        from = "blast",
-        to = "inactive",
-        condition = function () return true end
-    })
+--  cannon.addTransition({
+--      from = "charging",
+--      to = "mega_blast",
+--      condition = function ()
 
-    cannon.addTransition({
-        from = "charging",
-        to = "mega_blast",
-        condition = function ()
-
-            return not entity.get("shocked") and entity.released(SHOOT) and cannon.isSet("mega_blast")
-        end
-    })
+--          return not entity.get("shocked") and entity.released(SHOOT) and entity.get("mega_blast")
+--      end
+--  })
 
     cannon.addTransition({
         from = "charging",
@@ -189,11 +188,40 @@ return function (entity, controls, world)
     })
 
     cannon.addTransition({
+        from = "charging",
+        to = "primed",
+        condition = function ()
+            return not entity.get("shocked") and entity.released(SHOOT)
+        end
+    })
+
+    cannon.addTransition({
+        from = "primed",
+        to = "mega_blast",
+        condition = function ()
+            return entity.get("mega_blast")
+        end
+    })
+
+    cannon.addTransition({
+        from = "primed",
+        to = "blast",
+        condition = function ()
+            return not entity.get("mega_blast")
+        end
+    })
+
+    cannon.addTransition({
         from = "mega_blast",
         to = "inactive",
         condition = function () return true end
     })
 
+    cannon.addTransition({
+        from = "blast",
+        to = "inactive",
+        condition = function () return true end
+    })
 
     cannon.start("inactive")
 

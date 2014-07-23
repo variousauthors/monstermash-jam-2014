@@ -18,7 +18,7 @@ NEXT STEPS
 [x] limit the number of charge shots
 [x] bullets should collide with obstacles too
 
-[ ] Replay 1 still demonstrates a dropped charge shot
+[x] Replay 1 still demonstrates a dropped charge shot
 [ ] bullets need animations too
 [ ] track bullets in a pool and ensure limits are respected
 

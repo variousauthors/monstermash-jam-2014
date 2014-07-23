@@ -365,6 +365,8 @@ return function (x, y, controls, name)
 
         movement.keyreleased(key)
 
+        -- this should buffer the shot, but the transition
+        -- should happen in the update function
         if key == SHOOT then
             x_buster.keyreleased(key)
         end
@@ -401,7 +403,7 @@ return function (x, y, controls, name)
 
             love.graphics.setColor(COLOR.CYAN)
 
-            if x_buster.isSet("mega_blast") then
+            if entity.get("mega_blast") then
                 love.graphics.setColor(COLOR.YELLOW)
             end
 
