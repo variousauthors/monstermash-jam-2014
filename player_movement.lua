@@ -389,7 +389,7 @@ return function (entity, controls, verbose)
         from = "climbing",
         to = "standing",
         condition = function ()
-            return not entity.get(FALLING)
+            return not entity.get(FALLING) and not entity.pressed(DASH) and not entity.pressed(JUMP)
         end
     })
 
