@@ -1,6 +1,10 @@
 NEXT STEPS
 ----------
 
+[ ] We want to be able to control the z order in which entities get drawn,
+    right now that is kind of randomly decided when the world iterates
+    over the entities in its draw loop.
+
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
 

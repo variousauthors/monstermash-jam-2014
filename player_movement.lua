@@ -2,11 +2,13 @@ if not DecorationFactory then require("decoration_factory") end
 
 return function (entity, world, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement                       = FSM(true, "move", entity.get("name"))
+    local movement                       = FSM(false, "move", entity.get("name"))
     local dash_duration                  = 30
     local damaged_duration               = 30
+    local smoke_interval = 4
+    local smoke_dimension = 10
 
-    local SmokeTrail = DecorationFactory(10, 10, COLOR.YELLOW, "pellet", {
+    local SmokeTrail = DecorationFactory(smoke_dimension, smoke_dimension, COLOR.YELLOW, "pellet", {
         update = function (self, dt)
             self.setY(self.getY() - 10*dt)
             -- update the animation
@@ -17,7 +19,7 @@ return function (entity, world, controls, verbose)
             end
         end,
         draw = function (self)
-            love.graphics.setColor(COLOR.GREY)
+            love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
             love.graphics.rectangle("fill", self.getX(), self.getY() + entity.getHeight(), self.getWidth(), self.getHeight())
 
             love.graphics.setColor(COLOR.WHITE)
@@ -72,7 +74,13 @@ return function (entity, world, controls, verbose)
         update = function ()
             if entity.holding(DASH) then
                 entity.resolveDash()
-                world:register(SmokeTrail(entity.getX(), entity.getY(), entity))
+
+                if movement.getCount() % smoke_interval == 0 then
+                    local facing = entity.get("facing") == LEFT and RIGHT or LEFT
+                    local sign = ( facing == RIGHT ) and 1 or -1
+
+                    world:register(SmokeTrail(entity.getX() + sign*(1.8*smoke_dimension), entity.getY(), entity))
+                end
             end
         end
     })
@@ -184,6 +192,13 @@ return function (entity, world, controls, verbose)
             -- megaman faces away from the wall
             local facing = entity.get("facing") == LEFT and RIGHT or LEFT
             entity.setFacing(facing)
+
+            if movement.getCount() > 8 and movement.getCount() % (1.5*smoke_interval) == 0 then
+                local offset = math.sin(5*movement.getCount())
+                local sign = ( facing == RIGHT ) and 1 or -1
+
+                world:register(SmokeTrail(entity.getX() + sign*(offset - smoke_dimension), entity.getY() - smoke_dimension, entity))
+            end
         end
     })
 
