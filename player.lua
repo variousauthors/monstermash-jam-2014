@@ -109,7 +109,7 @@ return function (x, y, controls, name)
     local image     = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
     entity.set("name", name)
 
-    local movement  = MovementModule(entity, controls)
+    local movement  = MovementModule(entity, world, controls)
     local x_buster  = XBuster(entity, controls)
     local animation = AnimationModule(entity, image, movement, x_buster, controls)
 

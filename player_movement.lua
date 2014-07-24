@@ -1,15 +1,28 @@
--- resolveLeft
--- resolveReft
--- resolveShoot
--- resolveFall
--- resolveDash
--- resolveJump
+if not DecorationFactory then require("decoration_factory") end
 
-return function (entity, controls, verbose)
+return function (entity, world, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local movement                       = FSM(true, "move", entity.get("name"))
     local dash_duration                  = 30
     local damaged_duration               = 30
+
+    local SmokeTrail = DecorationFactory(10, 10, COLOR.YELLOW, "pellet", {
+        update = function (self, dt)
+            self.setY(self.getY() - 10*dt)
+            -- update the animation
+
+            -- update the timer
+            if self.isOver() then
+                self._unregister()
+            end
+        end,
+        draw = function (self)
+            love.graphics.setColor(COLOR.GREY)
+            love.graphics.rectangle("fill", self.getX(), self.getY() + entity.getHeight(), self.getWidth(), self.getHeight())
+
+            love.graphics.setColor(COLOR.WHITE)
+        end
+    })
 
     movement.addState({
         name = "standing",
@@ -59,6 +72,7 @@ return function (entity, controls, verbose)
         update = function ()
             if entity.holding(DASH) then
                 entity.resolveDash()
+                world:register(SmokeTrail(entity.getX(), entity.getY(), entity))
             end
         end
     })
