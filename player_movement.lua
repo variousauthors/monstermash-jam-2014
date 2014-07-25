@@ -4,7 +4,7 @@ local smoke_dimension = 10
 local sparks_width    = 20
 local sparks_height   = 10
 
-local SmokeTrail = DecorationFactory(smoke_dimension, smoke_dimension, COLOR.GREY, "smoke_trail", {
+local SmokeTrail = DecorationFactory(smoke_dimension, smoke_dimension, global.z_orders.decorations, COLOR.GREY, "smoke_trail", {
     update = function (self, dt)
         self.setY(self.getY() - 10*dt)
         -- update the animation
@@ -22,7 +22,7 @@ local SmokeTrail = DecorationFactory(smoke_dimension, smoke_dimension, COLOR.GRE
     end
 })
 
-local DashSparks = DecorationFactory(sparks_width, sparks_height, COLOR.YELLOW, "dash_sparks", {
+local DashSparks = DecorationFactory(sparks_width, sparks_height, global.z_orders.decorations, COLOR.YELLOW, "dash_sparks", {
     update = function (self, dt)
         -- update the animation
 

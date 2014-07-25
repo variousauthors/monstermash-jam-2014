@@ -4,6 +4,15 @@ global.tile_size = 16
 global.scale     = 0
 global.screen_width = 640
 global.screen_height = 360
+global.z_orders = {
+    background    = 0, -- the background image
+    low_obstacle  = 1, -- things bullets don't collide with
+    bullets       = 2, -- ... bullets
+    high_obstacle = 3, -- things bullets do collide with
+    sprites       = 5, -- MEGAMAAAAAAN
+    decorations   = 4, -- dust and sparks
+    overlays      = 6, -- charge up etc...
+}
 
 function DEC_HEX(IN)
     local B,K,OUT,I,D=16,"0123456789abcdef","",0

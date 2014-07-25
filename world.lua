@@ -8,8 +8,8 @@ World.__index = World
 
 --Private Methods
 
-local function addObstacle(self, x,y,w,h)
-    local obstacle = Entity(x, y, w, h)
+local function addObstacle(self, x, y, w, h, z)
+    local obstacle = Entity(x, y, w, h, z)
     obstacle.set('isObstacle', true)
     self.obstacles[#self.obstacles+1] = obstacle
     self.bump:add(obstacle, x, y, w, h)
@@ -24,6 +24,11 @@ local function drawBox(box, r,g,b)
     love.graphics.rectangle("line", x+0.5, y+0.5, w-1, h-1)
     love.graphics.setColor(_r,_g,_b,_a)
 end
+
+local function zOrderSort (a, b)
+    return a.z < b.z
+end
+
 
 --Public Methods
 
@@ -54,7 +59,7 @@ function World:init()
     self.bump = bump.newWorld(32)
 
     for i, v in pairs(self.data["layers"][2]["objects"]) do
-        addObstacle(self, v.x, v.y, v.width, v.height)
+        addObstacle(self, v.x, v.y, v.width, v.height, global.z_orders.high_obstacle)
     end
 
     return self
@@ -62,7 +67,12 @@ end
 
 function World:register(entity)
     self.entities[entity.get("id")] = entity
-    table.insert(self.drawables, entity)
+
+    -- store the entity ids so that we can use the
+    -- drawable table to look into the entities
+    -- table without making a new reference
+    table.insert(self.drawables, { id = entity.get("id"), z = entity.getZOrder() })
+    table.sort(self.drawables, zOrderSort)
 
     if entity.register then
         entity.register(self)
@@ -78,7 +88,10 @@ end
 
 function World:unregister(entity)
     self.entities[entity.get("id")] = nil
-    table.remove(self.drawables, entity)
+
+    -- we never remove from the drawables table
+    -- because we have no efficient way of finding
+
     entity.cleanup()
 
     if world.bump:hasItem(entity) then
@@ -122,15 +135,14 @@ function World:update(dt)
     end
 end
 
-local zOrderSort = function (a, b)
-    return a.getZOrder() < b.getZOrder()
-end
-
 function World:draw(dt)
     love.graphics.draw(self.background_image)
 
-    table.sort(self.drawables, zOrderSort)
-
+    -- TODO use the z-order sorted drawable table
+    -- to get the ids of the entities to draw
+    -- if we hit an id that isn't in the entities
+    -- table, remove that from the drawables
+    -- table (we don't need to sort when removing?)
     for i, entity in pairs(self.entities) do
         entity.draw(dt)
     end

@@ -1,9 +1,9 @@
 
 -- bullet returns a constructor for a bullet type
-DecorationFactory = function (w, h, color, name, callbacks)
+DecorationFactory = function (w, h, z, color, name, callbacks)
 
     return function (x, y, owner)
-        local entity = Entity(x, y - h/2, w, h)
+        local entity = Entity(x, y - h/2, w, h, z)
         local speed, direction
         local timer = 0
 
