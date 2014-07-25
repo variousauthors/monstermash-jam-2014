@@ -25,7 +25,7 @@ DecorationFactory = function (w, h, color, name, callbacks)
 
         entity.isOver = function ()
             if callbacks["isOver"] then
-                return callbacks["isOver"](entity)
+                return callbacks["isOver"](entity, owner)
             else
                 return isOver()
             end

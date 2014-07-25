@@ -502,5 +502,9 @@ return function (x, y, controls, name)
         love.graphics.setColor(COLOR.WHITE)
     end
 
+    entity.isDashing = function ()
+        return movement.is("dashing")
+    end
+
     return entity
 end

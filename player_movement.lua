@@ -1,30 +1,53 @@
 if not DecorationFactory then require("decoration_factory") end
 
+local smoke_dimension = 10
+local sparks_width    = 20
+local sparks_height   = 10
+
+local SmokeTrail = DecorationFactory(smoke_dimension, smoke_dimension, COLOR.GREY, "smoke_trail", {
+    update = function (self, dt)
+        self.setY(self.getY() - 10*dt)
+        -- update the animation
+
+        -- update the timer
+        if self.isOver() then
+            self._unregister()
+        end
+    end,
+    draw = function (self)
+        love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
+        love.graphics.rectangle("fill", self.getX(), self.getY(), self.getWidth(), self.getHeight())
+
+        love.graphics.setColor(COLOR.WHITE)
+    end
+})
+
+local DashSparks = DecorationFactory(sparks_width, sparks_height, COLOR.YELLOW, "dash_sparks", {
+    update = function (self, dt)
+        -- update the animation
+
+        -- update the timer
+        if self.isOver() then
+            self._unregister()
+        end
+    end,
+    draw = function (self)
+        love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
+        love.graphics.rectangle("fill", self.getX(), self.getY(), self.getWidth(), self.getHeight())
+
+        love.graphics.setColor(COLOR.WHITE)
+    end,
+    isOver = function (self, owner)
+        return not owner.isDashing()
+    end
+})
+
 return function (entity, world, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local movement                       = FSM(false, "move", entity.get("name"))
     local dash_duration                  = 30
     local damaged_duration               = 30
     local smoke_interval = 4
-    local smoke_dimension = 10
-
-    local SmokeTrail = DecorationFactory(smoke_dimension, smoke_dimension, COLOR.YELLOW, "pellet", {
-        update = function (self, dt)
-            self.setY(self.getY() - 10*dt)
-            -- update the animation
-
-            -- update the timer
-            if self.isOver() then
-                self._unregister()
-            end
-        end,
-        draw = function (self)
-            love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
-            love.graphics.rectangle("fill", self.getX(), self.getY() + entity.getHeight(), self.getWidth(), self.getHeight())
-
-            love.graphics.setColor(COLOR.WHITE)
-        end
-    })
 
     movement.addState({
         name = "standing",
@@ -70,16 +93,21 @@ return function (entity, world, controls, verbose)
             entity.set("can_dash", false)
             local id = entity.get('id')
             Sound:run('dash', id)
+
         end,
         update = function ()
             if entity.holding(DASH) then
                 entity.resolveDash()
+                local facing = entity.get("facing") == LEFT and RIGHT or LEFT
+                local sign = ( facing == RIGHT ) and 1 or -1
+
+                if movement.getCount() == 2 then
+                    world:register(DashSparks(entity.getX() + sign*(sparks_width), entity.getY() + entity.getHeight(), entity))
+                end
 
                 if movement.getCount() % smoke_interval == 0 then
-                    local facing = entity.get("facing") == LEFT and RIGHT or LEFT
-                    local sign = ( facing == RIGHT ) and 1 or -1
 
-                    world:register(SmokeTrail(entity.getX() + sign*(1.8*smoke_dimension), entity.getY(), entity))
+                    world:register(SmokeTrail(entity.getX() + sign*(1.8*smoke_dimension), entity.getY() + entity.getHeight(), entity))
                 end
             end
         end
@@ -197,7 +225,7 @@ return function (entity, world, controls, verbose)
                 local offset = math.sin(5*movement.getCount())
                 local sign = ( facing == RIGHT ) and 1 or -1
 
-                world:register(SmokeTrail(entity.getX() + sign*(offset - smoke_dimension), entity.getY() - smoke_dimension, entity))
+                world:register(SmokeTrail(entity.getX() + sign*(offset - smoke_dimension), entity.getY() + entity.getHeight() - smoke_dimension, entity))
             end
         end
     })
