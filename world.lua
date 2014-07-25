@@ -48,6 +48,7 @@ end
 -- but initialize it when the game starts
 function World:init()
     self.entities = {}
+    self.drawables = {}
 
     self.obstacles = {}
     self.bump = bump.newWorld(32)
@@ -61,6 +62,7 @@ end
 
 function World:register(entity)
     self.entities[entity.get("id")] = entity
+    table.insert(self.drawables, entity)
 
     if entity.register then
         entity.register(self)
@@ -76,6 +78,7 @@ end
 
 function World:unregister(entity)
     self.entities[entity.get("id")] = nil
+    table.remove(self.drawables, entity)
     entity.cleanup()
 
     if world.bump:hasItem(entity) then
@@ -119,8 +122,14 @@ function World:update(dt)
     end
 end
 
+local zOrderSort = function (a, b)
+    return a.getZOrder() < b.getZOrder()
+end
+
 function World:draw(dt)
     love.graphics.draw(self.background_image)
+
+    table.sort(self.drawables, zOrderSort)
 
     for i, entity in pairs(self.entities) do
         entity.draw(dt)
