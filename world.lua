@@ -26,7 +26,7 @@ local function drawBox(box, r,g,b)
 end
 
 local function zOrderSort (a, b)
-    return a.z < b.z
+    return a.z > b.z
 end
 
 
@@ -136,15 +136,28 @@ function World:update(dt)
 end
 
 function World:draw(dt)
+    local removes = { }
+
     love.graphics.draw(self.background_image)
 
-    -- TODO use the z-order sorted drawable table
-    -- to get the ids of the entities to draw
-    -- if we hit an id that isn't in the entities
-    -- table, remove that from the drawables
-    -- table (we don't need to sort when removing?)
-    for i, entity in pairs(self.entities) do
-        entity.draw(dt)
+    for i = 1, #(self.drawables) do
+        local drawable_id = self.drawables[i].id
+
+        if self.entities[drawable_id] then
+            self.entities[drawable_id].draw(dt)
+        else
+            -- oops! remember to remove it from the drawables table
+            table.insert(removes, i)
+        end
+    end
+
+    -- if we found anything old we'll remove and re-sort
+    if #removes > 0 then
+        for i = 1, #(removes) do
+            table.remove(self.drawables, removes[i])
+        end
+
+        table.sort(self.drawables, zOrderSort)
     end
 
     love.graphics.draw(self.foreground_image)
