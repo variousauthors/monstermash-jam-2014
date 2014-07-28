@@ -306,7 +306,7 @@ return function (entity, controls, verbose)
         from = "dashing",
         to = "dash_jump",
         condition = function ()
-            return entity.pressed(JUMP)
+            return entity.pressed(JUMP) and not entity.get("air_dash")
         end
     })
 
