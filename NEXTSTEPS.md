@@ -24,7 +24,7 @@ NEXT STEPS
 
 ### BUGS ###
 
-[ ] Can somehow jump from air-dash again?
+[x] Can somehow jump from air-dash again?
 
 The keydrop saga
 
@@ -85,7 +85,7 @@ DO THESE FIRST
 [x] switch to and from shooting animation based on the inactive state
 [ ] when megaman is climbing and presses away from the wall (but still also pressing towards)
     he should get a little push away (about half his senses distance) (see the game)
-[ ] when running and then push the opposite direction but without letting go of the original
+[x] when running and then push the opposite direction but without letting go of the original
     run direction, megaman goes to standing and faces in the original run direction.
 
 ### VHS ###
@@ -111,6 +111,10 @@ DO THESE FIRST
 [ ] Accept command-line args for playback rate, track file, and track
 [ ] the keypress functions needs to be moved into the game_state, as is right
 [x] Megaman should die immediately upon falling off the screen
+
+## APPENDIX I ##
+
+The was once a monsterjam, I guess?
 
 ### GOAL ###
 

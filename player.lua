@@ -119,12 +119,18 @@ return function (x, y, controls, name)
 
     entity.resolveLeft = function ()
         move(LEFT, horizontal_speed)
-        entity.setFacing(LEFT)
+
+        if not entity.holding(RIGHT) then
+            entity.setFacing(LEFT)
+        end
     end
 
     entity.resolveRight = function ()
         move(RIGHT, horizontal_speed)
-        entity.setFacing(RIGHT)
+
+        if not entity.holding(LEFT) then
+            entity.setFacing(RIGHT)
+        end
     end
 
     entity.resolveJump = function (dt)

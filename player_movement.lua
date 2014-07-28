@@ -224,10 +224,10 @@ return function (entity, controls, verbose)
         from = "running",
         to = "standing",
         condition = function ()
-            local running = (entity.holding(LEFT) or entity.holding(RIGHT))
-            local turning = (entity.pressed(RIGHT) or entity.pressed(LEFT))
+            local running    = (entity.holding(LEFT) or entity.holding(RIGHT))
+            local turning    = (entity.pressed(RIGHT) or entity.pressed(LEFT))
 
-            return not entity.pressed(DASH) and not running and not turning and entity.get("vs") == 0
+            return not entity.pressed(DASH) and (not running or press_both) and not turning and entity.get("vs") == 0
         end
     })
 
@@ -306,7 +306,7 @@ return function (entity, controls, verbose)
         from = "dashing",
         to = "dash_jump",
         condition = function ()
-            return entity.pressed(JUMP)
+            return entity.pressed(JUMP) and not entity.get("air_dash")
         end
     })
 
