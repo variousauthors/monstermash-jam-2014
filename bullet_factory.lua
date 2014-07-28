@@ -42,7 +42,11 @@ BulletFactory = function (speed, w, h, damage, color, name)
 
         entity.resolveEntityCollide = function ()
             owner.incrementAmmo(name)
-            entity._unregister()
+
+            -- only pellets vanish after a hit
+            if name == "pellet" then
+                entity._unregister()
+            end
         end
 
         return entity
