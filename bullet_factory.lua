@@ -3,8 +3,12 @@
 BulletFactory = function (speed, w, h, damage, color, name)
 
     return function (x, y, owner, direction)
-        local entity = Entity(x, y - h/2, w, h)
+        local entity         = Entity(x, y - h/2, w, h)
         local obstacleFilter = entity.getFilterFor('isObstacle')
+        local max_speed      = speed
+        local current_speed  = 0
+        local acceleration   = 0.25
+
         entity.set('isBullet', true)
         entity.set("owner_id", owner.get("id"))
         entity.set("damage", damage)
@@ -23,7 +27,8 @@ BulletFactory = function (speed, w, h, damage, color, name)
 
             -- remove bullets as they fly off the screen
             if entity.getX() > global.screen_width or entity.getX() < 0 then
-                entity.resolveEntityCollide()
+                owner.incrementAmmo(name)
+                entity._unregister()
             end
 
         end
@@ -36,7 +41,8 @@ BulletFactory = function (speed, w, h, damage, color, name)
                 world.bump:move(entity, new_x, new_y)
             else
 
-                entity.resolveEntityCollide()
+                owner.incrementAmmo(name)
+                entity._unregister()
             end
         end
 

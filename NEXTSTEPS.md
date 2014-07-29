@@ -4,6 +4,9 @@ NEXT STEPS
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
 
+[ ] Regression: I seem to be able to fire multiple blasts again?
+[ ] bug: I can mash shoot to release a constant stream of blasts
+
 ### Shooting ###
 
 [x] We are losing collisions: sometimes I will shoot twice, and only one collision will
@@ -21,6 +24,16 @@ NEXT STEPS
 [x] Replay 1 still demonstrates a dropped charge shot
 [ ] bullets need animations too
 [ ] track bullets in a pool and ensure limits are respected
+
+## Shooting: Animation ##
+
+[ ] bullets animation should trail behind their collision box,
+    so the tip of the bullet should always be in the same position
+    on the sprite
+[ ] blasts and mega_blasts are initially slower than pellets,
+    during the muzzle flair animation, but then speed up:
+    - blasts match pellet speed
+    - mega_blasts overtake pellets
 
 ### BUGS ###
 
