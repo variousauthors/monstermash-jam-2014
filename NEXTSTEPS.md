@@ -4,9 +4,6 @@ NEXT STEPS
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
 
-[ ] Regression: I seem to be able to fire multiple blasts again?
-[ ] bug: I can mash shoot to release a constant stream of blasts
-
 ### Shooting ###
 
 [x] We are losing collisions: sometimes I will shoot twice, and only one collision will
@@ -38,6 +35,8 @@ NEXT STEPS
 ### BUGS ###
 
 [x] Can somehow jump from air-dash again?
+[x] Regression: I seem to be able to fire multiple blasts again?
+[x] bug: I can mash shoot to release a constant stream of blasts
 
 The keydrop saga
 
