@@ -8,9 +8,10 @@ return function (entity, controls, world)
     local mega_blast = 40
     local fat_gun_dim             = 3
 
-    local Pellet    = BulletFactory(5, 4, 4, 1, COLOR.YELLOW, "pellet")
-    local Blast     = BulletFactory(6, 20, 5, 2, COLOR.GREEN, "blast")
-    local MegaBlast = BulletFactory(5, 15, 20, 3, COLOR.RED, "mega_blast")
+    -- bullets(speed, acceleration, w, h, damage, color, name)
+    local Pellet    = BulletFactory(5, 5, 4, 4, 1, COLOR.YELLOW, "pellet")
+    local Blast     = BulletFactory(6, 0.25, 20, 5, 2, COLOR.GREEN, "blast")
+    local MegaBlast = BulletFactory(5, 0.25, 15, 20, 3, COLOR.RED, "mega_blast")
 
     local Bullets = {
         pellet     = Pellet,

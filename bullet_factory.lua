@@ -1,13 +1,13 @@
 
 -- bullet returns a constructor for a bullet type
-BulletFactory = function (speed, w, h, damage, color, name)
+BulletFactory = function (speed, acceleration, w, h, damage, color, name)
 
     return function (x, y, owner, direction)
         local entity         = Entity(x, y - h/2, w, h)
         local obstacleFilter = entity.getFilterFor('isObstacle')
         local max_speed      = speed
+        local acceleration   = acceleration
         local current_speed  = 0
-        local acceleration   = 0.25
 
         entity.set('isBullet', true)
         entity.set("owner_id", owner.get("id"))
@@ -20,7 +20,9 @@ BulletFactory = function (speed, w, h, damage, color, name)
         end
 
         entity.update = function (dt, world)
-            entity.setX(entity.getX() + direction*speed)
+            current_speed = math.min(current_speed + acceleration, max_speed)
+
+            entity.setX(entity.getX() + direction*current_speed)
             world.bump:move(entity, entity.getX(), entity.getY())
 
             entity.resolveObstacleCollide(world)
