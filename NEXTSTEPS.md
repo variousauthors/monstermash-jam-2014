@@ -13,9 +13,39 @@ NEXT STEPS
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
 
+### Shooting ###
+
+[x] We are losing collisions: sometimes I will shoot twice, and only one collision will
+    be detected
+    - hmm... but actually the bullets would still get removed when the left the screen
+      so that can't be it... maybe the bullet object is never added?
+    - moving the bullet creation code into the arm cannon resolved this: it was keydrops
+      causing trouble again
+[x] A second shooting animation plays parallel to some of megaman's animations
+[x] switch to and from shooting animation based on the inactive state
+[x] The X-Buster should only enter shoot states when it can actually produce bullets.
+[x] limit the number of charge shots
+[x] bullets should collide with obstacles too
+
+[x] Replay 1 still demonstrates a dropped charge shot
+[ ] bullets need animations too
+[ ] track bullets in a pool and ensure limits are respected
+
+## Shooting: Animation ##
+
+[ ] bullets animation should trail behind their collision box,
+    so the tip of the bullet should always be in the same position
+    on the sprite
+[ ] blasts and mega_blasts are initially slower than pellets,
+    during the muzzle flair animation, but then speed up:
+    - blasts match pellet speed
+    - mega_blasts overtake pellets
+
 ### BUGS ###
 
-[ ] Can somehow jump from air-dash again?
+[x] Can somehow jump from air-dash again?
+[x] Regression: I seem to be able to fire multiple blasts again?
+[x] bug: I can mash shoot to release a constant stream of blasts
 
 The keydrop saga
 
@@ -48,13 +78,13 @@ Discussion:
   needed. It does not, however, address the problem in its entirety (in the
   sense mentioned immediately above).
 
-
 DO THESE FIRST
 
-[ ] When megaman wall jumps in the crook, he gets trapped forever
 [ ] When megaman is damaged, he should not be able to wall jump and shoot and charge
 [x] megaman should lose charge when damaged
 [ ] when megamans hit each other they should both take damage (this failed once)
+[x] When megaman wall jumps in the crook, he gets trapped forever
+[x] megaman should lose charge when damaged
 [x] Megaman loses shots when mashing keys
 [x] Megaman loses jumps when mashing keys
 [x] Megaman does a little dance when jump and dash are mashed
@@ -76,7 +106,7 @@ DO THESE FIRST
 [x] switch to and from shooting animation based on the inactive state
 [ ] when megaman is climbing and presses away from the wall (but still also pressing towards)
     he should get a little push away (about half his senses distance) (see the game)
-[ ] when running and then push the opposite direction but without letting go of the original
+[x] when running and then push the opposite direction but without letting go of the original
     run direction, megaman goes to standing and faces in the original run direction.
 
 ### VHS ###
@@ -102,6 +132,10 @@ DO THESE FIRST
 [ ] Accept command-line args for playback rate, track file, and track
 [ ] the keypress functions needs to be moved into the game_state, as is right
 [x] Megaman should die immediately upon falling off the screen
+
+## APPENDIX I ##
+
+The was once a monsterjam, I guess?
 
 ### GOAL ###
 

@@ -62,6 +62,7 @@ function VHS:processEventQueue(cb)
 
             local actual = world:serialize()
 
+          if global.DEBUG then
             for i = 1, #expect do
                 local e = expect[i]
                 local a = actual[i]
@@ -69,10 +70,11 @@ function VHS:processEventQueue(cb)
                 for j = 1, #e do
                     if (math.abs(e[j] - a[j]) > math.pow(10, -10)) then
                         inspect({ "diff", e, a })
-                        --assert(false)
+                        assert(false)
                     end
                 end
             end
+          end
         end
     else
         -- play the game normally, but remember the events

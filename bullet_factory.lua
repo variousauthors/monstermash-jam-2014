@@ -3,17 +3,15 @@
 BulletFactory = function (speed, w, h, z, damage, color, name)
 
     return function (x, y, owner, direction)
-        local entity = Entity(x, y - h/2, w, h, z)
+        local entity         = Entity(x, y - h/2, w, h, z)
+        local obstacleFilter = entity.getFilterFor('isObstacle')
+        local max_speed      = speed
+        local current_speed  = 0
+        local acceleration   = 0.25
+
         entity.set('isBullet', true)
         entity.set("owner_id", owner.get("id"))
         entity.set("damage", damage)
-
-        if owner.get(name) then
-            local count = owner.get(name)
-            owner.set(name, count + 1)
-        else
-            owner.set(name, 1)
-        end
 
         entity.draw = function ()
             love.graphics.setColor(color)
@@ -25,18 +23,36 @@ BulletFactory = function (speed, w, h, z, damage, color, name)
             entity.setX(entity.getX() + direction*speed)
             world.bump:move(entity, entity.getX(), entity.getY())
 
+            entity.resolveObstacleCollide(world)
+
             -- remove bullets as they fly off the screen
             if entity.getX() > global.screen_width or entity.getX() < 0 then
-                local count = owner.get(name)
-                owner.set(name, count - 1)
+                owner.incrementAmmo(name)
+                entity._unregister()
+            end
+
+        end
+
+        entity.resolveObstacleCollide = function(world)
+            local new_x, new_y = entity.getX(), entity.getY()
+            local cols, len = world.bump:check(entity, new_x, new_y, obstacleFilter)
+
+            if len == 0 then
+                world.bump:move(entity, new_x, new_y)
+            else
+
+                owner.incrementAmmo(name)
                 entity._unregister()
             end
         end
 
-        entity.resolveCollide = function ()
-            local count = owner.get(name)
-            owner.set(name, count - 1)
-            entity._unregister()
+        entity.resolveEntityCollide = function ()
+            owner.incrementAmmo(name)
+
+            -- only pellets vanish after a hit
+            if name == "pellet" then
+                entity._unregister()
+            end
         end
 
         return entity

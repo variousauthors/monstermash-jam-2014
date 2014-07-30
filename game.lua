@@ -9,9 +9,9 @@ return function(world)
 
             players = {
                 Player(32, 140, "p1", "rock"),
-                Player(110, 300, "p2", "opera"),
-                Player(370, 300, "p3", "proto"),
-                Player(560, 140, "p4", "violet")
+            --  Player(110, 300, "p2", "opera"),
+            --  Player(370, 300, "p3", "proto"),
+            --  Player(560, 140, "p4", "violet")
             }
 
             for _, v in ipairs(players) do world:register(v) end

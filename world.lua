@@ -133,6 +133,7 @@ function World:update(dt)
     for i, entity in pairs(self.entities) do
         entity.update(dt, self)
     end
+
 end
 
 function World:draw(dt)

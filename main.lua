@@ -58,7 +58,6 @@ function love.update(dt)
 
     -- Process Input events in order
     Input:processEventQueue(function(event, states)
-        inspect({ event, states })
         for i,state in ipairs(states) do
             if game_state[event] then game_state[event](state) end
         end
