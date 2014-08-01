@@ -14,6 +14,7 @@ XBuster         = require("player/x_buster")
 return function (x, y, controls, name)
     local controls = require('controls')[controls]
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
+    local facing
 
     local ring_timer       = 0
     local ring_timer_limit = 100
@@ -65,17 +66,21 @@ return function (x, y, controls, name)
     local sprite_box_offset_x = 20
     local sprite_box_offset_y = 9
 
-    entity.setFacing = function (facing)
+    entity.setFacing = function (new_facing)
         -- we have to flip his collision box
-        if facing == LEFT and entity.get("facing") ~= facing then
+        if new_facing == LEFT and entity.getFacing() ~= new_facing then
             sprite_box_offset_x = 17
         end
 
-        if facing == RIGHT and entity.get("facing") ~= facing then
+        if new_facing == RIGHT and entity.getFacing() ~= new_facing then
             sprite_box_offset_x = 22
         end
 
-        entity.set("facing", facing)
+        facing = new_facing
+    end
+
+    entity.getFacing = function ()
+        return facing
     end
 
     entity.setFacing(RIGHT)
@@ -163,7 +168,7 @@ return function (x, y, controls, name)
         local speed = horizontal_speed*2
         local sign = 1
 
-        if entity.get("facing") == LEFT then sign = -1 end
+        if entity.getFacing() == LEFT then sign = -1 end
 
         entity.setX(entity.getX() + sign*speed)
         senses.setX(senses.getX() + sign*speed)
@@ -174,7 +179,7 @@ return function (x, y, controls, name)
 
         -- face forward but slide back
         if movement.is('damaged') then
-            move(entity.get("facing"), -damaged_speed)
+            move(entity.getFacing(), -damaged_speed)
         end
 
         entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
@@ -395,7 +400,7 @@ return function (x, y, controls, name)
         local draw_x = entity.getX()
         local draw_y = entity.getY()
 
-        if entity.get("facing") == LEFT then
+        if entity.getFacing() == LEFT then
             -- love.graphics.line(draw_x, draw_y, draw_x, draw_y + height)
         else
             -- love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)

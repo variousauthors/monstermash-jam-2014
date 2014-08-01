@@ -6,6 +6,23 @@ local smoke_dimension = SmokeTrail.WIDTH
 local sparks_width    = DashSparks.WIDTH
 local sparks_height   = DashSparks.HEIGHT
 
+-- TODO assert that entity has the right interface
+-- TODO better would be to pass in an object that only
+-- exposes those methods: then we can do "if and only if"
+-- entity must implement
+-- set/get
+-- pressed/holding
+-- getFacing/setFacing
+-- id
+
+-- TODO all the string keys should be constants maybe
+-- even in an object called "registers"
+
+-- TODO get facing and get near_a_wall
+-- are examples of non-boolean registers
+-- they should be replaced with methods getFacing and senseWall
+-- or something
+
 return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local movement                       = FSM(false, "move", entity.get("name"))
@@ -40,6 +57,9 @@ return function (entity, controls, verbose)
             entity.set("can_dash", true)
             entity.set("air_dash", false)
         end,
+        -- TODO this is the kind of function I'd ilke
+        -- to set in the player, and use the closure
+        -- property
         update = function ()
             if entity.holding(LEFT) then
                 entity.resolveLeft()
@@ -62,7 +82,7 @@ return function (entity, controls, verbose)
         update = function ()
             if entity.holding(DASH) then
                 entity.resolveDash()
-                local facing = entity.get("facing") == LEFT and RIGHT or LEFT
+                local facing = entity.getFacing() == LEFT and RIGHT or LEFT
                 local sign = ( facing == RIGHT ) and 1 or -1
 
                 if movement.getCount() == 2 then
@@ -108,6 +128,9 @@ return function (entity, controls, verbose)
 
             -- if we are continuing from a wall jump there
             -- is no need to reset this
+            -- TODO this is an example of a register with a non
+            -- boolean value. I'd like to remove these
+            -- maybe replace with `get("vertical_movement")`
             if entity.get("vs") == 0 then
                 entity.startJump()
             end
@@ -139,15 +162,13 @@ return function (entity, controls, verbose)
 
             entity.set(FALLING, false)
 
-            entity.startJump()
+            entity.startJump() -- TODO this has got to go... but how!?
         end,
         update = function ()
             -- wall jump can't be interrupted or air controlled
             entity.resolveJump()
         end
-
     })
-
 
     movement.addState({
         name = "falling",
@@ -182,7 +203,7 @@ return function (entity, controls, verbose)
             end
 
             -- megaman faces away from the wall
-            local facing = entity.get("facing") == LEFT and RIGHT or LEFT
+            local facing = entity.getFacing() == LEFT and RIGHT or LEFT
             entity.setFacing(facing)
 
             if movement.getCount() > 8 and movement.getCount() % (1.5*smoke_interval) == 0 then
@@ -290,7 +311,7 @@ return function (entity, controls, verbose)
         from = "dashing",
         to = "running",
         condition = function ()
-            local turning     = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
+            local turning     = (entity.getFacing() == LEFT and entity.pressed(RIGHT) or entity.getFacing() == RIGHT and entity.pressed(LEFT))
             local not_jumping = not entity.holding(JUMP) and not entity.pressed(JUMP)
             local dash_done   = movement.getCount() > dash_duration or not entity.holding(DASH)
             local running     = entity.holding(RIGHT) or entity.holding(LEFT)
@@ -303,7 +324,7 @@ return function (entity, controls, verbose)
         from = "dashing",
         to = "standing",
         condition = function ()
-            local turning     = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
+            local turning     = (entity.getFacing() == LEFT and entity.pressed(RIGHT) or entity.getFacing() == RIGHT and entity.pressed(LEFT))
             local not_jumping = not entity.holding(JUMP) and not entity.pressed(JUMP)
             local dash_done   = movement.getCount() > dash_duration or not entity.holding(DASH)
             local running     = entity.holding(RIGHT) or entity.holding(LEFT)
@@ -316,7 +337,7 @@ return function (entity, controls, verbose)
         from = "dashing",
         to = "falling",
         condition = function ()
-            local turning   = (entity.get("facing") == LEFT and entity.pressed(RIGHT) or entity.get("facing") == RIGHT and entity.pressed(LEFT))
+            local turning   = (entity.getFacing() == LEFT and entity.pressed(RIGHT) or entity.getFacing() == RIGHT and entity.pressed(LEFT))
             local dash_done = movement.getCount() > dash_duration or not entity.holding(DASH)
 
             return movement.isSet("would_fall") and (dash_done or turning)
@@ -434,8 +455,8 @@ return function (entity, controls, verbose)
         from = "climbing",
         to = "falling",
         condition = function ()
-            local clinging    = entity.holding(entity.get("facing") == LEFT and RIGHT or LEFT)
-            local pushing_off = entity.holding(entity.get("facing"))
+            local clinging    = entity.holding(entity.getFacing() == LEFT and RIGHT or LEFT)
+            local pushing_off = entity.holding(entity.getFacing())
 
             -- TODO I would like to push megaman about half his senses distance away from the wall he was clinging
             -- when he "pushes off"
@@ -447,7 +468,7 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "jumping",
         condition = function ()
-            return entity.get("near_a_wall") ~= entity.get("facing") and entity.holding(JUMP)
+            return entity.get("near_a_wall") ~= entity.getFacing() and entity.holding(JUMP)
         end
     })
 
@@ -455,7 +476,7 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "falling",
         condition = function ()
-            return entity.get("near_a_wall") ~= entity.get("facing") and not entity.holding(JUMP)
+            return entity.get("near_a_wall") ~= entity.getFacing() and not entity.holding(JUMP)
         end
     })
 
@@ -471,6 +492,8 @@ return function (entity, controls, verbose)
         from = "any",
         to = "destroyed",
         condition = function ()
+            -- TODO this kind of check (for entity death_line stuff) should be done in the player update and flagged
+            -- HP also
             return not movement.is('destroyed') and (entity.get("hp") < 1 or entity.getY() > entity.get("death_line"))
         end
     })

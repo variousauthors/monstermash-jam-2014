@@ -14,12 +14,12 @@ return function (entity, image, movement, x_buster, controls, verbose)
     local animation        = FSM(false, "animation", entity.get("name"))
     local timer            = 0
     local anim, shooting_anim, duration
-    local facing = entity.get("facing")
+    local facing = entity.getFacing()
 
     local g = anim8.newGrid(51, 51, image:getWidth(), image:getHeight())
 
     local update_facing = function ()
-        facing = entity.get("facing")
+        facing = entity.getFacing()
 
         anim:setFlipped(facing == LEFT)
         shooting_anim:setFlipped(facing == LEFT)
@@ -29,7 +29,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     anim8.newAnimation = function (frames, durations, onLoop)
         local result = _old(frames, durations, onLoop)
 
-        facing = entity.get("facing")
+        facing = entity.getFacing()
 
         result:setFlipped(facing == LEFT)
 
@@ -47,6 +47,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     end
 
     animation.draw = function (x, y)
+        -- TODO the shoot animation stopped playing for mega_blast
         if x_buster.isSet("shoot") or x_buster.is("cool_down") then
             shooting_anim:draw(image, x, y)
         else

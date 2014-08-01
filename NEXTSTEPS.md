@@ -24,6 +24,12 @@ During this refactor I would also like to use the recording system as a test bat
 My goal will be to record a replay and run it after each set of changes. If this
 doesn't work, then I will work on the replay system until it does.
 
+#### new bugs ####
+
+[ ] regression: shoot animation stopped playing for mega_blasts
+
+#### checklist ####
+
 [ ] reduce coupling between movement module and player
 [ ] reduce coupling between arm_cannon and player
 [ ] change the way we use "world" in the player and module code

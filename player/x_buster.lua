@@ -26,9 +26,9 @@ return function (entity, controls, world)
     local resolveShoot = function ()
         local offset       = entity.getWidth()
         local bullet
-        local direction = (entity.get("facing") == LEFT and -1 or 1)
+        local direction = (entity.getFacing() == LEFT and -1 or 1)
 
-        if entity.get("facing") == LEFT then
+        if entity.getFacing() == LEFT then
             offset = 0 - fat_gun_dim*2
         end
 

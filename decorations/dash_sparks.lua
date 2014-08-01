@@ -13,7 +13,7 @@ return DecorationFactory(sparks_width, sparks_height, global.z_orders.decoration
         end
     end,
     draw = function (self, owner)
-        local facing = owner.get("facing") == LEFT and RIGHT or LEFT
+        local facing = owner.getFacing() == LEFT and RIGHT or LEFT
         local sign = ( facing == RIGHT ) and 1 or -1
 
         love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
