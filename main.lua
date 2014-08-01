@@ -14,7 +14,6 @@ Input  = require("input")
 Sound  = require("sound")
 World  = require("world")
 Player = require("player/player")
-Boss   = require("boss")
 HUD    = require("hud")
 
 function love.focus(f) gameIsPaused = not f end
