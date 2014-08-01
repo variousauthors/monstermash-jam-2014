@@ -49,9 +49,17 @@ return function (x, y, controls, name)
         return other.get and other.get("isBullet") == true and other.get("owner_id") ~= entity.get("id")
     end
 
-    entity.register = function (world)
+    -- ensures that the player's senses get added to the world
+    entity.onRegister = function (world)
         world.bump:add(entity, entity.getBoundingBox())
         world.bump:add(senses, senses.getBoundingBox())
+        entity.set("death_line", world.death_line)
+    end
+
+    -- registers another entity in the world on behalf of the player
+    -- things like smoke and sparks... TODO and bullets?
+    entity.register = function (other)
+        world:register(other)
     end
 
     local sprite_box_offset_x = 20
@@ -99,7 +107,7 @@ return function (x, y, controls, name)
     local image     = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
     entity.set("name", name)
 
-    local movement  = MovementModule(entity, world, controls)
+    local movement  = MovementModule(entity, controls)
     local x_buster  = XBuster(entity, controls, world)
     local animation = AnimationModule(entity, image, movement, x_buster, controls)
 

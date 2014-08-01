@@ -74,9 +74,8 @@ function World:register(entity)
     table.insert(self.drawables, { id = entity.get("id"), z = entity.getZOrder() })
     table.sort(self.drawables, zOrderSort)
 
-    if entity.register then
-        entity.register(self)
-        entity.set("death_line", self.death_line)
+    if entity.onRegister then
+        entity.onRegister(self)
     else
         self.bump:add(entity, entity.getBoundingBox())
     end

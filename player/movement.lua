@@ -6,7 +6,7 @@ local smoke_dimension = SmokeTrail.WIDTH
 local sparks_width    = DashSparks.WIDTH
 local sparks_height   = DashSparks.HEIGHT
 
-return function (entity, world, controls, verbose)
+return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local movement                       = FSM(false, "move", entity.get("name"))
     local dash_duration                  = 30
@@ -66,12 +66,12 @@ return function (entity, world, controls, verbose)
                 local sign = ( facing == RIGHT ) and 1 or -1
 
                 if movement.getCount() == 2 then
-                    world:register(DashSparks(entity.getX() + sign*(sparks_width), entity.getY() + entity.getHeight(), entity))
+                    entity.register(DashSparks(entity.getX() + sign*(sparks_width), entity.getY() + entity.getHeight(), entity))
                 end
 
                 if movement.getCount() % smoke_interval == 0 then
 
-                    world:register(SmokeTrail(entity.getX() + sign*(1.8*smoke_dimension), entity.getY() + entity.getHeight(), entity))
+                    entity.register(SmokeTrail(entity.getX() + sign*(1.8*smoke_dimension), entity.getY() + entity.getHeight(), entity))
                 end
             end
         end
@@ -189,7 +189,7 @@ return function (entity, world, controls, verbose)
                 local offset = math.sin(5*movement.getCount())
                 local sign = ( facing == RIGHT ) and 1 or -1
 
-                world:register(SmokeTrail(entity.getX() + sign*(offset - smoke_dimension), entity.getY() + entity.getHeight() - smoke_dimension, entity))
+                entity.register(SmokeTrail(entity.getX() + sign*(offset - smoke_dimension), entity.getY() + entity.getHeight() - smoke_dimension, entity))
             end
         end
     })
