@@ -5,6 +5,8 @@ global.scale     = 0
 global.screen_width = 640
 global.screen_height = 360
 
+global.DEBUG = true
+
 -- for now the high and low obstacles don't do anything, since
 -- obstacles are visualized by the background/foreground
 global.z_orders = {

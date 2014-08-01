@@ -13,6 +13,35 @@ NEXT STEPS
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
 
+### Player Refactor ###
+
+GOAL: I want to be able to swap out the modules easily. Right now the modules for
+player live in the player folder with player.lua; I would like to be able to define
+modules that declare an interface and exist independently of the entity. For example,
+a different weapon or new movement FSM that could be swapped in.
+
+During this refactor I would also like to use the recording system as a test battery.
+My goal will be to record a replay and run it after each set of changes. If this
+doesn't work, then I will work on the replay system until it does.
+
+[ ] reduce coupling between movement module and player
+[ ] reduce coupling between arm_cannon and player
+[ ] change the way we use "world" in the player and module code
+    - basically, I'd like to not have to pass world around. We'll
+      see how well this can be accomplished
+[ ] extract the common code for player and create Rock as a subclass
+[ ] FSM should be able to attach functions to a state after the fact
+    as well as explicitly upon adding a state.
+
+    `state_machine["jumping"].setUpdate(f)`
+
+[ ] make the recorder accurate to within a fraction of a pixel
+    - right now recordings stay accurate to within 1 pixel over longish
+      periods.
+    - make a recording of a 4 full player game and see if the accuracy
+      is within 1 pixel.
+    - try to make accuracy within 0.1 pixels
+
 ### Shooting ###
 
 [x] We are losing collisions: sometimes I will shoot twice, and only one collision will
