@@ -2,7 +2,12 @@
 -- bullet returns a constructor for a bullet type
 DecorationFactory = function (w, h, z, color, name, callbacks)
 
-    return function (x, y, owner)
+    local obj = {
+        WIDTH  = w,
+        HEIGHT = h
+    }
+
+    local init = function (x, y, owner)
         local entity = Entity(x, y - h/2, w, h, z)
         local speed, direction
         local timer = 0
@@ -11,7 +16,7 @@ DecorationFactory = function (w, h, z, color, name, callbacks)
         entity.set("owner_id", owner.get("id"))
 
         entity.draw = function ()
-            callbacks["draw"](entity, dt)
+            callbacks["draw"](entity, owner)
         end
 
         entity.update = function (dt)
@@ -33,4 +38,10 @@ DecorationFactory = function (w, h, z, color, name, callbacks)
 
         return entity
     end
+
+    setmetatable(obj, {
+        __call = function (_, ...) return init(...) end
+    })
+
+    return obj
 end

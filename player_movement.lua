@@ -1,46 +1,10 @@
-if not DecorationFactory then require("decoration_factory") end
 
-local smoke_dimension = 10
-local sparks_width    = 20
-local sparks_height   = 10
+local SmokeTrail = require("decorations/smoke_trail")
+local DashSparks = require("decorations/dash_sparks")
 
-local SmokeTrail = DecorationFactory(smoke_dimension, smoke_dimension, global.z_orders.decorations, COLOR.GREY, "smoke_trail", {
-    update = function (self, dt)
-        self.setY(self.getY() - 10*dt)
-        -- update the animation
-
-        -- update the timer
-        if self.isOver() then
-            self._unregister()
-        end
-    end,
-    draw = function (self)
-        love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
-        love.graphics.rectangle("fill", self.getX(), self.getY(), self.getWidth(), self.getHeight())
-
-        love.graphics.setColor(COLOR.WHITE)
-    end
-})
-
-local DashSparks = DecorationFactory(sparks_width, sparks_height, global.z_orders.decorations, COLOR.YELLOW, "dash_sparks", {
-    update = function (self, dt)
-        -- update the animation
-
-        -- update the timer
-        if self.isOver() then
-            self._unregister()
-        end
-    end,
-    draw = function (self)
-        love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
-        love.graphics.rectangle("fill", self.getX(), self.getY(), self.getWidth(), self.getHeight())
-
-        love.graphics.setColor(COLOR.WHITE)
-    end,
-    isOver = function (self, owner)
-        return not owner.isDashing()
-    end
-})
+local smoke_dimension = SmokeTrail.WIDTH
+local sparks_width    = DashSparks.WIDTH
+local sparks_height   = DashSparks.HEIGHT
 
 return function (entity, world, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
