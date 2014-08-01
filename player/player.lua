@@ -7,9 +7,9 @@ RELEASED     = "released"
 HOLDING      = "holding"
 FALLING      = "falling"
 
-MovementModule  = require("player_movement")
-AnimationModule = require("player_animation")
-XBuster         = require("arm_cannon")
+MovementModule  = require("player/movement")
+AnimationModule = require("player/animation")
+XBuster         = require("player/x_buster")
 
 return function (x, y, controls, name)
     local controls = require('controls')[controls]

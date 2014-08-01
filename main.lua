@@ -13,7 +13,7 @@ VHS = require("libs/inputman_recorder")
 Input  = require("input")
 Sound  = require("sound")
 World  = require("world")
-Player = require("player")
+Player = require("player/player")
 Boss   = require("boss")
 HUD    = require("hud")
 
