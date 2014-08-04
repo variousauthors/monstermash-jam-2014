@@ -10,10 +10,10 @@ local sparks_height   = DashSparks.HEIGHT
 -- TODO better would be to pass in an object that only
 -- exposes those methods: then we can do "if and only if"
 -- entity must implement
--- set/get
+-- set/get for boolean flags only
 -- pressed/holding
 -- getFacing/setFacing
--- id/name
+-- getId/getName
 
 -- TODO all the string keys should be constants maybe
 -- even in an object called "registers"
@@ -126,7 +126,7 @@ return function (entity, controls, verbose)
             -- TODO this is an example of a register with a non
             -- boolean value. I'd like to remove these
             -- maybe replace with `get("vertical_movement")`
-            if entity.get("vs") == 0 then
+            if entity.getDeltaY() == 0 then
                 entity.startJump()
             end
         end,
@@ -170,7 +170,7 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "falling",
         init = function ()
-            entity.set("vs", 0)
+            entity.setDeltaY(0)
             entity.set(FALLING, true)
         end,
         update = function ()
@@ -238,7 +238,7 @@ return function (entity, controls, verbose)
         from = "standing",
         to = "falling",
         condition = function ()
-            return entity.get("vs") > 0 and not (entity.holding(LEFT) or entity.holding(RIGHT))
+            return entity.getDeltaY() > 0 and not (entity.holding(LEFT) or entity.holding(RIGHT))
         end
     })
 
@@ -266,7 +266,7 @@ return function (entity, controls, verbose)
             local running    = (entity.holding(LEFT) or entity.holding(RIGHT))
             local turning    = (entity.pressed(RIGHT) or entity.pressed(LEFT))
 
-            return not entity.pressed(DASH) and (not running or press_both) and not turning and entity.get("vs") == 0
+            return not entity.pressed(DASH) and (not running or press_both) and not turning and entity.getDeltaY() == 0
         end
     })
 
@@ -275,7 +275,7 @@ return function (entity, controls, verbose)
         to = "jumping",
         condition = function ()
 
-            return entity.pressed(JUMP) and entity.get("vs") == 0
+            return entity.pressed(JUMP) and entity.getDeltaY() == 0
         end
     })
 
@@ -292,7 +292,7 @@ return function (entity, controls, verbose)
         from = "running",
         to = "falling",
         condition = function ()
-            return entity.get("vs") > 0 and not entity.pressed(DASH)
+            return entity.getDeltaY() > 0 and not entity.pressed(DASH)
         end
     })
 
@@ -353,7 +353,7 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "falling",
         condition = function ()
-            return entity.get("vs") == 0 or not entity.holding(JUMP) and not entity.holding(DASH)
+            return entity.getDeltaY() == 0 or not entity.holding(JUMP) and not entity.holding(DASH)
         end
     })
 
@@ -411,7 +411,7 @@ return function (entity, controls, verbose)
         from = "falling",
         to = "climbing",
         condition = function ()
-            return not entity.pressed(JUMP) and movement.isSet("climbing") and entity.get(FALLING) and entity.get("vs") == 0 and not entity.pressed(DASH)
+            return not entity.pressed(JUMP) and movement.isSet("climbing") and entity.get(FALLING) and entity.getDeltaY() == 0 and not entity.pressed(DASH)
         end
     })
 

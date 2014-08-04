@@ -91,8 +91,16 @@ return function (x, y, controls, name)
         facing_wall = facing
     end
 
+    entity.setDeltaY = function (delta)
+        dy = delta
+    end
+
+    entity.getDeltaY = function ()
+        return dy
+    end
+
     entity.setFacing(RIGHT)
-    entity.set("vs", 0)
+    entity.setDeltaY(0)
     entity.set("initial_vs", initial_vs)
     entity.set("hp", 16)
 
@@ -102,7 +110,7 @@ return function (x, y, controls, name)
     entity.set("damage", 4)
 
     entity.startJump = function ()
-        entity.set("vs", initial_vs)
+        entity.setDeltaY(initial_vs)
     end
 
     entity.pressed = function (key)
@@ -167,9 +175,9 @@ return function (x, y, controls, name)
             -- entity.set("near_a_wall", nil)
         end
 
-        entity.setY(entity.getY() - entity.get("vs"))
-        senses.setY(senses.getY() - entity.get("vs"))
-        entity.set("vs", math.max(entity.get("vs") - gravity, 0))
+        entity.setY(entity.getY() - entity.getDeltaY())
+        senses.setY(senses.getY() - entity.getDeltaY())
+        entity.setDeltaY(math.max(entity.getDeltaY() - gravity, 0))
     end
 
     entity.resolveDash = function (dt)
@@ -190,10 +198,10 @@ return function (x, y, controls, name)
             move(entity.getFacing(), -damaged_speed)
         end
 
-        entity.set("vs", math.min(entity.get("vs") + gravity, terminal_vs))
+        entity.setDeltaY(math.min(entity.getDeltaY() + gravity, terminal_vs))
 
-        entity.setY(entity.getY() + entity.get("vs"))
-        senses.setY(senses.getY() + entity.get("vs"))
+        entity.setY(entity.getY() + entity.getDeltaY())
+        senses.setY(senses.getY() + entity.getDeltaY())
     end
 
     entity.resolveObstacleCollide = function(world)
@@ -211,11 +219,11 @@ return function (x, y, controls, name)
 
                 if(ny == -1) then
                     -- we've landed on something
-                    entity.set("vs", 0)
+                    entity.setDeltaY(0)
                     entity.set(FALLING, false)
                 elseif(ny == 1) then
                     -- we bonked out head
-                    entity.set("vs", 0)
+                    entity.setDeltaY(0)
                     entity.set(FALLING, true)
                 end
 
@@ -223,7 +231,7 @@ return function (x, y, controls, name)
                 if (nx == 1 or nx == -1) then
                     if movement.is("falling") or movement.is("climbing") then
                         movement.set("climbing")
-                        entity.set("vs", 0)
+                        entity.setDeltaY(0)
                         sy = sy + 1
                     end
                 end
