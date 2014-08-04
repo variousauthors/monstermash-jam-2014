@@ -2,10 +2,9 @@ if not Entity then require("entity") end
 
 -- TODO convert these to unique constants
 -- rather than strings
-PRESSED      = "pressed"
-RELEASED     = "released"
-HOLDING      = "holding"
-FALLING      = "falling"
+local PRESSED      = "pressed"
+local RELEASED     = "released"
+local HOLDING      = "holding"
 
 MovementModule  = require("player/movement")
 AnimationModule = require("player/animation")
@@ -132,13 +131,18 @@ return function (x, y, controls, name)
     local x_buster  = XBuster(entity, controls, world)
     local animation = AnimationModule(entity, image, movement, x_buster, controls)
 
+    local FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP = unpack(movement.register_keys)
+
     local move = function (direction, speed)
         local sign = (direction == LEFT) and -1 or 1
 
-        if entity.get("dash_jump") then
+        if entity.get(DASH_JUMP) then
             speed = dash_speed
         end
 
+        -- TODO #1 this releases the dash key
+        -- everything seems to work fine if we comment
+        -- out this line, but the replays show a diff
         entity.set(DASH, false)
 
         entity.setX(entity.getX() + sign*speed)
@@ -164,7 +168,7 @@ return function (x, y, controls, name)
     end
 
     entity.resolveJump = function (dt)
-        if entity.get("wall_jump") then
+        if entity.get(WALL_JUMP) then
             local away = entity.getFacingWall() == LEFT and RIGHT or LEFT
 
             move(away, 1)

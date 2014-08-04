@@ -25,14 +25,23 @@ return function (entity, controls, verbose)
     local damaged_duration               = 30
     local smoke_interval = 4
 
+    local FALLING   = "falling"
+    local CAN_DASH  = "can_dash"
+    local WALL_JUMP = "wall_jump"
+    local AIR_DASH  = "air_dash"
+    local SHOCKED   = "shocked"
+    local DASH_JUMP = "dash_jump"
+
+    movement.register_keys = { FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP }
+
     movement.addState({
         name = "standing",
         init = function ()
-            entity.set("dash_jump", false)
-            entity.set("shocked", false)
+            entity.set(DASH_JUMP, false)
+            entity.set(SHOCKED, false)
             entity.setFacingWall(nil)
-            entity.set("can_dash", true)
-            entity.set("air_dash", false)
+            entity.set(CAN_DASH, true)
+            entity.set(AIR_DASH, false)
         end
     })
 
@@ -48,9 +57,9 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "running",
         init = function ()
-            entity.set("dash_jump", false)
-            entity.set("can_dash", true)
-            entity.set("air_dash", false)
+            entity.set(DASH_JUMP, false)
+            entity.set(CAN_DASH, true)
+            entity.set(AIR_DASH, false)
         end,
         -- TODO this is the kind of function I'd ilke
         -- to set in the player, and use the closure
@@ -69,7 +78,7 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "dashing",
         init = function()
-            entity.set("can_dash", false)
+            entity.set(CAN_DASH, false)
             local id = entity.getId()
             Sound:run('dash', id)
 
@@ -95,20 +104,20 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "dash_jump",
         init = function ()
-            entity.set("can_dash", false)
+            entity.set(CAN_DASH, false)
             local id = entity.getId()
-            Sound:run('wall_jump', id)
-            entity.set("dash_jump", true)
+            Sound:run(WALL_JUMP, id)
+            entity.set(DASH_JUMP, true)
         end
     })
 
     movement.addState({
         name = "air_dash",
         init = function ()
-            entity.set("can_dash", false)
+            entity.set(CAN_DASH, false)
             local id = entity.getId()
             Sound:run('dash', id)
-            entity.set("air_dash", true)
+            entity.set(AIR_DASH, true)
         end
     })
 
@@ -118,7 +127,7 @@ return function (entity, controls, verbose)
             local id = entity.getId()
 
             -- if a jump starts near a wall, kick off
-            entity.set("wall_jump", false)
+            entity.set(WALL_JUMP, false)
             Sound:run('jump', id)
 
             -- if we are continuing from a wall jump there
@@ -151,11 +160,11 @@ return function (entity, controls, verbose)
         name = "wall_jump",
         init = function ()
             local id = entity.getId()
-            entity.set("wall_jump", true)
+            entity.set(WALL_JUMP, true)
 
             -- TODO this seems like it could null out the facing
             entity.setFacing(entity.getFacingWall())
-            Sound:run('wall_jump', id)
+            Sound:run(WALL_JUMP, id)
 
             entity.set(FALLING, false)
 
@@ -187,8 +196,8 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "climbing",
         init = function ()
-            entity.set("dash_jump", false)
-            entity.set("can_dash", true)
+            entity.set(DASH_JUMP, false)
+            entity.set(CAN_DASH, true)
         end,
         update = function ()
             if entity.holding(LEFT) then
@@ -221,8 +230,8 @@ return function (entity, controls, verbose)
             entity.set("hp", math.max(entity.get("hp") - entity.get("damage_queue")))
             entity.set("damage_queue", 0)
             entity.set("invulnerable", 1)
-            entity.set("dash_jump", false)
-            entity.set("shocked", true)
+            entity.set(DASH_JUMP, false)
+            entity.set(SHOCKED, true)
         end,
     })
 
@@ -255,7 +264,7 @@ return function (entity, controls, verbose)
         from = "standing",
         to = "dashing",
         condition = function ()
-            return entity.pressed(DASH) and entity.get("can_dash")
+            return entity.pressed(DASH) and entity.get(CAN_DASH)
         end
     })
 
@@ -284,7 +293,7 @@ return function (entity, controls, verbose)
         to = "dashing",
         condition = function ()
 
-            return entity.pressed(DASH) and entity.get("can_dash")
+            return entity.pressed(DASH) and entity.get(CAN_DASH)
         end
     })
 
@@ -345,7 +354,7 @@ return function (entity, controls, verbose)
         from = "dashing",
         to = "dash_jump",
         condition = function ()
-            return entity.pressed(JUMP) and not entity.get("air_dash")
+            return entity.pressed(JUMP) and not entity.get(AIR_DASH)
         end
     })
 
@@ -361,7 +370,7 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "air_dash",
         condition = function ()
-            return entity.pressed(DASH) and entity.get("can_dash")
+            return entity.pressed(DASH) and entity.get(CAN_DASH)
         end
     })
 
@@ -371,7 +380,7 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "wall_jump",
         condition = function ()
-            return movement.is("wall_jump")
+            return movement.is(WALL_JUMP)
         end
     })
 
@@ -403,7 +412,7 @@ return function (entity, controls, verbose)
         from = "falling",
         to = "air_dash",
         condition = function ()
-            return entity.pressed(DASH) and entity.get("can_dash")
+            return entity.pressed(DASH) and entity.get(CAN_DASH)
         end
     })
 
@@ -437,7 +446,7 @@ return function (entity, controls, verbose)
         from = "climbing",
         to = "air_dash",
         condition = function ()
-            return entity.pressed(DASH) and entity.get("can_dash")
+            return entity.pressed(DASH) and entity.get(CAN_DASH)
         end
     })
 
