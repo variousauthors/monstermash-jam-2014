@@ -35,7 +35,7 @@ return function (entity, controls, verbose)
         init = function ()
             entity.set("dash_jump", false)
             entity.set("shocked", false)
-            entity.set("near_a_wall", nil)
+            entity.setFacingWall(nil)
             entity.set("can_dash", true)
             entity.set("air_dash", false)
         end
@@ -157,7 +157,9 @@ return function (entity, controls, verbose)
         init = function ()
             local id = entity.get('id')
             entity.set("wall_jump", true)
-            entity.setFacing(entity.get("near_a_wall"))
+
+            -- TODO this seems like it could null out the facing
+            entity.setFacing(entity.getFacingWall())
             Sound:run('wall_jump', id)
 
             entity.set(FALLING, false)
@@ -423,7 +425,8 @@ return function (entity, controls, verbose)
         to = "wall_jump",
         condition = function ()
 
-            return entity.get("near_a_wall") ~= nil and entity.pressed(JUMP) and not entity.pressed(DASH)
+            -- TODO isNearWall()
+            return entity.getFacingWall() ~= nil and entity.pressed(JUMP) and not entity.pressed(DASH)
         end
     })
 
@@ -460,7 +463,7 @@ return function (entity, controls, verbose)
 
             -- TODO I would like to push megaman about half his senses distance away from the wall he was clinging
             -- when he "pushes off"
-            return (not clinging and not entity.pressed(JUMP)) or (clinging and pushing_off) or entity.get("near_a_wall") == nil
+            return (not clinging and not entity.pressed(JUMP)) or (clinging and pushing_off) or entity.getFacingWall() == nil
         end
     })
 
@@ -468,7 +471,8 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "jumping",
         condition = function ()
-            return entity.get("near_a_wall") ~= entity.getFacing() and entity.holding(JUMP)
+            -- TODO isNearWall(entity.getFacing())
+            return entity.getFacingWall() ~= entity.getFacing() and entity.holding(JUMP)
         end
     })
 
@@ -476,7 +480,7 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "falling",
         condition = function ()
-            return entity.get("near_a_wall") ~= entity.getFacing() and not entity.holding(JUMP)
+            return entity.getFacingWall() ~= entity.getFacing() and not entity.holding(JUMP)
         end
     })
 

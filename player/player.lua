@@ -14,7 +14,7 @@ XBuster         = require("player/x_buster")
 return function (x, y, controls, name)
     local controls = require('controls')[controls]
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local facing
+    local facing, facing_wall
 
     local ring_timer       = 0
     local ring_timer_limit = 100
@@ -83,6 +83,14 @@ return function (x, y, controls, name)
         return facing
     end
 
+    entity.getFacingWall = function ()
+        return facing_wall
+    end
+
+    entity.setFacingWall = function (facing)
+        facing_wall = facing
+    end
+
     entity.setFacing(RIGHT)
     entity.set("vs", 0)
     entity.set("initial_vs", initial_vs)
@@ -149,10 +157,10 @@ return function (x, y, controls, name)
 
     entity.resolveJump = function (dt)
         if entity.get("wall_jump") then
-            local away = entity.get("near_a_wall") == LEFT and RIGHT or LEFT
+            local away = entity.getFacingWall() == LEFT and RIGHT or LEFT
 
             move(away, 1)
-            entity.setFacing(entity.get("near_a_wall"))
+            entity.setFacing(entity.getFacingWall())
 
             -- removed this while fixing wall jump: we'll set near a wall to nil when the
             -- player's senses are not colliding with a wall
@@ -272,7 +280,7 @@ return function (x, y, controls, name)
 
         if len == 0 then
             -- any time megaman can't find a wall or floor or ceiling
-            entity.set("near_a_wall", nil)
+            entity.setFacingWall(nil)
         else
             local col, tx, ty, sx, sy
 
@@ -283,9 +291,9 @@ return function (x, y, controls, name)
                 -- which he can use to kick off a wall from falling
                 if movement.is("climbing") or movement.is("wall_jump") or movement.is("jumping") or movement.is("falling") then
                     if (nx == 1) then
-                        entity.set("near_a_wall", LEFT)
+                        entity.setFacingWall(LEFT)
                     elseif (nx == -1) then
-                        entity.set("near_a_wall", RIGHT)
+                        entity.setFacingWall(RIGHT)
                     end
                 end
             end
