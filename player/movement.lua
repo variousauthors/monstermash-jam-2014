@@ -22,7 +22,6 @@ return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local movement                       = FSM(false, "move", entity.getName())
     local dash_duration                  = 30
-    local damaged_duration               = 30
     local smoke_interval = 4
 
     local FALLING   = "falling"
@@ -46,12 +45,7 @@ return function (entity, controls, verbose)
     })
 
     movement.addState({
-        name = "destroyed",
-        init = function()
-            local id = entity.getId()
-            Sound:stop(id)
-            Sound:run("destroyed", id)
-        end
+        name = "shocked"
     })
 
     movement.addState({
@@ -219,20 +213,6 @@ return function (entity, controls, verbose)
                 entity.register(SmokeTrail(entity.getX() + sign*(offset - smoke_dimension), entity.getY() + entity.getHeight() - smoke_dimension, entity))
             end
         end
-    })
-
-    movement.addState({
-        name = "damaged",
-        init = function ()
-            local id = entity.getId()
-            Sound:stop(id)
-            Sound:run('damaged', id)
-            entity.set("hp", math.max(entity.get("hp") - entity.get("damage_queue")))
-            entity.set("damage_queue", 0)
-            entity.set("invulnerable", 1)
-            entity.set(DASH_JUMP, false)
-            entity.set(SHOCKED, true)
-        end,
     })
 
     movement.addTransition({
@@ -490,27 +470,17 @@ return function (entity, controls, verbose)
 
     movement.addTransition({
         from = "any",
-        to = "damaged",
+        to = "shocked",
         condition = function ()
-            return entity.get("hp") > 0 and entity.get("damage_queue") and entity.get("damage_queue") > 0
+            return entity.get(SHOCKED)
         end
     })
 
     movement.addTransition({
-        from = "any",
-        to = "destroyed",
-        condition = function ()
-            -- TODO this kind of check (for entity death_line stuff) should be done in the player update and flagged
-            -- HP also
-            return not movement.is('destroyed') and (entity.get("hp") < 1 or entity.getY() > entity.get("death_line"))
-        end
-    })
-
-    movement.addTransition({
-        from = "damaged",
+        from = "shocked",
         to = "standing",
         condition = function ()
-            return movement.getCount() > damaged_duration
+            return not entity.get(SHOCKED)
         end
     })
 

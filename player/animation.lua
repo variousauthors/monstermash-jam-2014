@@ -8,7 +8,7 @@ local frames = require("animation_index")
 -- resolveDash
 -- resolveJump
 
-return function (entity, image, movement, x_buster, controls, verbose)
+return function (entity, image, movement, armor, x_buster, controls, verbose)
     -- I think we won't need this
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local animation        = FSM(false, "animation", entity.get("name"))
@@ -669,7 +669,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "any",
         to = "to_hurt",
         condition = function ()
-            return not animation.is("to_hurt") and movement.is("damaged")
+            return not animation.is("to_hurt") and armor.is("damaged")
         end
     })
 
@@ -693,7 +693,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "any",
         to = "death",
         condition = function ()
-            return movement.is("destroyed")
+            return armor.is("destroyed")
         end
     })
 

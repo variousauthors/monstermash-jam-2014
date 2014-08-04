@@ -7,6 +7,7 @@ local RELEASED     = "released"
 local HOLDING      = "holding"
 
 MovementModule  = require("player/movement")
+ArmorModule     = require("player/armor")
 AnimationModule = require("player/animation")
 XBuster         = require("player/x_buster")
 
@@ -29,6 +30,7 @@ return function (x, y, controls, name)
     local dash_speed              = 3.5
     local damaged_speed           = 1
     local initial_vs  = 5
+    local dy
     local terminal_vs = 5.75
     local gravity                 = 0.25
 
@@ -128,8 +130,9 @@ return function (x, y, controls, name)
     entity.set("name", name)
 
     local movement  = MovementModule(entity, controls)
+    local armor     = ArmorModule(entity, controls)
     local x_buster  = XBuster(entity, controls, world)
-    local animation = AnimationModule(entity, image, movement, x_buster, controls)
+    local animation = AnimationModule(entity, image, movement, armor, x_buster, controls)
 
     local FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP = unpack(movement.register_keys)
 
@@ -198,7 +201,7 @@ return function (x, y, controls, name)
         if movement.is("wall_jump") or movement.is('jumping') then return end
 
         -- face forward but slide back
-        if movement.is('damaged') then
+        if armor.is('damaged') then
             move(entity.getFacing(), -damaged_speed)
         end
 
@@ -275,7 +278,9 @@ return function (x, y, controls, name)
 
             entity.set("damage_queue", bullet.get("damage"))
             entity.setFacing(facing)
-            movement.update()
+            armor.update()
+
+            -- TODO XBuster charge state actually should not reset after damage, eh?
             x_buster.start("inactive")
 
             -- if there is something the bullet needs to do
@@ -321,7 +326,7 @@ return function (x, y, controls, name)
             if entity.get("invulnerable") == 0 then entity.set("invulnerable", nil) end
         end
 
-        if movement.is("destroyed") then
+        if armor.is("destroyed") then
             if ring_count < ring_limit then
 
                 ring_count = ring_count + 1
@@ -332,7 +337,7 @@ return function (x, y, controls, name)
     entity.update = function (dt, world)
         local old_x, old_y = entity.getX(), entity.getY()
 
-        if movement.is("destroyed") then
+        if armor.is("destroyed") then
             if world.bump:hasItem(entity) then
                 world.bump:remove(entity)
                 world.bump:remove(senses)
@@ -356,6 +361,7 @@ return function (x, y, controls, name)
         end
 
         movement.update(dt)
+        armor.update(dt)
         x_buster.update(dt)
         animation.update(dt)
 
@@ -453,14 +459,14 @@ return function (x, y, controls, name)
             end
         end
 
-        if movement.is("damaged") then
+        if armor.is("damaged") then
             local r, g, b = love.graphics.getColor()
           --love.graphics.setColor(COLOR.YELLOW)
           --love.graphics.rectangle("fill", draw_x - 5, draw_y - 5, width + 10, height + 10)
           --love.graphics.setColor({ r, g, b })
         end
 
-        if movement.is("destroyed") then
+        if armor.is("destroyed") then
             love.graphics.setColor(COLOR.BLACK)
         end
 
@@ -471,7 +477,7 @@ return function (x, y, controls, name)
         end
 
         if flicker == 0 then
-            if movement.is("destroyed") then
+            if armor.is("destroyed") then
 
                 love.graphics.setColor(COLOR.CYAN)
                 for j = 1, ring_count do

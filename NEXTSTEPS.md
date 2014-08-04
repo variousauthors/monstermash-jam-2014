@@ -35,6 +35,7 @@ doesn't work, then I will work on the replay system until it does.
     forcibly released during calls to player#move, but commenting out this
     line doesn't seem to break the game (it does change things, though,
     since the replays break).
+[ ] XBuster should not lose its charge after rock is hit
 
 
 #### checklist ####
