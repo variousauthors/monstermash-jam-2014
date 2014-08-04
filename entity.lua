@@ -47,6 +47,14 @@ Entity = (function ()
             return z
         end
 
+        local getId = function ()
+            return id
+        end
+
+        local getName = function ()
+            return name
+        end
+
         local tic     = function () end
         local cleanup = function () end
 
@@ -58,6 +66,8 @@ Entity = (function ()
             getWidth       = getWidth,
             getHeight      = getHeight,
             getZOrder      = getZOrder,
+            getId          = getId,
+            getName        = getName,
             getX           = p.getX,
             getY           = p.getY,
             setX           = p.setX,

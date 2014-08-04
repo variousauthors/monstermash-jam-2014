@@ -13,19 +13,14 @@ local sparks_height   = DashSparks.HEIGHT
 -- set/get
 -- pressed/holding
 -- getFacing/setFacing
--- id
+-- id/name
 
 -- TODO all the string keys should be constants maybe
 -- even in an object called "registers"
 
--- TODO get facing and get near_a_wall
--- are examples of non-boolean registers
--- they should be replaced with methods getFacing and senseWall
--- or something
-
 return function (entity, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement                       = FSM(false, "move", entity.get("name"))
+    local movement                       = FSM(false, "move", entity.getName())
     local dash_duration                  = 30
     local damaged_duration               = 30
     local smoke_interval = 4
@@ -44,7 +39,7 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "destroyed",
         init = function()
-            local id = entity.get("id")
+            local id = entity.getId()
             Sound:stop(id)
             Sound:run("destroyed", id)
         end
@@ -75,7 +70,7 @@ return function (entity, controls, verbose)
         name = "dashing",
         init = function()
             entity.set("can_dash", false)
-            local id = entity.get('id')
+            local id = entity.getId()
             Sound:run('dash', id)
 
         end,
@@ -101,7 +96,7 @@ return function (entity, controls, verbose)
         name = "dash_jump",
         init = function ()
             entity.set("can_dash", false)
-            local id = entity.get('id')
+            local id = entity.getId()
             Sound:run('wall_jump', id)
             entity.set("dash_jump", true)
         end
@@ -111,7 +106,7 @@ return function (entity, controls, verbose)
         name = "air_dash",
         init = function ()
             entity.set("can_dash", false)
-            local id = entity.get('id')
+            local id = entity.getId()
             Sound:run('dash', id)
             entity.set("air_dash", true)
         end
@@ -120,7 +115,7 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "jumping",
         init = function ()
-            local id = entity.get('id')
+            local id = entity.getId()
 
             -- if a jump starts near a wall, kick off
             entity.set("wall_jump", false)
@@ -155,7 +150,7 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "wall_jump",
         init = function ()
-            local id = entity.get('id')
+            local id = entity.getId()
             entity.set("wall_jump", true)
 
             -- TODO this seems like it could null out the facing
@@ -220,7 +215,7 @@ return function (entity, controls, verbose)
     movement.addState({
         name = "damaged",
         init = function ()
-            local id = entity.get('id')
+            local id = entity.getId()
             Sound:stop(id)
             Sound:run('damaged', id)
             entity.set("hp", math.max(entity.get("hp") - entity.get("damage_queue")))
