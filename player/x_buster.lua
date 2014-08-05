@@ -1,16 +1,21 @@
 if not BulletFactory then require("bullet_factory") end
 
-return function (entity, controls, world)
+return function (entity, controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local cannon     = FSM(false, "x_buster", entity.get("name"))
-    local cool_down  = 10
-    local relax      = 20
-    local mega_blast = 40
-    local fat_gun_dim             = 3
+    local cannon      = FSM(false, "x_buster", entity.get("name"))
+    local cool_down   = 10
+    local relax       = 20
+    local mega_blast  = 40
+    local fat_gun_dim = 3
 
     local Pellet    = BulletFactory(5, 4, 4, global.z_orders.bullets, 1, COLOR.YELLOW, "pellet")
     local Blast     = BulletFactory(6, 20, 5, global.z_orders.bullets, 2, COLOR.GREEN, "blast")
     local MegaBlast = BulletFactory(5, 15, 20, global.z_orders.bullets, 3, COLOR.RED, "mega_blast")
+
+    local MEGA_BLAST = "mega_blast"
+    local SHOCKED    = "shocked"
+
+    cannon.register_keys = { MEGA_BLAST, SHOCKED }
 
     local Bullets = {
         pellet     = Pellet,
@@ -50,7 +55,7 @@ return function (entity, controls, world)
     cannon.addState({
         name = "inactive",
         init = function()
-            local id = entity.get("id")
+            local id = entity.getId()
             Sound:stop("charge", id)
         end
     })
@@ -58,11 +63,11 @@ return function (entity, controls, world)
     cannon.addState({
         name = "pellet",
         init = function ()
-            local id = entity.get("id")
+            local id = entity.getId()
             Sound:stop("charge", id)
             Sound:run("pellet", id)
             cannon.set("shoot")
-            world:register(resolveShoot())
+            entity.register(resolveShoot())
             decrementAmmo("pellet")
         end,
     })
@@ -70,11 +75,11 @@ return function (entity, controls, world)
     cannon.addState({
         name = "blast",
         init = function ()
-            local id = entity.get("id")
+            local id = entity.getId()
             Sound:stop("charge", id)
             Sound:run("blast", id)
             cannon.set("shoot")
-            world:register(resolveShoot())
+            entity.register(resolveShoot())
             decrementAmmo("charge")
         end
     })
@@ -82,12 +87,12 @@ return function (entity, controls, world)
     cannon.addState({
         name = "mega_blast",
         init = function ()
-            local id = entity.get("id")
+            local id = entity.getId()
             Sound:stop("charge", id)
             Sound:run("mega_blast", id)
             cannon.set("shoot")
-            entity.set("mega_blast", false)
-            world:register(resolveShoot())
+            entity.set(MEGA_BLAST, false)
+            entity.register(resolveShoot())
             decrementAmmo("charge")
         end
     })
@@ -95,12 +100,12 @@ return function (entity, controls, world)
     cannon.addState({
         name = "charging",
         init = function()
-            local id = entity.get("id")
+            local id = entity.getId()
             Sound:run("charge", id)
         end,
         update = function (dt)
             if cannon.getCount() > mega_blast then
-                entity.set("mega_blast", true)
+                entity.set(MEGA_BLAST, true)
             end
         end
     })
@@ -117,7 +122,7 @@ return function (entity, controls, world)
         from = "inactive",
         to = "pellet",
         condition = function ()
-            return ammo["pellet"] > 0 and not entity.get("shocked") and entity.pressed(SHOOT)
+            return ammo["pellet"] > 0 and not entity.get(SHOCKED) and entity.pressed(SHOOT)
         end
     })
 
@@ -125,7 +130,7 @@ return function (entity, controls, world)
         from = "inactive",
         to = "charging",
         condition = function ()
-            return ammo["charge"] > 0 and not entity.get("shocked") and entity.holding(SHOOT)
+            return ammo["charge"] > 0 and not entity.get(SHOCKED) and entity.holding(SHOOT)
         end
     })
 
@@ -133,7 +138,7 @@ return function (entity, controls, world)
         from = "inactive",
         to = "cool_down",
         condition = function ()
-            return ammo["charge"] > 0 and ammo["pellet"] == 0 and not entity.get("shocked") and entity.pressed(SHOOT)
+            return ammo["charge"] > 0 and ammo["pellet"] == 0 and not entity.get(SHOCKED) and entity.pressed(SHOOT)
         end
     })
 
@@ -161,29 +166,12 @@ return function (entity, controls, world)
         end
     })
 
---  cannon.addTransition({
---      from = "charging",
---      to = "blast",
---      condition = function ()
---          return not entity.get("shocked") and entity.released(SHOOT) and not entity.get("mega_blast")
---      end
---  })
-
---  cannon.addTransition({
---      from = "charging",
---      to = "mega_blast",
---      condition = function ()
-
---          return not entity.get("shocked") and entity.released(SHOOT) and entity.get("mega_blast")
---      end
---  })
-
     cannon.addTransition({
         from = "charging",
         to = "inactive",
         condition = function ()
 
-            return entity.get("shocked")
+            return entity.get(SHOCKED)
         end
     })
 
@@ -191,7 +179,7 @@ return function (entity, controls, world)
         from = "charging",
         to = "primed",
         condition = function ()
-            return not entity.get("shocked") and entity.released(SHOOT)
+            return not entity.get(SHOCKED) and entity.released(SHOOT)
         end
     })
 
@@ -199,7 +187,7 @@ return function (entity, controls, world)
         from = "primed",
         to = "mega_blast",
         condition = function ()
-            return entity.get("mega_blast")
+            return entity.get(MEGA_BLAST)
         end
     })
 
@@ -207,7 +195,7 @@ return function (entity, controls, world)
         from = "primed",
         to = "blast",
         condition = function ()
-            return not entity.get("mega_blast")
+            return not entity.get(MEGA_BLAST)
         end
     })
 

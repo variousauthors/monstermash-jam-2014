@@ -13,18 +13,19 @@ return function (x, y, controls, name)
 
     local image = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
 
+    -- TODO this should move into a decoration
     local ring_timer       = 0
     local ring_timer_limit = 100
     local ring_count       = 1
     local ring_speed       = 40
     local ring_limit       = 2
 
-    -- back of glove to beginning of red thing
-    -- red thing is top
-    local max_bullets = 3
+    -- TODO should this live in armor?
+    local bump_damage = 4
 
+    -- TODO should this live in armor?
     local damaged_speed           = 1
-    local dy
+    local dx, dy
 
     local entity = Entity(x, y, 12, 29)
     local width  = entity.getWidth()
@@ -47,7 +48,7 @@ return function (x, y, controls, name)
     local sprite_box_offset_y = 9
 
     local movement, armor, x_buster, animation
-    local FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP
+    local FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP, MEGA_BLAST
 
     entity.set("name", name)
 
@@ -109,24 +110,26 @@ return function (x, y, controls, name)
 
     entity.init = function (Movement, Armor, XBuster, Animation)
 
-        movement  = Movement(entity, controls)
-        armor     = Armor(entity, controls)
-        x_buster  = XBuster(entity, controls, world)
+        movement = Movement(entity, controls)
+        armor    = Armor(entity, controls)
+        x_buster = XBuster(entity, controls, world)
 
         animation = AnimationModule(entity, image, movement, armor, x_buster, controls)
 
         entity.incrementAmmo = x_buster.incrementAmmo
 
+        -- TODO would be better if we could declare these as the only available
+        -- boolean registers. Like, entity's get/set method only responds to these
+        -- keys
         FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP = unpack(movement.register_keys)
+        MEGA_BLAST, SHOCKED = unpack(movement.register_keys)
 
         entity.setFacing(RIGHT)
         entity.setDeltaY(0)
         entity.set("hp", 16)
 
-        -- TODO player's collide with enemies causing damage
-        -- this is just to test
         entity.set("isBullet", true)
-        entity.set("damage", 4)
+        entity.set("damage", bump_damage)
     end
 
     entity.pressed = function (key)
@@ -368,7 +371,7 @@ return function (x, y, controls, name)
 
             love.graphics.setColor(COLOR.CYAN)
 
-            if entity.get("mega_blast") then
+            if entity.get(MEGA_BLAST) then
                 love.graphics.setColor(COLOR.YELLOW)
             end
 

@@ -40,10 +40,15 @@ doesn't work, then I will work on the replay system until it does.
 
 #### checklist ####
 
+[ ] I should be able to change the way a player moves by changing the movement module
+[ ] I should be able to change the way a player shoots by changing the x_buster module
+[ ] I should be able to change the way a player takes damage by changing the armor module
+
 [x] reduce coupling between movement module and player
 [x] Remove world from Moveement Module
-[ ] Remove world from ArmCannon
-[ ] Pull some functions like "move" into the Movement module somehow
+[x] Remove world from ArmCannon
+[x] Pull some functions like "move" into the Movement module somehow
+
 [ ] reduce coupling between arm_cannon and player
 [ ] change the way we use "world" in the player and module code
     - basically, I'd like to not have to pass world around. We'll

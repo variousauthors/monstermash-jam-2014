@@ -42,6 +42,8 @@ return function (entity, controls)
     local SHOCKED   = "shocked"
     local DASH_JUMP = "dash_jump"
 
+    movement.register_keys = { FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP }
+
     movement.move = function (direction, speed)
         local sign = (direction == LEFT) and -1 or 1
 
@@ -111,8 +113,6 @@ return function (entity, controls)
 
         entity.adjustY(result)
     end
-
-    movement.register_keys = { FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP }
 
     movement.addState({
         name = "standing",
