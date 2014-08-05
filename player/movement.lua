@@ -342,7 +342,7 @@ return function (entity, controls, verbose)
         from = "jumping",
         to = "falling",
         condition = function ()
-            return entity.getDeltaY() == 0 or not entity.holding(JUMP) and not entity.holding(DASH)
+            return not entity.pressed(DASH) and (entity.getDeltaY() == 0 or not entity.holding(JUMP) and not entity.holding(DASH))
         end
     })
 
