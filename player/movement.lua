@@ -15,10 +15,7 @@ local sparks_height   = DashSparks.HEIGHT
 -- getFacing/setFacing
 -- getId/getName
 
--- TODO all the string keys should be constants maybe
--- even in an object called "registers"
-
-return function (entity, controls, verbose)
+return function (entity, controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local movement                       = FSM(false, "move", entity.getName())
     local dash_duration                  = 30
@@ -126,9 +123,6 @@ return function (entity, controls, verbose)
 
             -- if we are continuing from a wall jump there
             -- is no need to reset this
-            -- TODO this is an example of a register with a non
-            -- boolean value. I'd like to remove these
-            -- maybe replace with `get("vertical_movement")`
             if entity.getDeltaY() == 0 then
                 entity.startJump()
             end
@@ -156,7 +150,6 @@ return function (entity, controls, verbose)
             local id = entity.getId()
             entity.set(WALL_JUMP, true)
 
-            -- TODO this seems like it could null out the facing
             entity.setFacing(entity.getFacingWall())
             Sound:run(WALL_JUMP, id)
 
@@ -231,7 +224,6 @@ return function (entity, controls, verbose)
         end
     })
 
-    -- TODO add a from = "any" option to simplify this
     movement.addTransition({
         from = "standing",
         to = "jumping",
@@ -354,8 +346,6 @@ return function (entity, controls, verbose)
         end
     })
 
-    -- TODO this might not be necessary because megaman always goes to
-    -- falling before walljump
     movement.addTransition({
         from = "jumping",
         to = "wall_jump",
@@ -409,7 +399,6 @@ return function (entity, controls, verbose)
         to = "wall_jump",
         condition = function ()
 
-            -- TODO isNearWall()
             return entity.getFacingWall() ~= nil and entity.pressed(JUMP) and not entity.pressed(DASH)
         end
     })
@@ -455,7 +444,6 @@ return function (entity, controls, verbose)
         from = "wall_jump",
         to = "jumping",
         condition = function ()
-            -- TODO isNearWall(entity.getFacing())
             return entity.getFacingWall() ~= entity.getFacing() and entity.holding(JUMP)
         end
     })

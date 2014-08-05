@@ -7,6 +7,13 @@ return function(world)
         init       = function ()
             world:init()
 
+            BasicMovementModule  = require("player/movement")
+            BasicArmorModule     = require("player/armor")
+            BasicXBuster         = require("player/x_buster")
+
+            AnimationModule = require("player/animation")
+
+
             players = {
                 Player(32, 140, "p1", "rock"),
             --  Player(110, 300, "p2", "opera"),
@@ -14,7 +21,10 @@ return function(world)
             --  Player(560, 140, "p4", "violet")
             }
 
-            for _, v in ipairs(players) do world:register(v) end
+            for _, v in ipairs(players) do
+                world:register(v)
+                v.init(BasicMovementModule, BasicArmorModule, BasicXBuster, AnimationModule)
+            end
 
             hud = HUD.new(unpack(players))
 

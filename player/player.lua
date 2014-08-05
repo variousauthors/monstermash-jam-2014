@@ -6,15 +6,12 @@ local PRESSED      = "pressed"
 local RELEASED     = "released"
 local HOLDING      = "holding"
 
-MovementModule  = require("player/movement")
-ArmorModule     = require("player/armor")
-AnimationModule = require("player/animation")
-XBuster         = require("player/x_buster")
-
 return function (x, y, controls, name)
     local controls = require('controls')[controls]
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local facing, facing_wall
+
+    local image = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
 
     local ring_timer       = 0
     local ring_timer_limit = 100
@@ -51,6 +48,30 @@ return function (x, y, controls, name)
         return other.get and other.get("isBullet") == true and other.get("owner_id") ~= entity.get("id")
     end
 
+    local sprite_box_offset_x = 20
+    local sprite_box_offset_y = 9
+
+    local movement, armor, x_buster, animation
+    local FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP
+
+    entity.set("name", name)
+
+    local move = function (direction, speed)
+        local sign = (direction == LEFT) and -1 or 1
+
+        if entity.get(DASH_JUMP) then
+            speed = dash_speed
+        end
+
+        -- TODO #1 this releases the dash key
+        -- everything seems to work fine if we comment
+        -- out this line, but the replays show a diff
+        entity.set(DASH, false)
+
+        entity.setX(entity.getX() + sign*speed)
+        senses.setX(senses.getX() + sign*speed)
+    end
+
     -- ensures that the player's senses get added to the world
     entity.onRegister = function (world)
         world.bump:add(entity, entity.getBoundingBox())
@@ -63,9 +84,6 @@ return function (x, y, controls, name)
     entity.register = function (other)
         world:register(other)
     end
-
-    local sprite_box_offset_x = 20
-    local sprite_box_offset_y = 9
 
     entity.setFacing = function (new_facing)
         -- we have to flip his collision box
@@ -100,15 +118,28 @@ return function (x, y, controls, name)
         return dy
     end
 
-    entity.setFacing(RIGHT)
-    entity.setDeltaY(0)
-    entity.set("initial_vs", initial_vs)
-    entity.set("hp", 16)
+    entity.init = function (Movement, Armor, XBuster, Animation)
 
-    -- TODO player's collide with enemies causing damage
-    -- this is just to test
-    entity.set("isBullet", true)
-    entity.set("damage", 4)
+        movement  = Movement(entity, controls)
+        armor     = Armor(entity, controls)
+        x_buster  = XBuster(entity, controls, world)
+
+        animation = AnimationModule(entity, image, movement, armor, x_buster, controls)
+
+        entity.incrementAmmo = x_buster.incrementAmmo
+
+        FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP = unpack(movement.register_keys)
+
+        entity.setFacing(RIGHT)
+        entity.setDeltaY(0)
+        entity.set("initial_vs", initial_vs)
+        entity.set("hp", 16)
+
+        -- TODO player's collide with enemies causing damage
+        -- this is just to test
+        entity.set("isBullet", true)
+        entity.set("damage", 4)
+    end
 
     entity.startJump = function ()
         entity.setDeltaY(initial_vs)
@@ -125,34 +156,6 @@ return function (x, y, controls, name)
     entity.holding = function (key)
         return entity.get(key) == HOLDING
     end
-
-    local image     = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
-    entity.set("name", name)
-
-    local movement  = MovementModule(entity, controls)
-    local armor     = ArmorModule(entity, controls)
-    local x_buster  = XBuster(entity, controls, world)
-    local animation = AnimationModule(entity, image, movement, armor, x_buster, controls)
-
-    local FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP = unpack(movement.register_keys)
-
-    local move = function (direction, speed)
-        local sign = (direction == LEFT) and -1 or 1
-
-        if entity.get(DASH_JUMP) then
-            speed = dash_speed
-        end
-
-        -- TODO #1 this releases the dash key
-        -- everything seems to work fine if we comment
-        -- out this line, but the replays show a diff
-        entity.set(DASH, false)
-
-        entity.setX(entity.getX() + sign*speed)
-        senses.setX(senses.getX() + sign*speed)
-    end
-
-    entity.incrementAmmo = x_buster.incrementAmmo
 
     entity.resolveLeft = function ()
         move(LEFT, horizontal_speed)
@@ -431,18 +434,6 @@ return function (x, y, controls, name)
         else
             -- love.graphics.line(draw_x + width, draw_y, draw_x + width, draw_y + height)
         end
-
-      --if movement.is("running") then
-      --    love.graphics.setColor(COLOR.RED)
-      --elseif movement.is("jumping") then
-      --    love.graphics.setColor(COLOR.GREEN)
-      --elseif movement.is("falling") then
-      --    love.graphics.setColor(COLOR.PURPLE)
-      --elseif movement.is("climbing") then
-      --    love.graphics.setColor(COLOR.GREY)
-      --else
-      --    love.graphics.setColor(COLOR.BLUE)
-      --end
 
         local flicker = 0
         if x_buster.is("charging") then
