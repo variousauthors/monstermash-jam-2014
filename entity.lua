@@ -48,7 +48,7 @@ Entity = (function ()
         end
 
         local getId = function ()
-            return id
+            return entity_id
         end
 
         local getName = function ()
