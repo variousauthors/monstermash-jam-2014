@@ -24,7 +24,6 @@ return function (x, y, controls, name)
     local max_bullets = 3
 
     local damaged_speed           = 1
-    local initial_vs  = 5
     local dy
 
     local entity = Entity(x, y, 12, 29)
@@ -51,18 +50,6 @@ return function (x, y, controls, name)
     local FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP
 
     entity.set("name", name)
-
-    -- TODO we should be able to do everything with the adjust method,
-    -- even the collision code
-    local setX = function (new_x)
-        entity.setX(new_x)
-        senses.setX(new_x - senses_offset_x)
-    end
-
-    local setY = function (new_y)
-        entity.setY(new_y)
-        senses.setY(new_y + senses_offset_x)
-    end
 
     entity.adjustX = function (dx)
         entity.setX(entity.getX() + dx)
@@ -134,17 +121,12 @@ return function (x, y, controls, name)
 
         entity.setFacing(RIGHT)
         entity.setDeltaY(0)
-        entity.set("initial_vs", initial_vs)
         entity.set("hp", 16)
 
         -- TODO player's collide with enemies causing damage
         -- this is just to test
         entity.set("isBullet", true)
         entity.set("damage", 4)
-    end
-
-    entity.startJump = function ()
-        entity.setDeltaY(initial_vs)
     end
 
     entity.pressed = function (key)
@@ -191,15 +173,15 @@ return function (x, y, controls, name)
                     end
                 end
 
-                setX(tx)
-                setY(ty)
+                entity.adjustX(tx - entity.getX())
+                entity.adjustY(ty - entity.getY())
                 world.bump:move(entity, entity.getX(), entity.getY())
                 world.bump:move(senses, senses.getX(), senses.getY())
 
                 cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
                 if len == 0 then
-                    setX(sx)
-                    setY(sy)
+                    entity.adjustX(sx - entity.getX())
+                    entity.adjustY(sy - entity.getY())
                     world.bump:move(entity, entity.getX(), entity.getY())
                     world.bump:move(senses, senses.getX(), senses.getY())
                 end
@@ -263,7 +245,6 @@ return function (x, y, controls, name)
     end
 
     entity.tic = function (dt)
-
         if entity.get("invulnerable") and entity.get("invulnerable") > 0 then
             entity.set("invulnerable", math.max(entity.get("invulnerable") - 1, 0))
 

@@ -27,6 +27,13 @@ return function (entity, controls)
     local gravity          = 0.25
     local terminal_vs      = 5.75
     local horizontal_speed = 1.5
+    local initial_vs       = 5
+
+    -- TODO this represents coupling between the animation
+    -- module and the movement module. The animation module
+    -- needs initial_vs to know how fast to run the falling
+    -- animation
+    entity.set("initial_vs", initial_vs)
 
     local FALLING   = "falling"
     local CAN_DASH  = "can_dash"
@@ -201,7 +208,7 @@ return function (entity, controls)
             -- if we are continuing from a wall jump there
             -- is no need to reset this
             if entity.getDeltaY() == 0 then
-                entity.startJump()
+                entity.setDeltaY(initial_vs)
             end
         end,
         update = function ()
@@ -232,7 +239,7 @@ return function (entity, controls)
 
             entity.set(FALLING, false)
 
-            entity.startJump() -- TODO this has got to go... but how!?
+            entity.setDeltaY(initial_vs)
         end,
         update = function ()
             -- wall jump can't be interrupted or air controlled
