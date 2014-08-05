@@ -23,6 +23,11 @@ return function (entity, controls)
     local dash_speed     = 3.5
     local smoke_interval = 4
 
+    -- these could be global
+    local gravity          = 0.25
+    local terminal_vs      = 5.75
+    local horizontal_speed = 1.5
+
     local FALLING   = "falling"
     local CAN_DASH  = "can_dash"
     local WALL_JUMP = "wall_jump"
@@ -42,7 +47,62 @@ return function (entity, controls)
         -- out this line, but the replays show a diff
         entity.set(DASH, false)
 
-        return sign*speed
+        entity.adjustX(sign*speed)
+    end
+
+    movement.resolveFall = function (dt)
+        if movement.is("wall_jump") or movement.is('jumping') then return end
+
+        entity.setDeltaY(math.min(entity.getDeltaY() + gravity, terminal_vs))
+
+        entity.adjustY(entity.getDeltaY())
+    end
+
+    local resolveDash = function (dt)
+        local speed = horizontal_speed*2
+        local sign = 1
+
+        if entity.getFacing() == LEFT then sign = -1 end
+
+        entity.adjustX(sign*speed)
+    end
+
+
+    local resolveLeft = function ()
+        movement.move(LEFT, horizontal_speed)
+
+        if not entity.holding(RIGHT) then
+            entity.setFacing(LEFT)
+        end
+    end
+
+    local resolveRight = function ()
+        movement.move(RIGHT, horizontal_speed)
+
+        if not entity.holding(LEFT) then
+            entity.setFacing(RIGHT)
+        end
+    end
+
+    local resolveJump = function (dt)
+        local result
+
+        if entity.get(WALL_JUMP) then
+            local away = entity.getFacingWall() == LEFT and RIGHT or LEFT
+
+            movement.move(away, 1)
+
+            entity.setFacing(entity.getFacingWall())
+
+            -- removed this while fixing wall jump: we'll set near a wall to nil when the
+            -- player's senses are not colliding with a wall
+            -- entity.set("near_a_wall", nil)
+        end
+
+        result = -entity.getDeltaY()
+        entity.setDeltaY(math.max(entity.getDeltaY() - gravity, 0))
+
+        entity.adjustY(result)
     end
 
     movement.register_keys = { FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP }
@@ -74,11 +134,11 @@ return function (entity, controls)
         -- property
         update = function ()
             if entity.holding(LEFT) then
-                entity.resolveLeft()
+                resolveLeft()
             end
 
             if entity.holding(RIGHT) then
-                entity.resolveRight()
+                resolveRight()
             end
         end
     })
@@ -93,7 +153,7 @@ return function (entity, controls)
         end,
         update = function ()
             if entity.holding(DASH) then
-                entity.resolveDash()
+                resolveDash()
                 local facing = entity.getFacing() == LEFT and RIGHT or LEFT
                 local sign = ( facing == RIGHT ) and 1 or -1
 
@@ -147,16 +207,16 @@ return function (entity, controls)
         update = function ()
             -- as long as you are holding jump, keep jumping
             if entity.holding(JUMP) then
-                entity.resolveJump()
+                resolveJump()
             end
 
             -- air control
             if entity.holding(LEFT) then
-                entity.resolveLeft()
+                resolveLeft()
             end
 
             if entity.holding(RIGHT) then
-                entity.resolveRight()
+                resolveRight()
             end
         end
     })
@@ -176,7 +236,7 @@ return function (entity, controls)
         end,
         update = function ()
             -- wall jump can't be interrupted or air controlled
-            entity.resolveJump()
+            resolveJump()
         end
     })
 
@@ -188,11 +248,11 @@ return function (entity, controls)
         end,
         update = function ()
             if entity.holding(LEFT) then
-                entity.resolveLeft()
+                resolveLeft()
             end
 
             if entity.holding(RIGHT) then
-                entity.resolveRight()
+                resolveRight()
             end
         end
     })
@@ -205,11 +265,11 @@ return function (entity, controls)
         end,
         update = function ()
             if entity.holding(LEFT) then
-                entity.resolveLeft()
+                resolveLeft()
             end
 
             if entity.holding(RIGHT) then
-                entity.resolveRight()
+                resolveRight()
             end
 
             -- megaman faces away from the wall

@@ -23,12 +23,9 @@ return function (x, y, controls, name)
     -- red thing is top
     local max_bullets = 3
 
-    local horizontal_speed        = 1.5
     local damaged_speed           = 1
     local initial_vs  = 5
     local dy
-    local terminal_vs = 5.75
-    local gravity                 = 0.25
 
     local entity = Entity(x, y, 12, 29)
     local width  = entity.getWidth()
@@ -67,19 +64,14 @@ return function (x, y, controls, name)
         senses.setY(new_y + senses_offset_x)
     end
 
-    local adjustX = function (dx)
+    entity.adjustX = function (dx)
         entity.setX(entity.getX() + dx)
         senses.setX(senses.getX() + dx)
     end
 
-    local adjustY = function (dy)
+    entity.adjustY = function (dy)
         entity.setY(entity.getY() + dy)
         senses.setY(senses.getY() + dy)
-    end
-
-    local move = function (distance, speed)
-        local dx = movement.move(distance, speed)
-        adjustX(dx)
     end
 
     -- ensures that the player's senses get added to the world
@@ -167,64 +159,6 @@ return function (x, y, controls, name)
         return entity.get(key) == HOLDING
     end
 
-    entity.resolveLeft = function ()
-        move(LEFT, horizontal_speed)
-
-        if not entity.holding(RIGHT) then
-            entity.setFacing(LEFT)
-        end
-    end
-
-    entity.resolveRight = function ()
-        move(RIGHT, horizontal_speed)
-
-        if not entity.holding(LEFT) then
-            entity.setFacing(RIGHT)
-        end
-    end
-
-    entity.resolveJump = function (dt)
-        if entity.get(WALL_JUMP) then
-            local away = entity.getFacingWall() == LEFT and RIGHT or LEFT
-
-            move(away, 1)
-
-            entity.setFacing(entity.getFacingWall())
-
-            -- removed this while fixing wall jump: we'll set near a wall to nil when the
-            -- player's senses are not colliding with a wall
-            -- entity.set("near_a_wall", nil)
-        end
-
-        entity.setY(entity.getY() - entity.getDeltaY())
-        senses.setY(senses.getY() - entity.getDeltaY())
-        entity.setDeltaY(math.max(entity.getDeltaY() - gravity, 0))
-    end
-
-    entity.resolveDash = function (dt)
-        local speed = horizontal_speed*2
-        local sign = 1
-
-        if entity.getFacing() == LEFT then sign = -1 end
-
-        entity.setX(entity.getX() + sign*speed)
-        senses.setX(senses.getX() + sign*speed)
-    end
-
-    entity.resolveFall = function (dt)
-        if movement.is("wall_jump") or movement.is('jumping') then return end
-
-        -- face forward but slide back
-        if armor.is('damaged') then
-            move(entity.getFacing(), -damaged_speed)
-        end
-
-        entity.setDeltaY(math.min(entity.getDeltaY() + gravity, terminal_vs))
-
-        entity.setY(entity.getY() + entity.getDeltaY())
-        senses.setY(senses.getY() + entity.getDeltaY())
-    end
-
     entity.resolveObstacleCollide = function(world)
         local new_x, new_y = entity.getX(), entity.getY()
         local cols, len = world.bump:check(entity, new_x, new_y, obstacleFilter)
@@ -257,19 +191,15 @@ return function (x, y, controls, name)
                     end
                 end
 
-                entity.setX(tx)
-                senses.setX(tx - senses_offset_x)
-                entity.setY(ty)
-                senses.setY(ty + senses_offset_y)
+                setX(tx)
+                setY(ty)
                 world.bump:move(entity, entity.getX(), entity.getY())
                 world.bump:move(senses, senses.getX(), senses.getY())
 
                 cols, len = world.bump:check(entity, sx, sy, obstacleFilter)
                 if len == 0 then
-                    entity.setX(sx)
-                    senses.setX(sx - senses_offset_x)
-                    entity.setY(sy)
-                    senses.setY(sy + senses_offset_y)
+                    setX(sx)
+                    setY(sy)
                     world.bump:move(entity, entity.getX(), entity.getY())
                     world.bump:move(senses, senses.getX(), senses.getY())
                 end
@@ -379,12 +309,18 @@ return function (x, y, controls, name)
         x_buster.update(dt)
         animation.update(dt)
 
-        local by = entity.getY()
+        -- TODO this code calls resolve fall and should probably
+        -- live in movement, but it relies on WORLD
+
         -- after we resolve falling we need to reset
         -- if megaman was dashing, but track that a
         -- change occurred
         if not movement.is("dashing") then
-            entity.resolveFall(dt)
+            movement.resolveFall(dt)
+            -- face forward but slide back
+            if armor.is('damaged') then
+                movement.move(entity.getFacing(), -damaged_speed)
+            end
         else
             -- if megaman has nothing under him, then he would fall
             local cols, len = world.bump:check(entity, entity.getX(), entity.getY() + 1, obstacleFilter)
