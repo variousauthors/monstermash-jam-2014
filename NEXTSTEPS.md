@@ -40,7 +40,10 @@ doesn't work, then I will work on the replay system until it does.
 
 #### checklist ####
 
-[ ] reduce coupling between movement module and player
+[x] reduce coupling between movement module and player
+[x] Remove world from Moveement Module
+[ ] Remove world from ArmCannon
+[ ] Pull some functions like "move" into the Movement module somehow
 [ ] reduce coupling between arm_cannon and player
 [ ] change the way we use "world" in the player and module code
     - basically, I'd like to not have to pass world around. We'll

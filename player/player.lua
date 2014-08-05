@@ -24,7 +24,6 @@ return function (x, y, controls, name)
     local max_bullets = 3
 
     local horizontal_speed        = 1.5
-    local dash_speed              = 3.5
     local damaged_speed           = 1
     local initial_vs  = 5
     local dy
@@ -56,20 +55,31 @@ return function (x, y, controls, name)
 
     entity.set("name", name)
 
-    local move = function (direction, speed)
-        local sign = (direction == LEFT) and -1 or 1
+    -- TODO we should be able to do everything with the adjust method,
+    -- even the collision code
+    local setX = function (new_x)
+        entity.setX(new_x)
+        senses.setX(new_x - senses_offset_x)
+    end
 
-        if entity.get(DASH_JUMP) then
-            speed = dash_speed
-        end
+    local setY = function (new_y)
+        entity.setY(new_y)
+        senses.setY(new_y + senses_offset_x)
+    end
 
-        -- TODO #1 this releases the dash key
-        -- everything seems to work fine if we comment
-        -- out this line, but the replays show a diff
-        entity.set(DASH, false)
+    local adjustX = function (dx)
+        entity.setX(entity.getX() + dx)
+        senses.setX(senses.getX() + dx)
+    end
 
-        entity.setX(entity.getX() + sign*speed)
-        senses.setX(senses.getX() + sign*speed)
+    local adjustY = function (dy)
+        entity.setY(entity.getY() + dy)
+        senses.setY(senses.getY() + dy)
+    end
+
+    local move = function (distance, speed)
+        local dx = movement.move(distance, speed)
+        adjustX(dx)
     end
 
     -- ensures that the player's senses get added to the world
@@ -178,6 +188,7 @@ return function (x, y, controls, name)
             local away = entity.getFacingWall() == LEFT and RIGHT or LEFT
 
             move(away, 1)
+
             entity.setFacing(entity.getFacingWall())
 
             -- removed this while fixing wall jump: we'll set near a wall to nil when the

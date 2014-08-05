@@ -17,8 +17,10 @@ local sparks_height   = DashSparks.HEIGHT
 
 return function (entity, controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement                       = FSM(false, "move", entity.getName())
-    local dash_duration                  = 30
+
+    local movement       = FSM(false, "move", entity.getName())
+    local dash_duration  = 30
+    local dash_speed     = 3.5
     local smoke_interval = 4
 
     local FALLING   = "falling"
@@ -27,6 +29,21 @@ return function (entity, controls)
     local AIR_DASH  = "air_dash"
     local SHOCKED   = "shocked"
     local DASH_JUMP = "dash_jump"
+
+    movement.move = function (direction, speed)
+        local sign = (direction == LEFT) and -1 or 1
+
+        if entity.get(DASH_JUMP) then
+            speed = dash_speed
+        end
+
+        -- TODO #1 this releases the dash key
+        -- everything seems to work fine if we comment
+        -- out this line, but the replays show a diff
+        entity.set(DASH, false)
+
+        return sign*speed
+    end
 
     movement.register_keys = { FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP }
 
