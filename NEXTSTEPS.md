@@ -12,6 +12,7 @@ NEXT STEPS
 
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
+[ ] world is global and that bothers me
 
 ### Player Refactor ###
 

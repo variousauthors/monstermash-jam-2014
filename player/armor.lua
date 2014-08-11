@@ -18,13 +18,45 @@ return function (entity, controls, verbose)
     local ring_speed       = 40
     local ring_limit       = 2
 
+    local bulletFilter = function (other)
+        return other.get and other.get("isBullet") == true and other.get("owner_id") ~= entity.get("id")
+    end
+
+    entity.set("damage_queue", 0)
+
+    local resolveBulletCollide = function ()
+        local x, y = entity.getX(), entity.getY()
+        local cols, len = entity.bump_check(entity, x, y, bulletFilter)
+
+        while len > 0 and not (entity.get("damage_queue") > 0) do
+            local col            = cols[1]
+            local bullet         = col.other
+            local tx, ty, nx, ny = col:getTouch()
+
+            local entity_center = entity.getX() + col.itemRect.w/2
+            local bullet_center = bullet.getX() + col.otherRect.w/2
+            local facing        = (entity_center > bullet_center) and LEFT or RIGHT
+
+            entity.set("damage_queue", bullet.get("damage"))
+            entity.setFacing(facing)
+
+            -- if there is something the bullet needs to do
+            if bullet.resolveEntityCollide then
+                bullet.resolveEntityCollide()
+            end
+
+            cols, len = entity.bump_check(entity, x, y, bulletFilter)
+        end
+    end
+
     armor.register_keys = { FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP }
 
     armor.addState({
         name = "inactive",
         init = function ()
             entity.set(SHOCKED, false)
-        end
+        end,
+        update = resolveBulletCollide
     })
 
     armor.addState({

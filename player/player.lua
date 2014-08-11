@@ -33,9 +33,6 @@ return function (x, y, controls, name)
     local senses         = Entity(x - senses_offset_x, y + senses_offset_y, senses_width, senses_height, global.z_orders.sprites)
 
     local obstacleFilter = entity.getFilterFor('isObstacle')
-    local bulletFilter = function (other)
-        return other.get and other.get("isBullet") == true and other.get("owner_id") ~= entity.get("id")
-    end
 
     local sprite_box_offset_x = 20
     local sprite_box_offset_y = 9
@@ -115,7 +112,7 @@ return function (x, y, controls, name)
         -- boolean registers. Like, entity's get/set method only responds to these
         -- keys
         FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP = unpack(movement.register_keys)
-        MEGA_BLAST, SHOCKED = unpack(movement.register_keys)
+        MEGA_BLAST, SHOCKED = unpack(x_buster.register_keys)
 
         entity.setFacing(RIGHT)
         entity.setDeltaY(0)
@@ -185,33 +182,8 @@ return function (x, y, controls, name)
         end
     end
 
-    entity.resolveBulletCollide = function(world)
-        local x, y = entity.getX(), entity.getY()
-        local cols, len = world.bump:check(entity, x, y, bulletFilter)
-
-        while len > 0 and not entity.get("invulnerable") do
-            local col            = cols[1]
-            local bullet         = col.other
-            local tx, ty, nx, ny = col:getTouch()
-
-            local entity_center = entity.getX() + col.itemRect.w/2
-            local bullet_center = bullet.getX() + col.otherRect.w/2
-            local facing        = (entity_center > bullet_center) and LEFT or RIGHT
-
-            entity.set("damage_queue", bullet.get("damage"))
-            entity.setFacing(facing)
-            armor.update()
-
-            -- TODO XBuster charge state actually should not reset after damage, eh?
-            x_buster.start("inactive")
-
-            -- if there is something the bullet needs to do
-            if bullet.resolveEntityCollide then
-                bullet.resolveEntityCollide()
-            end
-
-            cols, len = world.bump:check(entity, x, y, bulletFilter)
-        end
+    entity.bump_check = function (entity, x, y, filter)
+        return world.bump:check(entity, x, y, filter)
     end
 
     entity.resolveWallProximity = function(world)
@@ -307,7 +279,6 @@ return function (x, y, controls, name)
         end
 
         entity.resolveObstacleCollide(world)
-        entity.resolveBulletCollide(world)
         entity.resolveWallProximity(world)
 
         -- if after all this, megaman's position had not changed, then set
