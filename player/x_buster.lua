@@ -1,5 +1,8 @@
 if not BulletFactory then require("bullet_factory") end
 
+-- TODO need to be able to "pick up" new weapons
+-- and switch between weapons
+
 return function (entity, controls)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local cannon      = FSM(false, "x_buster", entity.get("name"))
@@ -8,7 +11,21 @@ return function (entity, controls)
     local mega_blast  = 40
     local fat_gun_dim = 3
 
-    local Pellet    = BulletFactory(5, 4, 4, global.z_orders.bullets, 1, COLOR.YELLOW, "pellet")
+    local IcePellet = BulletFactory(6, 2, 2, global.z_orders.bullets, 1, { 100, 150, 200 }, "pellet", {
+        increment_ammo = false
+    })
+
+    local Pellet    = BulletFactory(5, 6, 6, global.z_orders.bullets, 1, { 100, 150, 200 }, "pellet", {
+        increment_ammo = false,
+        vanish_on_hit = true,
+        onCollision = function (col, bullet)
+            local tx, ty, nx, ny = col:getTouch()
+            local direction = nx
+
+            entity.register(IcePellet(bullet.getX() + direction*10, bullet.getY(), entity, direction))
+        end
+    })
+    -- local Pellet    = BulletFactory(5, 4, 4, global.z_orders.bullets, 1, COLOR.YELLOW, "pellet")
     local Blast     = BulletFactory(6, 20, 5, global.z_orders.bullets, 2, COLOR.GREEN, "blast")
     local MegaBlast = BulletFactory(5, 15, 20, global.z_orders.bullets, 3, COLOR.RED, "mega_blast")
 
@@ -23,10 +40,16 @@ return function (entity, controls)
         mega_blast = MegaBlast
     }
 
-    local ammo = {
-        pellet = 3,
+    local Ammo = {
+        pellet = 16,
+        --pellet = 3,
         charge = 1
     }
+
+    local addBullet = function (ammo_type, ammo, Factory)
+        Bullets[ammo_type] = Factory
+        Ammo[ammo_type] = ammo
+    end
 
     local resolveShoot = function ()
         local offset       = entity.getWidth()
@@ -45,11 +68,11 @@ return function (entity, controls)
             ammo_type = "charge"
         end
 
-        ammo[ammo_type] = ammo[ammo_type] + 1
+        Ammo[ammo_type] = Ammo[ammo_type] + 1
     end
 
     local decrementAmmo = function (ammo_type)
-        ammo[ammo_type] = ammo[ammo_type] - 1
+        Ammo[ammo_type] = Ammo[ammo_type] - 1
     end
 
     cannon.addState({
@@ -122,7 +145,7 @@ return function (entity, controls)
         from = "inactive",
         to = "pellet",
         condition = function ()
-            return ammo["pellet"] > 0 and not entity.get(SHOCKED) and entity.pressed(SHOOT)
+            return Ammo["pellet"] > 0 and not entity.get(SHOCKED) and entity.pressed(SHOOT)
         end
     })
 
@@ -130,7 +153,7 @@ return function (entity, controls)
         from = "inactive",
         to = "charging",
         condition = function ()
-            return ammo["charge"] > 0 and not entity.get(SHOCKED) and entity.holding(SHOOT)
+            return Ammo["charge"] > 0 and not entity.get(SHOCKED) and entity.holding(SHOOT)
         end
     })
 
@@ -138,7 +161,7 @@ return function (entity, controls)
         from = "inactive",
         to = "cool_down",
         condition = function ()
-            return ammo["charge"] > 0 and ammo["pellet"] == 0 and not entity.get(SHOCKED) and entity.pressed(SHOOT)
+            return Ammo["charge"] > 0 and Ammo["pellet"] == 0 and not entity.get(SHOCKED) and entity.pressed(SHOOT)
         end
     })
 
@@ -162,7 +185,7 @@ return function (entity, controls)
         from = "cool_down",
         to = "pellet",
         condition = function ()
-            return ammo["pellet"] > 0 and cool_down <= cannon.getCount() and cannon.getCount() <= relax and entity.pressed(SHOOT)
+            return Ammo["pellet"] > 0 and cool_down <= cannon.getCount() and cannon.getCount() <= relax and entity.pressed(SHOOT)
         end
     })
 

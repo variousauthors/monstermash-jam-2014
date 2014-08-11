@@ -186,8 +186,8 @@ return function (x, y, controls, name)
         return world.bump:check(entity, x, y, filter)
     end
 
-    entity.resolveWallProximity = function(world)
-        local cols, len = world.bump:check(senses, new_x, new_y, obstacleFilter)
+    entity.resolveWallProximity = function()
+        local cols, len = entity.bump_check(senses, new_x, new_y, obstacleFilter)
 
         if len == 0 then
             -- any time megaman can't find a wall or floor or ceiling
@@ -279,10 +279,13 @@ return function (x, y, controls, name)
         end
 
         entity.resolveObstacleCollide(world)
-        entity.resolveWallProximity(world)
+        entity.resolveWallProximity()
 
         -- if after all this, megaman's position had not changed, then set
         -- a flag to animate him as standing
+        -- TODO we should store megaman's velocity as a vector, even though we aren't
+        -- doing physics that way, so that we can check facing and did move in a consistent
+        -- manner
         if entity.getX() == old_x and entity.getY() == old_y then
             entity.set("did_not_move", true)
         else

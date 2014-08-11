@@ -13,6 +13,7 @@ NEXT STEPS
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
 [ ] world is global and that bothers me
+    - world is crazy tangled: some places it is a parameter, some places it is global. BOOM
 
 ### Player Refactor ###
 
@@ -25,25 +26,24 @@ During this refactor I would also like to use the recording system as a test bat
 My goal will be to record a replay and run it after each set of changes. If this
 doesn't work, then I will work on the replay system until it does.
 
-#### references ####
-
 #### new bugs ####
 
 [ ] regression: shoot animation stopped playing for mega_blasts
     - nope, it is actually just playing for a very short period. Probably
       something to do with the cool_down state
+[ ] megaman can continue to move even while exploding
 [ ] Once this refactor is done, play with "TODO #1". The dash key is being
     forcibly released during calls to player#move, but commenting out this
     line doesn't seem to break the game (it does change things, though,
     since the replays break).
-[ ] XBuster should not lose its charge after rock is hit
-
+[x] XBuster should not lose its charge after rock is hit
 
 #### checklist ####
 
 [ ] I should be able to change the way a player moves by changing the movement module
 [ ] I should be able to change the way a player shoots by changing the x_buster module
 [ ] I should be able to change the way a player takes damage by changing the armor module
+[ ] the player's update method should just delegate to these subsystems
 
 [x] reduce coupling between movement module and player
 [x] Remove world from Moveement Module
@@ -54,6 +54,10 @@ doesn't work, then I will work on the replay system until it does.
 [ ] change the way we use "world" in the player and module code
     - basically, I'd like to not have to pass world around. We'll
       see how well this can be accomplished
+    [x] entity now wraps bump:check as bump_check so we don't pass world into bullet collide
+    [ ] world in the wall collide method
+        - this might be OK because I don't intend to move object collide into a module
+
 [ ] extract the common code for player and create Rock as a subclass
 [ ] FSM should be able to attach functions to a state after the fact
     as well as explicitly upon adding a state.
