@@ -13,13 +13,6 @@ return function (x, y, controls, name)
 
     local image = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
 
-    -- TODO this should move into a decoration
-    local ring_timer       = 0
-    local ring_timer_limit = 100
-    local ring_count       = 1
-    local ring_speed       = 40
-    local ring_limit       = 2
-
     -- TODO should this live in armor?
     local bump_damage = 4
 
@@ -255,29 +248,18 @@ return function (x, y, controls, name)
         end
 
         if armor.is("destroyed") then
-            if ring_count < ring_limit then
+        end
+    end
 
-                ring_count = ring_count + 1
-            end
+    entity.remove = function ()
+        if world.bump:hasItem(entity) then
+            world.bump:remove(entity)
+            world.bump:remove(senses)
         end
     end
 
     entity.update = function (dt, world)
         local old_x, old_y = entity.getX(), entity.getY()
-
-        if armor.is("destroyed") then
-            if world.bump:hasItem(entity) then
-                world.bump:remove(entity)
-                world.bump:remove(senses)
-            end
-
-            ring_timer = ring_timer + ring_speed*dt
-            if ring_timer > ring_timer_limit then
-                entity._unregister()
-            end
-
-            return
-        end
 
         for i, key in pairs(controls) do
             if entity.pressed(key) then
@@ -292,6 +274,14 @@ return function (x, y, controls, name)
         armor.update(dt)
         x_buster.update(dt)
         animation.update(dt)
+
+        -- TODO this return is a temporary fix
+        -- the module updates are happening in the middle
+        -- of this update function, but they shouldn't be
+        -- basically all the code to come should move into the
+        -- modules and shouldn't depend on armor not being
+        -- destroyed
+        if armor.is("destroyed") then return end
 
         -- TODO this code calls resolve fall and should probably
         -- live in movement, but it relies on WORLD
@@ -400,24 +390,7 @@ return function (x, y, controls, name)
 
         if flicker == 0 then
             if armor.is("destroyed") then
-
-                love.graphics.setColor(COLOR.CYAN)
-                for j = 1, ring_count do
-                    local r = ring_timer/j
-
-                    for i = 1, 8 do
-                        local rad = i*math.pi/4 + ring_timer
-                        local x = r*4*math.cos(rad)
-                        local y = r*4*math.sin(rad)
-
-                        local rad2 = i*math.pi/4 + ring_timer + math.pi/3
-                        local x2 = r*4.2*math.cos(rad2)
-                        local y2 = r*4.2*math.sin(rad2)
-
-                        love.graphics.rectangle("fill", draw_x + x, draw_y + y, 5, 5)
-                        love.graphics.rectangle("fill", draw_x + x2, draw_y + y2, 5, 5)
-                    end
-                end
+                armor.draw()
             else
                 animation.draw(draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y)
             end

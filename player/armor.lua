@@ -11,6 +11,13 @@ return function (entity, controls, verbose)
     local SHOCKED   = "shocked"
     local DASH_JUMP = "dash_jump"
 
+    -- animation info for destroy
+    local ring_timer       = 0
+    local ring_timer_limit = 100
+    local ring_count       = 1
+    local ring_speed       = 40
+    local ring_limit       = 2
+
     armor.register_keys = { FALLING, CAN_DASH, WALL_JUMP, AIR_DASH, SHOCKED, DASH_JUMP }
 
     armor.addState({
@@ -27,6 +34,43 @@ return function (entity, controls, verbose)
             Sound:stop(id)
             Sound:run("destroyed", id)
 
+        end,
+        update = function (dt)
+            if ring_count < ring_limit then
+                ring_count = ring_count + 1
+            end
+
+            -- remove from the world
+            entity.remove()
+
+            ring_timer = ring_timer + ring_speed*dt
+            if ring_timer > ring_timer_limit then
+
+                -- unregister as an entity
+                entity._unregister()
+            end
+        end,
+        draw = function ()
+            local draw_x = entity.getX()
+            local draw_y = entity.getY()
+
+            love.graphics.setColor(COLOR.CYAN)
+            for j = 1, ring_count do
+                local r = ring_timer/j
+
+                for i = 1, 8 do
+                    local rad = i*math.pi/4 + ring_timer
+                    local x = r*4*math.cos(rad)
+                    local y = r*4*math.sin(rad)
+
+                    local rad2 = i*math.pi/4 + ring_timer + math.pi/3
+                    local x2 = r*4.2*math.cos(rad2)
+                    local y2 = r*4.2*math.sin(rad2)
+
+                    love.graphics.rectangle("fill", draw_x + x, draw_y + y, 5, 5)
+                    love.graphics.rectangle("fill", draw_x + x2, draw_y + y2, 5, 5)
+                end
+            end
         end
     })
 
