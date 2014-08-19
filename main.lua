@@ -35,42 +35,16 @@ function love.load(args)
     game_state.start("title_menu")
 end
 
-local tic = 0
-local play_rate = 1
-local cbCount = {
-    pressed = 0,
-    released = 0,
-}
-local cbCountCounter = 0
-
 function love.update(dt)
-    tic = tic + 1
-
-    if tic < play_rate then return end
-    tic = 0
-
-    cbCountCounter = cbCountCounter + dt
-    if(cbCountCounter > 10) then
-        print("Love2d input events:", stringspect(cbCount))
-        cbCountCounter = 0
-    end
-
-    -- Process Input events in order
-    Input:processEventQueue(function(event, states)
-        for i,state in ipairs(states) do
-            if game_state[event] then game_state[event](state) end
-        end
-    end)
-
     game_state.update(dt)
 
     --Sound:printDebugQueue()
     --Input:printDebugQueue()
 end
 
+-- Receives keyboard codes and Input states
 function love.keypressed(key, isrepeat)
     if (not love.window.hasFocus()) then return end
-    cbCount['pressed'] = cbCount['pressed'] + 1
 
     if (key == 'f11') then
         view:setFullscreen()
@@ -79,7 +53,7 @@ function love.keypressed(key, isrepeat)
         love.event.quit()
     elseif (key == 'q') then
         Input:startRecording()
-    elseif (key:match("[1-9]")) then
+    elseif (key:match("^[1-9]$")) then
         if Input:isRecording() then
             Input:save(key)
         else
@@ -93,22 +67,24 @@ function love.keypressed(key, isrepeat)
         play_rate = math.min(play_rate * 2, 16)
     elseif (key == '=') then
         play_rate = math.max(play_rate / 2, 1)
+    else
+        -- Pass through any states or non-global keys.
+        game_state.keypressed(key)
     end
 end
 
+-- Receives keyboard codes and Input states
 function love.keyreleased(key)
     if (not love.window.hasFocus()) then return end
-    cbCount['released'] = cbCount['released'] + 1
+    game_state.keyreleased(key)
 end
 
 function love.gamepadpressed(joystick, button)
     if (not love.window.hasFocus()) then return end
-    cbCount['pressed'] = cbCount['pressed'] + 1
 end
 
 function love.gamepadreleased(joystick, button)
     if (not love.window.hasFocus()) then return end
-    cbCount['released'] = cbCount['released'] + 1
 end
 
 function love.draw()
@@ -131,4 +107,101 @@ end
 
 function love.joystickremoved (j)
     Input:updateJoysticks()
+end
+
+function love.processevents()
+    -- Process events.
+    love.event.pump()
+    -- Process Input events into queue
+    Input:processEventQueue(function(event, states)
+        for i,state in ipairs(states) do
+            love.event.push(event, state)
+        end
+    end)
+    for e,a,b,c,d in love.event.poll() do
+        if e == "quit" then
+            if not love.quit or not love.quit() then
+                love.audio.stop()
+                return
+            end
+        end
+        love.handlers[e](a,b,c,d)
+    end
+    return true
+end
+
+function love.drawscreen(debug)
+    if love.window.isCreated() then
+        love.graphics.clear()
+        love.graphics.origin()
+        if love.draw then love.draw() end
+
+        -- Print debug information nicely if it was passed along
+        if (type(debug) == "table") then
+            local insert = table.insert
+            local printtable = {}
+            for k,v in pairs(debug) do
+                insert(printtable, k .. ": ")
+                insert(printtable, v)
+                insert(printtable, "\n")
+            end
+            local r,g,b,a = love.graphics.getColor()
+            love.graphics.setColor(0,0,0)
+            love.graphics.print(table.concat(printtable), 1, 1)
+            love.graphics.setColor(r,g,b,a)
+            love.graphics.print(table.concat(printtable))
+        end
+
+        -- Present the graphics
+        love.graphics.present()
+    end
+end
+
+function love.run()
+    love.math.setRandomSeed(os.time())
+    love.event.pump()
+    love.load(arg)
+    love.timer.step()
+
+    local t = 0
+    local updateCount = 0
+    local frameCount = 0
+    local internalRate = 1/60
+    local nextTime = 0
+    local updateRate = 0
+    local maxFrameskip = 2
+
+    -- Main loop
+    while true do
+        -- Tick-count/running time
+        love.timer.step()
+        t = t + love.timer.getDelta()
+
+        -- Update at constant speed. Game will slow if maxFrameskip exceeded
+        updateRate = 0
+        while(t >= nextTime and updateRate < maxFrameskip ) do
+            -- Update on a fixed timestep
+            if not love.processevents() then return end
+            love.update(internalRate)
+            nextTime = nextTime + (internalRate)
+            updateCount = updateCount + 1
+            updateRate = updateRate + 1
+
+            -- Update tickcount
+            love.timer.step()
+            t = t + love.timer.getDelta()
+        end
+
+        -- Draw
+        love.drawscreen(--[[{
+            t = t,
+            updateCount = updateCount,
+            frameCount = frameCount,
+            internalFPS = "1/" .. (1/internalRate),
+            frameskip = updateRate .. ":" .. maxFrameskip
+        }]])
+        frameCount = frameCount + 1
+
+        love.timer.sleep(0.001)
+    end
 end
