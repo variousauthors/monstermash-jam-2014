@@ -1,15 +1,15 @@
 if not Entity then require("entity") end
 
-local class = require('vendor/middleclass/middleclass')
 local bump = require('vendor/bump/bump')
-require('vendor/lua4json/json4lua/json/json')
+json = json or require('vendor/dkjson')
 
-local World = class('World')
+local World = {}
+World.__index = World
 
 --Private Methods
 
-local function addObstacle(self, x,y,w,h)
-    local obstacle = Entity(x, y, w, h)
+local function addObstacle(self, x, y, w, h, z)
+    local obstacle = Entity(x, y, w, h, z)
     obstacle.set('isObstacle', true)
     self.obstacles[#self.obstacles+1] = obstacle
     self.bump:add(obstacle, x, y, w, h)
@@ -25,33 +25,57 @@ local function drawBox(box, r,g,b)
     love.graphics.setColor(_r,_g,_b,_a)
 end
 
+local function zOrderSort (a, b)
+    return a.z > b.z
+end
+
+
 --Public Methods
 
-function World:initialize()
-    self.entities = {}
-
-    self.obstacles = {}
-    self.bump = bump.newWorld(64)
+function World.new()
+    local self = {}
+    setmetatable(self, World)
 
     local contents, size = love.filesystem.read("assets/arena_highway.json")
-    local data = json.decode(contents)
-
-    for i, v in pairs(data["layers"][2]["objects"]) do
-        addObstacle(self, v.x, v.y, v.width, v.height)
-    end
+    self.data            = json.decode(contents)
+    self.death_line      = global.screen_height
 
     self.background_image = love.graphics.newImage("assets/arena_highway_bg.png")
     self.foreground_image = love.graphics.newImage("assets/arena_highway_fg.png")
 
     self.timer = 0
     self.tic_duration = 1
+
+    return self
+end
+
+-- broke init out of new so that we can pass references to world in lua.load
+-- but initialize it when the game starts
+function World:init()
+    self.entities = {}
+    self.drawables = {}
+
+    self.obstacles = {}
+    self.bump = bump.newWorld(32)
+
+    for i, v in pairs(self.data["layers"][2]["objects"]) do
+        addObstacle(self, v.x, v.y, v.width, v.height, global.z_orders.high_obstacle)
+    end
+
+    return self
 end
 
 function World:register(entity)
     self.entities[entity.get("id")] = entity
 
-    if entity.register then
-        entity.register(self)
+    -- store the entity ids so that we can use the
+    -- drawable table to look into the entities
+    -- table without making a new reference
+    table.insert(self.drawables, { id = entity.get("id"), z = entity.getZOrder() })
+    table.sort(self.drawables, zOrderSort)
+
+    if entity.onRegister then
+        entity.onRegister(self)
     else
         self.bump:add(entity, entity.getBoundingBox())
     end
@@ -63,6 +87,10 @@ end
 
 function World:unregister(entity)
     self.entities[entity.get("id")] = nil
+
+    -- we never remove from the drawables table
+    -- because we have no efficient way of finding
+
     entity.cleanup()
 
     if world.bump:hasItem(entity) then
@@ -82,6 +110,18 @@ function World:tic(dt)
     end
 end
 
+function World:keypressed(key)
+    for i, entity in pairs(self.entities) do
+        if entity.keypressed then entity.keypressed(key) end
+    end
+end
+
+function World:keyreleased(key)
+    for i, entity in pairs(self.entities) do
+        if entity.keyreleased then entity.keyreleased(key) end
+    end
+end
+
 function World:update(dt)
     self:tic(dt)
     -- iterate over the entities
@@ -92,17 +132,45 @@ function World:update(dt)
     for i, entity in pairs(self.entities) do
         entity.update(dt, self)
     end
+
 end
 
 function World:draw(dt)
-    love.graphics.setColor(COLOR.WHITE)
+    local removes = { }
+
     love.graphics.draw(self.background_image)
 
-    for i, entity in pairs(self.entities) do
-        entity.draw(dt)
+    for i = 1, #(self.drawables) do
+        local drawable_id = self.drawables[i].id
+
+        if self.entities[drawable_id] then
+            self.entities[drawable_id].draw(dt)
+        else
+            -- oops! remember to remove it from the drawables table
+            table.insert(removes, i)
+        end
+    end
+
+    -- if we found anything old we'll remove and re-sort
+    if #removes > 0 then
+        for i = 1, #(removes) do
+            table.remove(self.drawables, removes[i])
+        end
+
+        table.sort(self.drawables, zOrderSort)
     end
 
     love.graphics.draw(self.foreground_image)
+end
+
+function World:serialize()
+    local data = {}
+
+    for i, entity in pairs(self.entities) do
+        table.insert(data, { entity.get("id"), entity.getX(), entity.getY() })
+    end
+
+    return data
 end
 
 return World

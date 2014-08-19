@@ -1,30 +1,24 @@
-local class = require('vendor/middleclass/middleclass')
-
-local Input = class('Input')
+local InputMapper = {}
+InputMapper.__index = InputMapper
 
 -- Private variables/methods
 
-local joysticks = love.joystick.getJoysticks()
 local default_deadzone = 0.25
-
--- Overwriting joystick callbacks
-
-function love.joystickadded (j)
-    joysticks = love.joystick.getJoysticks()
-end
-
-function love.joystickremoved (j)
-    joysticks = love.joystick.getJoysticks()
-end
+local joysticks = love.joystick.getJoysticks()
 
 -- Public class
 
-function Input:initialize(map, deadzone)
-    self.deadzone = deadzone or default_deadzone
+function InputMapper.new(map, deadzone)
+    local self = {}
+    setmetatable(self, InputMapper)
+
+    self.deadzone = math.max(deadzone or default_deadzone, 0.05)
     self:setStateMap(map)
+
+    return self
 end
 
-function Input:setStateMap(map)
+function InputMapper:setStateMap(map)
     if(type(map) == 'table') then
         self.stateMap = map
     else
@@ -33,7 +27,7 @@ function Input:setStateMap(map)
     self:genFlatMap()
 end
 
-function Input:genFlatMap()
+function InputMapper:genFlatMap()
     local flatMap = {}
     for state, keys in pairs(self.stateMap) do
         for key, val in pairs(keys) do
@@ -48,13 +42,17 @@ function Input:genFlatMap()
     self.flatMap = flatMap
 end
 
-function Input:getJoyNum(hid)
+function InputMapper:updateJoysticks()
+    joysticks = love.joystick.getJoysticks()
+end
+
+function InputMapper:getJoyNum(hid)
     for i, joystick in pairs(joysticks) do
         if (joystick == hid) then return i end
     end
 end
 
-function Input:mappingToKey(mapping)
+function InputMapper:mappingToKey(mapping)
     local a, b, c, d = string.match(mapping, "(%a+)(%d?)_(%a+)([%+%-%.0-9]*)")
     b = tonumber(b)
     if (b and joysticks[b]) then
@@ -68,7 +66,7 @@ function Input:mappingToKey(mapping)
     return a, b, c, d
 end
 
-function Input:keyToMapping(...)
+function InputMapper:keyToMapping(...)
     local arguments = {...}
     local num_args = #arguments
     local device, key, direction = '', '', ''
@@ -91,13 +89,15 @@ function Input:keyToMapping(...)
     return table.concat{device, "_", key, direction or ''}
 end
 
-function Input:mappingToState(mapping)
+function InputMapper:mappingToState(mapping)
+    local find = string.find
+    local match = string.match
     for keys, state in pairs(self.flatMap) do
         if (mapping == keys) then
             return state
-        elseif(string.find(mapping, "^j.*[%+%-]")) then
-            local mm, ms, ma = string.match(mapping, "^j(.*)([%+%-])([%.0-9]*)$")
-            local km, ks, ka = string.match(keys, "^j(.*)([%+%-])([%.0-9]*)$")
+        elseif(find(mapping, "^j.*[%+%-]")) then
+            local mm, ms, ma = match(mapping, "^j(.*)([%+%-])([%.0-9]*)$")
+            local km, ks, ka = match(keys, "^j(.*)([%+%-])([%.0-9]*)$")
             if(mm == km and ms == ks and ma >= ka) then
                 return state
             end
@@ -105,37 +105,31 @@ function Input:mappingToState(mapping)
     end
 end
 
-function Input:keyEvent(...)
-    if (not love.window.hasFocus()) then return end
-
+function InputMapper:keyToState(...)
     local mapping = self:keyToMapping(...)
     return self:mappingToState(mapping)
 end
 
-function Input:axisEvent(j, a, v)
-    if (not love.window.hasFocus()) then return
-    elseif(math.abs(v) < self.deadzone) then return end
+function InputMapper:axisToState(j, a, v)
+    if(math.abs(v) < self.deadzone) then return end
 
     local mapping = self:keyToMapping(j, a, v)
     return self:mappingToState(mapping)
 end
 
-function Input:pressed(...)
-    return self:keyEvent(...)
+function InputMapper:getStates()
+    local states = {}
+    for state, v in pairs(self.stateMap) do
+        if self:isState(state) then table.insert(states,state) end
+    end
+    return states
 end
 
-function Input:released(...)
-    return self:keyEvent(...)
-end
-
-function Input:axis(...)
-    return self:axisEvent(...)
-end
-
-function Input:isState(state)
-    if not (self.stateMap[state] and love.window.hasFocus() ) then return false end
+function InputMapper:isState(state)
+    if not self.stateMap[state] then return false end
 
     local result = false
+    local abs = math.abs
 
     for k, v in pairs(self.stateMap[state]) do
         local device, joy, key, dir = self:mappingToKey(v)
@@ -145,14 +139,16 @@ function Input:isState(state)
         elseif (device == 'j' and joy) then
             if (dir) then
                 local axis = joy:getGamepadAxis(key)
-                if (dir == "+") then
-                    if (axis >= self.deadzone) then result = true end
-                elseif (dir == "-") then
-                    if (axis <= -self.deadzone) then result = true end
-                elseif (dir > 0) then
-                    if (axis >= dir) then result = true end
-                elseif (dir < 0) then
-                    if (axis <= dir) then result = true end
+                if (dir == '+') then
+                    dir = self.deadzone
+                elseif (dir == '-') then
+                    dir = -self.deadzone
+                end
+                local deadzone = tonumber(dir) and dir or self.deadzone
+                local range = 1 - abs(deadzone)
+                axis = axis - deadzone
+                if ((dir > 0 and axis >= 0) or (dir < 0 and axis <= 0)) then
+                    result = axis / range
                 end
             else
                 if (joy:isGamepadDown(key)) then result = true end
@@ -165,4 +161,4 @@ end
 
 --
 
-return Input
+return InputMapper

@@ -1,24 +1,31 @@
-local class = require('vendor/middleclass/middleclass')
-
-local Viewport = class('Viewport')
+local Viewport = {}
+Viewport.__index = Viewport
 
 local roundDownToNearest = function(val, multiple)
     return multiple * (math.floor(val/multiple))
 end
 
-function Viewport:initialize(opts)
+function Viewport.new(opts)
+    local self = {}
+    setmetatable(self, Viewport)
+
     opts = opts or {}
     setmetatable(opts,{__index={
         width  = 640,
         height = 360,
         scale  = 0,
-        fs     = false
+        fs     = false,
+        multiple = 1
     }})
+
     self:setWidth(opts.width)
     self:setHeight(opts.height)
+    self:setScaleMultiple(opts.multiple)
     self:setScale(opts.scale)
     self:setFullscreen(opts.fs)
     self:setupScreen()
+
+    return self
 end
 
 function Viewport:setupScreen()
@@ -28,7 +35,8 @@ function Viewport:setupScreen()
         love.window.setMode(0, 0, {fullscreen = true, fullscreentype = "desktop"})
     else
         love.window.setMode(self.width * self.r_scale,
-                            self.height * self.r_scale)
+                            self.height * self.r_scale,
+                            {resizable = true})
     end
     self.r_width  = self.width * self.r_scale
     self.r_height = self.height * self.r_scale
@@ -37,7 +45,7 @@ function Viewport:setupScreen()
 end
 
 function Viewport:setScale(scale)
-    local scale = roundDownToNearest(scale, 0.5)
+    local scale = roundDownToNearest(scale, self.multiple)
     self.scale = scale
 
     local screen_w, screen_h = love.window.getDesktopDimensions()
@@ -47,16 +55,45 @@ function Viewport:setScale(scale)
         screen_w = screen_w - 64
         screen_h = screen_h - 96
     end
-    local max_scale = math.min(roundDownToNearest(screen_w / self.width, 0.5),
-                               roundDownToNearest(screen_h / self.height, 0.5))
 
-    if ((scale or 0) <= 0 or (scale or 0) > max_scale) then
+    local max_scale = math.min(roundDownToNearest(screen_w / self.width, self.multiple),
+                               roundDownToNearest(screen_h / self.height, self.multiple))
+
+    if (self.fs or (scale or 0) <= 0 or (scale or 0) > max_scale) then
         self.r_scale = max_scale
     else
         self.r_scale = scale
     end
 
     return self.r_scale
+end
+
+function Viewport:fixSize(w, h)
+    local screen_w, screen_h = love.window.getDesktopDimensions()
+    if (not self.fs) then
+        -- subtract some height so that windowed mode doesn't scale
+        -- beyond titlebar + application bar height in windows
+        screen_w = screen_w - 64
+        screen_h = screen_h - 96
+    end
+
+    local cur_scale = math.max(roundDownToNearest(w / self.width, self.multiple),
+                               roundDownToNearest(h / self.height, self.multiple))
+
+    print(cur_scale)
+
+    local max_scale = math.min(roundDownToNearest(screen_w / self.width, self.multiple),
+                               roundDownToNearest(screen_h / self.height, self.multiple))
+
+    if (cur_scale < 1) then
+        self.scale = 1
+    elseif(cur_scale > max_scale) then
+        self.scale = max_scale
+    else
+        self.scale = cur_scale
+    end
+
+    self:setupScreen()
 end
 
 function Viewport:getWidth()
@@ -77,6 +114,15 @@ function Viewport:setHeight(height)
     local screen_w, screen_h = love.window.getDesktopDimensions()
     self.height = math.floor(math.min(height, screen_h))
     return self.height
+end
+
+function Viewport:getScaleMultiple()
+    return self.multiple
+end
+
+function Viewport:setScaleMultiple(multiple)
+    self.multiple = multiple
+    return self.multiple
 end
 
 function Viewport:getParams()
@@ -103,6 +149,44 @@ function Viewport:setFullscreen(mode)
     end
 
     return self.fs
+end
+
+function Viewport:left(x)
+    return x
+end
+
+function Viewport:top(y)
+    return y
+end
+
+function Viewport:lefttop(x, y)
+    return x, y
+end
+
+function Viewport:right(x, w)
+    w = tonumber(w) or 0
+    return self.width - x - w
+end
+
+function Viewport:righttop(x, y, w, h)
+    w = tonumber(w) or 0
+    return self.width - x - w, y
+end
+
+function Viewport:bottom(y, h)
+    h = tonumber(h) or 0
+    return self.height - y - h
+end
+
+function Viewport:leftbottom(x, y, w, h)
+    h = tonumber(h) or 0
+    return x, self.height - y - h
+end
+
+function Viewport:rightbottom(x, y, w, h)
+    w = tonumber(w) or 0
+    h = tonumber(h) or 0
+    return self.width - x - w, self.height - y - h
 end
 
 function Viewport:pushScale()

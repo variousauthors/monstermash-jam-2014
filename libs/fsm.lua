@@ -31,7 +31,7 @@
     --  }
 --  })
 
-FSM = function (verbose)
+FSM = function (verbose, label, entity_name)
     local states        = {}
     local current_state = { name = "nil" }
 
@@ -75,6 +75,13 @@ FSM = function (verbose)
     end
 
     local stateTransition = function ()
+        if verbose then
+            if label then
+                print("in", label, "stateTransition", current_state.name, entity_name)
+            else
+                print("in" .. current_state.name)
+            end
+        end
         -- iterate over the transitions for the current state
         local next_state = {}
 
@@ -107,7 +114,11 @@ FSM = function (verbose)
         current_state.count = current_state.count + 1
 
         if verbose then
-            print("in " .. current_state.name)
+            if label then
+                print("out", label, "stateTransition", current_state.name, entity_name)
+            else
+                print("out " .. current_state.name)
+            end
         end
     end
 
@@ -127,12 +138,32 @@ FSM = function (verbose)
         if current_state.keypressed then current_state.keypressed(key) end
     end
 
-    local keyreleased = function (key)
-        stateTransition()
+    local keyreleased = function (key, skip_transition)
+        if verbose then
+            if label then
+                print("in", label, "keyreleased", current_state.name, entity_name)
+            else
+                print("in " .. current_state.name)
+            end
+        end
+
+        if skip_transition then
+            -- no-op
+        else
+            stateTransition()
+        end
 
         unset(key)
 
         if current_state.keyreleased then current_state.keyreleased(key) end
+
+        if verbose then
+            if label then
+                print("out", label, "keyreleased", current_state.name, entity_name)
+            else
+                print("in " .. current_state.name)
+            end
+        end
     end
 
     local draw = function ()
