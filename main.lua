@@ -35,35 +35,16 @@ function love.load(args)
     game_state.start()
 end
 
-local tic = 0
-local play_rate = 1
-local cbCount = {
-    pressed = 0,
-    released = 0,
-}
-local cbCountCounter = 0
-
 function love.update(dt)
-    tic = tic + 1
-
-    if tic < play_rate then return end
-    tic = 0
-
-    cbCountCounter = cbCountCounter + dt
-    if(cbCountCounter > 10) then
-        print("Love2d input events:", stringspect(cbCount))
-        cbCountCounter = 0
-    end
-
     game_state.update(dt)
 
     --Sound:printDebugQueue()
     --Input:printDebugQueue()
 end
 
+-- Receives keyboard codes and Input states
 function love.keypressed(key, isrepeat)
     if (not love.window.hasFocus()) then return end
-    cbCount['pressed'] = cbCount['pressed'] + 1
 
     if (key == 'f11') then
         view:setFullscreen()
@@ -92,21 +73,18 @@ function love.keypressed(key, isrepeat)
     end
 end
 
+-- Receives keyboard codes and Input states
 function love.keyreleased(key)
     if (not love.window.hasFocus()) then return end
-    cbCount['released'] = cbCount['released'] + 1
-
     game_state.keyreleased(key)
 end
 
 function love.gamepadpressed(joystick, button)
     if (not love.window.hasFocus()) then return end
-    cbCount['pressed'] = cbCount['pressed'] + 1
 end
 
 function love.gamepadreleased(joystick, button)
     if (not love.window.hasFocus()) then return end
-    cbCount['released'] = cbCount['released'] + 1
 end
 
 function love.draw()
