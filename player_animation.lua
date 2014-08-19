@@ -443,7 +443,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_running",
         to = "running",
         condition = function ()
-            return animation.isFinished()
+            return animation.isFinished() and not movement.is("standing")
         end
     })
 

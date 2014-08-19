@@ -12,9 +12,9 @@ MovementModule  = require("player_movement")
 AnimationModule = require("player_animation")
 XBuster         = require("arm_cannon")
 
-Pellet    = BulletFactory(5, 4, 4, 1, COLOR.YELLOW, "pellet")
-Blast     = BulletFactory(6, 20, 5, 2, COLOR.GREEN, "blast")
-MegaBlast = BulletFactory(5, 15, 20, 3, COLOR.RED, "mega_blast")
+Pellet    = BulletFactory(5, 4, 4, global.z_orders.bullets, 1, COLOR.YELLOW, "pellet")
+Blast     = BulletFactory(6, 20, 5, global.z_orders.bullets, 2, COLOR.GREEN, "blast")
+MegaBlast = BulletFactory(5, 15, 20, global.z_orders.bullets, 3, COLOR.RED, "mega_blast")
 
 Bullets = {
     pellet     = Pellet,
@@ -51,8 +51,8 @@ return function (x, y, controls, name)
     local senses_offset_x = senses_width/2 - width/2
     local senses_offset_y = height - senses_height
 
-    local entity         = Entity(x, y, width, height)
-    local senses         = Entity(x - senses_offset_x, y + senses_offset_y, senses_width, senses_height)
+    local entity         = Entity(x, y, width, height, global.z_orders.sprites)
+    local senses         = Entity(x - senses_offset_x, y + senses_offset_y, senses_width, senses_height, global.z_orders.sprites)
 
     local obstacleFilter = entity.getFilterFor('isObstacle')
     local bulletFilter = function (other)
@@ -109,7 +109,7 @@ return function (x, y, controls, name)
     local image     = love.graphics.newImage('assets/spritesheets/' .. name .. '.png')
     entity.set("name", name)
 
-    local movement  = MovementModule(entity, controls)
+    local movement  = MovementModule(entity, world, controls)
     local x_buster  = XBuster(entity, controls)
     local animation = AnimationModule(entity, image, movement, x_buster, controls)
 
@@ -506,6 +506,10 @@ return function (x, y, controls, name)
       --love.graphics.rectangle("line", draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y, 51, 51)
       --love.graphics.line(draw_x - sprite_box_offset_x + sprite_width/2, draw_y - sprite_diff, draw_x - sprite_box_offset_x + sprite_width/2, draw_y + sprite_box_offset_y + sprite_diff)
         love.graphics.setColor(COLOR.WHITE)
+    end
+
+    entity.isDashing = function ()
+        return movement.is("dashing")
     end
 
     return entity
