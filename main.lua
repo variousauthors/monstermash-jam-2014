@@ -33,7 +33,7 @@ function love.load(args)
     game_state = require("game")(world)
     menu_state = require("menu")
 
-    game_state.start()
+    game_state.start("title_menu")
 end
 
 local tic = 0
