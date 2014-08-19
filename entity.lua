@@ -2,7 +2,7 @@
 Entity = (function ()
     local entity_id = 1
 
-    return function (x, y, w, h)
+    return function (x, y, w, h, z)
         local read_only  = {}
         local read_write = { }
 
@@ -43,6 +43,10 @@ Entity = (function ()
             return h
         end
 
+        local getZOrder = function ()
+            return z
+        end
+
         local tic     = function () end
         local cleanup = function () end
 
@@ -53,6 +57,7 @@ Entity = (function ()
             cleanup        = cleanup,
             getWidth       = getWidth,
             getHeight      = getHeight,
+            getZOrder      = getZOrder,
             getX           = p.getX,
             getY           = p.getY,
             setX           = p.setX,

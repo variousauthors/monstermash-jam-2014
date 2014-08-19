@@ -5,6 +5,18 @@ global.scale     = 0
 global.screen_width = 640
 global.screen_height = 360
 
+-- for now the high and low obstacles don't do anything, since
+-- obstacles are visualized by the background/foreground
+global.z_orders = {
+    background    = 0, -- the background image
+    low_obstacle  = 1, -- things bullets don't collide with
+    bullets       = 2, -- ... bullets
+    high_obstacle = 3, -- things bullets do collide with
+    sprites       = 5, -- MEGAMAAAAAAN
+    decorations   = 4, -- dust and sparks
+    overlays      = 6, -- charge up etc...
+}
+
 function DEC_HEX(IN)
     local B,K,OUT,I,D=16,"0123456789abcdef","",0
     while IN>0 do

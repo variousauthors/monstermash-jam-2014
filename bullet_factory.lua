@@ -1,9 +1,9 @@
 
 -- bullet returns a constructor for a bullet type
-BulletFactory = function (speed, w, h, damage, color, name)
+BulletFactory = function (speed, w, h, z, damage, color, name)
 
     return function (x, y, owner, direction)
-        local entity         = Entity(x, y - h/2, w, h)
+        local entity = Entity(x, y - h/2, w, h, z)
         local obstacleFilter = entity.getFilterFor('isObstacle')
         local max_speed      = speed
         local current_speed  = 0
