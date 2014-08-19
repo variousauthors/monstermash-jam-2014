@@ -1,15 +1,53 @@
--- resolveLeft
--- resolveReft
--- resolveShoot
--- resolveFall
--- resolveDash
--- resolveJump
+if not DecorationFactory then require("decoration_factory") end
 
-return function (entity, controls, verbose)
+local smoke_dimension = 10
+local sparks_width    = 20
+local sparks_height   = 10
+
+local SmokeTrail = DecorationFactory(smoke_dimension, smoke_dimension, global.z_orders.decorations, COLOR.GREY, "smoke_trail", {
+    update = function (self, dt)
+        self.setY(self.getY() - 10*dt)
+        -- update the animation
+
+        -- update the timer
+        if self.isOver() then
+            self._unregister()
+        end
+    end,
+    draw = function (self)
+        love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
+        love.graphics.rectangle("fill", self.getX(), self.getY(), self.getWidth(), self.getHeight())
+
+        love.graphics.setColor(COLOR.WHITE)
+    end
+})
+
+local DashSparks = DecorationFactory(sparks_width, sparks_height, global.z_orders.decorations, COLOR.YELLOW, "dash_sparks", {
+    update = function (self, dt)
+        -- update the animation
+
+        -- update the timer
+        if self.isOver() then
+            self._unregister()
+        end
+    end,
+    draw = function (self)
+        love.graphics.setColor({ rng:random(0, 255), rng:random(0, 255), rng:random(0, 255) })
+        love.graphics.rectangle("fill", self.getX(), self.getY(), self.getWidth(), self.getHeight())
+
+        love.graphics.setColor(COLOR.WHITE)
+    end,
+    isOver = function (self, owner)
+        return not owner.isDashing()
+    end
+})
+
+return function (entity, world, controls, verbose)
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
-    local movement                       = FSM(true, "move", entity.get("name"))
+    local movement                       = FSM(false, "move", entity.get("name"))
     local dash_duration                  = 30
     local damaged_duration               = 30
+    local smoke_interval = 4
 
     movement.addState({
         name = "standing",
@@ -55,10 +93,22 @@ return function (entity, controls, verbose)
             entity.set("can_dash", false)
             local id = entity.get('id')
             Sound:run('dash', id)
+
         end,
         update = function ()
             if entity.holding(DASH) then
                 entity.resolveDash()
+                local facing = entity.get("facing") == LEFT and RIGHT or LEFT
+                local sign = ( facing == RIGHT ) and 1 or -1
+
+                if movement.getCount() == 2 then
+                    world:register(DashSparks(entity.getX() + sign*(sparks_width), entity.getY() + entity.getHeight(), entity))
+                end
+
+                if movement.getCount() % smoke_interval == 0 then
+
+                    world:register(SmokeTrail(entity.getX() + sign*(1.8*smoke_dimension), entity.getY() + entity.getHeight(), entity))
+                end
             end
         end
     })
@@ -170,6 +220,13 @@ return function (entity, controls, verbose)
             -- megaman faces away from the wall
             local facing = entity.get("facing") == LEFT and RIGHT or LEFT
             entity.setFacing(facing)
+
+            if movement.getCount() > 8 and movement.getCount() % (1.5*smoke_interval) == 0 then
+                local offset = math.sin(5*movement.getCount())
+                local sign = ( facing == RIGHT ) and 1 or -1
+
+                world:register(SmokeTrail(entity.getX() + sign*(offset - smoke_dimension), entity.getY() + entity.getHeight() - smoke_dimension, entity))
+            end
         end
     })
 
@@ -389,7 +446,7 @@ return function (entity, controls, verbose)
         from = "climbing",
         to = "standing",
         condition = function ()
-            return not entity.get(FALLING)
+            return not entity.get(FALLING) and not entity.pressed(DASH) and not entity.pressed(JUMP)
         end
     })
 
@@ -450,7 +507,7 @@ return function (entity, controls, verbose)
         from = "any",
         to = "destroyed",
         condition = function ()
-            return entity.get("hp") < 1 and not movement.is('destroyed') or entity.getY() > entity.get("death_line") and not movement.is('destroyed') 
+            return not movement.is('destroyed') and (entity.get("hp") < 1 or entity.getY() > entity.get("death_line"))
         end
     })
 

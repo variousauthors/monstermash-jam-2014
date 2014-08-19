@@ -1,5 +1,4 @@
 if not Entity then require("entity") end
-if not BulletFactory then require("bullet_factory") end
 
 -- TODO convert these to unique constants
 -- rather than strings
@@ -11,16 +10,6 @@ FALLING      = "falling"
 MovementModule  = require("player_movement")
 AnimationModule = require("player_animation")
 XBuster         = require("arm_cannon")
-
-Pellet    = BulletFactory(5, 4, 4, 1, COLOR.YELLOW, "pellet")
-Blast     = BulletFactory(6, 20, 5, 2, COLOR.GREEN, "blast")
-MegaBlast = BulletFactory(5, 15, 20, 3, COLOR.RED, "mega_blast")
-
-Bullets = {
-    pellet     = Pellet,
-    blast      = Blast,
-    mega_blast = MegaBlast
-}
 
 return function (x, y, controls, name)
     local controls = require('controls')[controls]
@@ -34,11 +23,8 @@ return function (x, y, controls, name)
 
     -- back of glove to beginning of red thing
     -- red thing is top
-    local height      = 29
-    local width       = 12
     local max_bullets = 3
 
-    local fat_gun_dim             = 3
     local horizontal_speed        = 1.5
     local dash_speed              = 3.5
     local damaged_speed           = 1
@@ -46,13 +32,17 @@ return function (x, y, controls, name)
     local terminal_vs = 5.75
     local gravity                 = 0.25
 
+    local entity = Entity(x, y, 12, 29)
+    local width  = entity.getWidth()
+    local height = entity.getHeight()
+
     local senses_width    = (5/2)*width
     local senses_height   = height
     local senses_offset_x = senses_width/2 - width/2
     local senses_offset_y = height - senses_height
 
-    local entity         = Entity(x, y, width, height)
-    local senses         = Entity(x - senses_offset_x, y + senses_offset_y, senses_width, senses_height)
+    local entity         = Entity(x, y, width, height, global.z_orders.sprites)
+    local senses         = Entity(x - senses_offset_x, y + senses_offset_y, senses_width, senses_height, global.z_orders.sprites)
 
     local obstacleFilter = entity.getFilterFor('isObstacle')
     local bulletFilter = function (other)
@@ -110,7 +100,7 @@ return function (x, y, controls, name)
     entity.set("name", name)
 
     local movement  = MovementModule(entity, controls)
-    local x_buster  = XBuster(entity, controls)
+    local x_buster  = XBuster(entity, controls, world)
     local animation = AnimationModule(entity, image, movement, x_buster, controls)
 
     local move = function (direction, speed)
@@ -125,6 +115,8 @@ return function (x, y, controls, name)
         entity.setX(entity.getX() + sign*speed)
         senses.setX(senses.getX() + sign*speed)
     end
+
+    entity.incrementAmmo = x_buster.incrementAmmo
 
     entity.resolveLeft = function ()
         move(LEFT, horizontal_speed)
@@ -167,24 +159,6 @@ return function (x, y, controls, name)
 
         entity.setX(entity.getX() + sign*speed)
         senses.setX(senses.getX() + sign*speed)
-    end
-
-    entity.resolveShoot = function (dt)
-        local offset       = width
-        local bullet_type  = x_buster.getState()
-        local bullet_count = entity.get(bullet_type)
-        local bullet
-        local direction = (entity.get("facing") == LEFT and -1 or 1)
-
-        if entity.get("facing") == LEFT then
-            offset = 0 - fat_gun_dim*2
-        end
-
-        if not bullet_count or bullet_count < max_bullets then
-            bullet = Bullets[x_buster.getState()](entity.getX() + offset, entity.getY() + 1*height/3 + fat_gun_dim/2, entity, direction)
-        end
-
-        return bullet
     end
 
     entity.resolveFall = function (dt)
@@ -272,8 +246,8 @@ return function (x, y, controls, name)
             x_buster.start("inactive")
 
             -- if there is something the bullet needs to do
-            if bullet.resolveCollide then
-                bullet.resolveCollide()
+            if bullet.resolveEntityCollide then
+                bullet.resolveEntityCollide()
             end
 
             cols, len = world.bump:check(entity, x, y, bulletFilter)
@@ -348,11 +322,6 @@ return function (x, y, controls, name)
             end
         end
 
-        if x_buster.isSet("shoot") then
-            local bullet = entity.resolveShoot()
-            if bullet then world:register(bullet) end
-        end
-
         movement.update(dt)
         x_buster.update(dt)
         animation.update(dt)
@@ -385,6 +354,7 @@ return function (x, y, controls, name)
         else
             entity.set("did_not_move", false)
         end
+
     end
 
     entity.keypressed = function (key)
@@ -402,6 +372,8 @@ return function (x, y, controls, name)
 
         movement.keyreleased(key)
 
+        -- this should buffer the shot, but the transition
+        -- should happen in the update function
         if key == SHOOT then
             x_buster.keyreleased(key)
         end
@@ -438,7 +410,7 @@ return function (x, y, controls, name)
 
             love.graphics.setColor(COLOR.CYAN)
 
-            if x_buster.isSet("mega_blast") then
+            if entity.get("mega_blast") then
                 love.graphics.setColor(COLOR.YELLOW)
             end
 
@@ -446,16 +418,6 @@ return function (x, y, controls, name)
             if flicker == 1 then
                 love.graphics.setColor(COLOR.BLACK)
             end
-        end
-
-        if x_buster.isSet("shoot") or x_buster.is("cool_down") then
-            local offset = width
-
-            if entity.get("facing") == LEFT then
-                offset = 0 - fat_gun_dim*2
-            end
-
-            love.graphics.rectangle("fill", draw_x + offset, draw_y + 1*height/3, fat_gun_dim * 2, fat_gun_dim)
         end
 
         if movement.is("damaged") then
@@ -506,6 +468,10 @@ return function (x, y, controls, name)
       --love.graphics.rectangle("line", draw_x - sprite_box_offset_x, draw_y - sprite_box_offset_y, 51, 51)
       --love.graphics.line(draw_x - sprite_box_offset_x + sprite_width/2, draw_y - sprite_diff, draw_x - sprite_box_offset_x + sprite_width/2, draw_y + sprite_box_offset_y + sprite_diff)
         love.graphics.setColor(COLOR.WHITE)
+    end
+
+    entity.isDashing = function ()
+        return movement.is("dashing")
     end
 
     return entity

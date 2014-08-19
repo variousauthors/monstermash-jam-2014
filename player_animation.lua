@@ -443,7 +443,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_running",
         to = "running",
         condition = function ()
-            return animation.isFinished()
+            return animation.isFinished() and not movement.is("standing")
         end
     })
 
@@ -475,7 +475,8 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "running",
         to = "standing",
         condition = function ()
-            return entity.get("did_not_move") and not movement.is("standing")
+            return entity.get("did_not_move") and movement.is("running")
+           -- not movement.is("standing") and not movement.is("jumping") and not movement.is("dashing") and not movement.is("falling")
         end
     })
 
@@ -603,7 +604,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_climbing",
         to = "climbing",
         condition = function ()
-            return animation.isFinished()
+            return animation.isFinished() and not movement.is("wall_jump") and not movement.is("standing")
         end
     })
 

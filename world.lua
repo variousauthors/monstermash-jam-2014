@@ -8,8 +8,8 @@ World.__index = World
 
 --Private Methods
 
-local function addObstacle(self, x,y,w,h)
-    local obstacle = Entity(x, y, w, h)
+local function addObstacle(self, x, y, w, h, z)
+    local obstacle = Entity(x, y, w, h, z)
     obstacle.set('isObstacle', true)
     self.obstacles[#self.obstacles+1] = obstacle
     self.bump:add(obstacle, x, y, w, h)
@@ -24,6 +24,11 @@ local function drawBox(box, r,g,b)
     love.graphics.rectangle("line", x+0.5, y+0.5, w-1, h-1)
     love.graphics.setColor(_r,_g,_b,_a)
 end
+
+local function zOrderSort (a, b)
+    return a.z > b.z
+end
+
 
 --Public Methods
 
@@ -48,12 +53,13 @@ end
 -- but initialize it when the game starts
 function World:init()
     self.entities = {}
+    self.drawables = {}
 
     self.obstacles = {}
     self.bump = bump.newWorld(32)
 
     for i, v in pairs(self.data["layers"][2]["objects"]) do
-        addObstacle(self, v.x, v.y, v.width, v.height)
+        addObstacle(self, v.x, v.y, v.width, v.height, global.z_orders.high_obstacle)
     end
 
     return self
@@ -61,6 +67,12 @@ end
 
 function World:register(entity)
     self.entities[entity.get("id")] = entity
+
+    -- store the entity ids so that we can use the
+    -- drawable table to look into the entities
+    -- table without making a new reference
+    table.insert(self.drawables, { id = entity.get("id"), z = entity.getZOrder() })
+    table.sort(self.drawables, zOrderSort)
 
     if entity.register then
         entity.register(self)
@@ -76,6 +88,10 @@ end
 
 function World:unregister(entity)
     self.entities[entity.get("id")] = nil
+
+    -- we never remove from the drawables table
+    -- because we have no efficient way of finding
+
     entity.cleanup()
 
     if world.bump:hasItem(entity) then
@@ -117,13 +133,32 @@ function World:update(dt)
     for i, entity in pairs(self.entities) do
         entity.update(dt, self)
     end
+
 end
 
 function World:draw(dt)
+    local removes = { }
+
     love.graphics.draw(self.background_image)
 
-    for i, entity in pairs(self.entities) do
-        entity.draw(dt)
+    for i = 1, #(self.drawables) do
+        local drawable_id = self.drawables[i].id
+
+        if self.entities[drawable_id] then
+            self.entities[drawable_id].draw(dt)
+        else
+            -- oops! remember to remove it from the drawables table
+            table.insert(removes, i)
+        end
+    end
+
+    -- if we found anything old we'll remove and re-sort
+    if #removes > 0 then
+        for i = 1, #(removes) do
+            table.remove(self.drawables, removes[i])
+        end
+
+        table.sort(self.drawables, zOrderSort)
     end
 
     love.graphics.draw(self.foreground_image)
