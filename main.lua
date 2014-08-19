@@ -13,8 +13,7 @@ VHS = require("libs/inputman_recorder")
 Input  = require("input")
 Sound  = require("sound")
 World  = require("world")
-Player = require("player")
-Boss   = require("boss")
+Player = require("player/player")
 HUD    = require("hud")
 
 function love.focus(f) gameIsPaused = not f end
@@ -58,7 +57,6 @@ function love.update(dt)
 
     -- Process Input events in order
     Input:processEventQueue(function(event, states)
-        inspect({ event, states })
         for i,state in ipairs(states) do
             if game_state[event] then game_state[event](state) end
         end

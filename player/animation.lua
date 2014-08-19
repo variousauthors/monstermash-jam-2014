@@ -8,18 +8,18 @@ local frames = require("animation_index")
 -- resolveDash
 -- resolveJump
 
-return function (entity, image, movement, x_buster, controls, verbose)
+return function (entity, image, movement, armor, x_buster, controls, verbose)
     -- I think we won't need this
     local LEFT, RIGHT, JUMP, SHOOT, DASH = unpack(controls)
     local animation        = FSM(false, "animation", entity.get("name"))
     local timer            = 0
     local anim, shooting_anim, duration
-    local facing = entity.get("facing")
+    local facing = entity.getFacing()
 
     local g = anim8.newGrid(51, 51, image:getWidth(), image:getHeight())
 
     local update_facing = function ()
-        facing = entity.get("facing")
+        facing = entity.getFacing()
 
         anim:setFlipped(facing == LEFT)
         shooting_anim:setFlipped(facing == LEFT)
@@ -29,7 +29,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     anim8.newAnimation = function (frames, durations, onLoop)
         local result = _old(frames, durations, onLoop)
 
-        facing = entity.get("facing")
+        facing = entity.getFacing()
 
         result:setFlipped(facing == LEFT)
 
@@ -47,6 +47,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
     end
 
     animation.draw = function (x, y)
+        -- TODO the shoot animation stopped playing for mega_blast
         if x_buster.isSet("shoot") or x_buster.is("cool_down") then
             shooting_anim:draw(image, x, y)
         else
@@ -443,7 +444,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_running",
         to = "running",
         condition = function ()
-            return animation.isFinished()
+            return animation.isFinished() and not movement.is("standing")
         end
     })
 
@@ -475,7 +476,8 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "running",
         to = "standing",
         condition = function ()
-            return entity.get("did_not_move") and not movement.is("standing")
+            return entity.get("did_not_move") and movement.is("running")
+           -- not movement.is("standing") and not movement.is("jumping") and not movement.is("dashing") and not movement.is("falling")
         end
     })
 
@@ -603,7 +605,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "to_climbing",
         to = "climbing",
         condition = function ()
-            return animation.isFinished()
+            return animation.isFinished() and not movement.is("wall_jump") and not movement.is("standing")
         end
     })
 
@@ -667,7 +669,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "any",
         to = "to_hurt",
         condition = function ()
-            return not animation.is("to_hurt") and movement.is("damaged")
+            return not animation.is("to_hurt") and armor.is("damaged")
         end
     })
 
@@ -691,7 +693,7 @@ return function (entity, image, movement, x_buster, controls, verbose)
         from = "any",
         to = "death",
         condition = function ()
-            return movement.is("destroyed")
+            return armor.is("destroyed")
         end
     })
 

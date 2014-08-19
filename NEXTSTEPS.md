@@ -1,12 +1,105 @@
 NEXT STEPS
 ----------
 
+[ ] We want to be able to control the z order in which entities get drawn,
+    right now that is kind of randomly decided when the world iterates
+    over the entities in its draw loop.
+[ ] Choose a data structure for the entity list:
+    - we need constant time lookup by id, but for drawables we would like
+      to be able to keep a list sorted by z_order... would still like to
+      be able to remove by id in constant time
+
+
 [ ] make a shortcut to declare transitions for many from states at once
     addTransition({ from = { "a", "b", "c", to = "d", condition = function () return true end}})
+[ ] world is global and that bothers me
+
+### Player Refactor ###
+
+GOAL: I want to be able to swap out the modules easily. Right now the modules for
+player live in the player folder with player.lua; I would like to be able to define
+modules that declare an interface and exist independently of the entity. For example,
+a different weapon or new movement FSM that could be swapped in.
+
+During this refactor I would also like to use the recording system as a test battery.
+My goal will be to record a replay and run it after each set of changes. If this
+doesn't work, then I will work on the replay system until it does.
+
+#### references ####
+
+#### new bugs ####
+
+[ ] regression: shoot animation stopped playing for mega_blasts
+    - nope, it is actually just playing for a very short period. Probably
+      something to do with the cool_down state
+[ ] Once this refactor is done, play with "TODO #1". The dash key is being
+    forcibly released during calls to player#move, but commenting out this
+    line doesn't seem to break the game (it does change things, though,
+    since the replays break).
+[ ] XBuster should not lose its charge after rock is hit
+
+
+#### checklist ####
+
+[ ] I should be able to change the way a player moves by changing the movement module
+[ ] I should be able to change the way a player shoots by changing the x_buster module
+[ ] I should be able to change the way a player takes damage by changing the armor module
+
+[x] reduce coupling between movement module and player
+[x] Remove world from Moveement Module
+[x] Remove world from ArmCannon
+[x] Pull some functions like "move" into the Movement module somehow
+
+[ ] reduce coupling between arm_cannon and player
+[ ] change the way we use "world" in the player and module code
+    - basically, I'd like to not have to pass world around. We'll
+      see how well this can be accomplished
+[ ] extract the common code for player and create Rock as a subclass
+[ ] FSM should be able to attach functions to a state after the fact
+    as well as explicitly upon adding a state.
+
+    `state_machine["jumping"].setUpdate(f)`
+
+[ ] make the recorder accurate to within a fraction of a pixel
+    - right now recordings stay accurate to within 1 pixel over longish
+      periods.
+    - make a recording of a 4 full player game and see if the accuracy
+      is within 1 pixel.
+    - try to make accuracy within 0.1 pixels
+
+### Shooting ###
+
+[x] We are losing collisions: sometimes I will shoot twice, and only one collision will
+    be detected
+    - hmm... but actually the bullets would still get removed when the left the screen
+      so that can't be it... maybe the bullet object is never added?
+    - moving the bullet creation code into the arm cannon resolved this: it was keydrops
+      causing trouble again
+[x] A second shooting animation plays parallel to some of megaman's animations
+[x] switch to and from shooting animation based on the inactive state
+[x] The X-Buster should only enter shoot states when it can actually produce bullets.
+[x] limit the number of charge shots
+[x] bullets should collide with obstacles too
+
+[x] Replay 1 still demonstrates a dropped charge shot
+[ ] bullets need animations too
+[ ] track bullets in a pool and ensure limits are respected
+
+## Shooting: Animation ##
+
+[ ] bullets animation should trail behind their collision box,
+    so the tip of the bullet should always be in the same position
+    on the sprite
+[ ] blasts and mega_blasts are initially slower than pellets,
+    during the muzzle flair animation, but then speed up:
+    - blasts match pellet speed
+    - mega_blasts overtake pellets
 
 ### BUGS ###
 
 [x] Can somehow jump from air-dash again?
+[x] Regression: I seem to be able to fire multiple blasts again?
+[x] bug: I can mash shoot to release a constant stream of blasts
 
 The keydrop saga
 
@@ -39,13 +132,13 @@ Discussion:
   needed. It does not, however, address the problem in its entirety (in the
   sense mentioned immediately above).
 
-
 DO THESE FIRST
 
-[ ] When megaman wall jumps in the crook, he gets trapped forever
 [ ] When megaman is damaged, he should not be able to wall jump and shoot and charge
 [x] megaman should lose charge when damaged
 [ ] when megamans hit each other they should both take damage (this failed once)
+[x] When megaman wall jumps in the crook, he gets trapped forever
+[x] megaman should lose charge when damaged
 [x] Megaman loses shots when mashing keys
 [x] Megaman loses jumps when mashing keys
 [x] Megaman does a little dance when jump and dash are mashed
