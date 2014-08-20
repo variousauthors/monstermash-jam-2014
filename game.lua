@@ -1,3 +1,6 @@
+Set = require('libs/set')
+
+local cachedInput = false
 
 return function(world)
     local fsm = FSM()
@@ -48,6 +51,13 @@ return function(world)
     fsm.addState({
         name       = "play",
         init       = function ()
+            if cachedInput then
+                local previous = Set(cachedInput)
+                local current = Set(Input:getStates())
+                for _,v in ipairs((current - previous):items()) do fsm.keypressed(v) end
+                for _,v in ipairs((previous - current):items()) do fsm.keyreleased(v) end
+                cachedInput = false
+            end
             Sound:resume()
         end,
         draw       = function ()
@@ -69,6 +79,7 @@ return function(world)
     fsm.addState({
         name = "pause",
         init = function()
+            cachedInput = Input:getStates()
             Sound:pause()
         end,
         update = function() end,
