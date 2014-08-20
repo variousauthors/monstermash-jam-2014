@@ -65,6 +65,14 @@ function InputMan:printDebugQueue()
     end
 end
 
+function InputMan:getStates()
+    if not self.thread:isRunning() then
+        self:reInitialize()
+    end
+    self.pChannel:supply('all')
+    return self.rChannel:demand()
+end
+
 function InputMan:isState(state)
     if not self.thread:isRunning() then
         self:reInitialize()

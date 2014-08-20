@@ -92,7 +92,11 @@ while not _stop do
     updateStates()
 
     local pollstate = pChannel:pop()
-    if pollstate then rChannel:push(InputMapper:isState(pollstate)) end
+    if (pollstate == 'all') then
+        rChannel:push(InputMapper:getStates())
+    elseif pollstate then
+        rChannel:push(InputMapper:isState(pollstate))
+    end
 
     local msg = cChannel:pop()
     if (type(msg) == 'table') then
