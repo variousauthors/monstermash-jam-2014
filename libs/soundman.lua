@@ -85,7 +85,7 @@ end
 function SoundMan:pause(...)
     local tags = {...}
     if #tags > 0 then tags = table.concat(tags, ';') else tags = nil end
-    self:sendCommand({'resume', tags})
+    self:sendCommand({'pause', tags})
 end
 
 --

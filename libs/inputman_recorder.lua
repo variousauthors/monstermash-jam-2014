@@ -98,6 +98,10 @@ function VHS:printDebugQueue()
     self.inputMan:printDebugQueue()
 end
 
+function VHS:getStates()
+    return self.inputMan:getStates()
+end
+
 function VHS:isState(state)
     return self.inputMan:isState(state)
 end

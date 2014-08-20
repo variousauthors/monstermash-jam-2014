@@ -1,10 +1,22 @@
+Set = require('libs/set')
+
+local cachedInput = false
 
 return function(world)
     local fsm = FSM()
 
     fsm.addState({
-        name       = "start",
-        init       = function ()
+        name = "title_menu",
+        init = function() end,
+        update = function() end,
+        draw = function() end,
+        keypressed = function()
+        end
+    })
+
+    fsm.addState({
+        name = "new_game",
+        init = function()
             world:init()
 
             BasicMovementModule  = require("player/movement")
@@ -32,6 +44,21 @@ return function(world)
 
             Sound:stop()
             Sound:run("mainMusic")
+            fsm.set("ready")
+        end
+    })
+
+    fsm.addState({
+        name       = "play",
+        init       = function ()
+            if cachedInput then
+                local previous = Set(cachedInput)
+                local current = Set(Input:getStates())
+                for _,v in ipairs((current - previous):items()) do fsm.keypressed(v) end
+                for _,v in ipairs((previous - current):items()) do fsm.keyreleased(v) end
+                cachedInput = false
+            end
+            Sound:resume()
         end,
         draw       = function ()
             world:draw()
@@ -42,11 +69,33 @@ return function(world)
         end,
         keypressed = function (key)
             world:keypressed(key)
+            if (key == 'pause') then fsm.set('pause') end
         end,
         keyreleased = function (key)
             world:keyreleased(key)
         end
-      })
+    })
+
+    fsm.addState({
+        name = "pause",
+        init = function()
+            cachedInput = Input:getStates()
+            Sound:pause()
+        end,
+        update = function() end,
+        draw = function()
+            world:draw()
+            hud:draw()
+            local r,g,b,a = love.graphics.getColor()
+            love.graphics.setColor(0, 0, 0, 128)
+            love.graphics.rectangle("fill", 0, 0, view:getWidth(), view:getHeight())
+            love.graphics.setColor(r, g, b, a)
+        end,
+        keypressed = function(key)
+            if (key == 'pause') then fsm.set('unpause') end
+        end,
+        keyreleased = function() end
+    })
 
     fsm.addState({
         name       = "stop",
@@ -56,20 +105,58 @@ return function(world)
         --keypressed = game.keypressed
     })
 
+    -- skip title menu for the moment
+    fsm.addTransition({
+        from      = "title_menu",
+        to        = "new_game",
+        condition = function ()
+            return true
+        end
+    })
+
     -- start the game when the rock chooses a menu option
     fsm.addTransition({
-        from      = "start",
-        to        = "stop",
+        from      = "new_game",
+        to        = "play",
         condition = function ()
-            return fsm.isSet("reset")
+            if fsm.isSet("ready") then
+                fsm.unset("ready")
+                return true
+            end
         end
     })
 
     fsm.addTransition({
-        from      = "stop",
-        to        = "start",
+        from      = "play",
+        to        = "pause",
         condition = function ()
-            return true
+            if fsm.isSet("pause") then
+                fsm.unset("pause")
+                return true
+            end
+        end
+    })
+
+    fsm.addTransition({
+        from      = "pause",
+        to        = "play",
+        condition = function ()
+            if fsm.isSet("unpause") then
+                fsm.unset("unpause")
+                return true
+            end
+        end
+    })
+
+
+    fsm.addTransition({
+        from      = "any",
+        to        = "new_game",
+        condition = function ()
+            if fsm.isSet("reset") then
+                fsm.unset("reset")
+                return true
+            end
         end
     })
 
