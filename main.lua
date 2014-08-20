@@ -169,7 +169,7 @@ function love.run()
     local internalRate = 1/60
     local nextTime = 0
     local updateRate = 0
-    local maxFrameskip = 2
+    local maxFrameskip = 4
 
     -- Main loop
     while true do
@@ -193,13 +193,13 @@ function love.run()
         end
 
         -- Draw
-        love.drawscreen(--[[{
+        love.drawscreen({
             t = t,
             updateCount = updateCount,
             frameCount = frameCount,
             internalFPS = "1/" .. (1/internalRate),
             frameskip = updateRate .. ":" .. maxFrameskip
-        }]])
+        })
         frameCount = frameCount + 1
 
         love.timer.sleep(0.001)
